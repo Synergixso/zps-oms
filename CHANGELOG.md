@@ -2,6 +2,11 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.1.14] — 2026-11-26 — Kamfinsa technical structure
+### Changed
+- Technical Team page, Kamfinsa Mobile Unit structure: "Engineering & Mechanical Services (MTU)" and "Information Technology & Communications (Technical Services Section and Signals Sections)".
+- IT & Communications card now states ICT is provided for the entire Kamfinsa Mobile Unit Division (previously "for the School").
+
 ## [0.1.13] — 2026-11-26 — Technical Team leadership
 ### Changed
 - Technical Team page, Published Leadership Positions: "Deputy Officer-in-Charge – Tech" added at the top of the Kamfinsa Mobile Unit (Technical Services) list.

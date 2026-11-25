@@ -101,7 +101,7 @@ export default function TechnicalTeam() {
               tone="blue"
               href="#kamfinsa-structure"
               title="Information Technology & Communications"
-              body="The Kamfinsa unit provides and manages information and communication technology (ICT) for the School."
+              body="The Kamfinsa unit provides and manages information and communication technology (ICT) for the entire Kamfinsa Mobile Unit Division."
             />
           </div>
         </section>
@@ -149,9 +149,9 @@ export default function TechnicalTeam() {
               <div className="px-6 py-5">
                 <p className="text-[16px] font-bold text-[#0d1b3e]">Local Administration structure, which lists:</p>
                 <ul className="mt-3 space-y-3">
-                  {["Engineering & Mechanical Services", "Information Technology & Communications"].map((t) => (
-                    <li key={t} className="flex items-center gap-3 text-[16px] text-[#1f2d45]">
-                      <Icon name="checkCircle" className="h-6 w-6 shrink-0 text-[#16823b]" />
+                  {["Engineering & Mechanical Services (MTU)", "Information Technology & Communications (Technical Services Section and Signals Sections)"].map((t) => (
+                    <li key={t} className="flex items-start gap-3 text-[16px] text-[#1f2d45]">
+                      <Icon name="checkCircle" className="mt-0.5 h-6 w-6 shrink-0 text-[#16823b]" />
                       {t}
                     </li>
                   ))}
