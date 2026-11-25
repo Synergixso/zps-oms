@@ -24,26 +24,22 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <main id="main" className="flex-1">
         {children}
       </main>
-      <footer className="mt-auto bg-[#0d2149] text-white">
+      <footer className="mt-auto text-white">
         <Wave fill="#0d2149" className="-mb-px bg-white" />
-        <div className="mx-auto max-w-[1180px] px-4 pb-8 pt-4">
-          <div className="flex flex-col items-center gap-5 text-center md:flex-row md:text-left">
-            <span className="flex h-[78px] w-[124px] shrink-0 items-center justify-center rounded-xl bg-white p-2 shadow">
-              <Crest className="h-[62px] w-[107px]" />
-            </span>
+        <div className="bg-[#0d2149]">
+          <div className="mx-auto max-w-[1180px] px-4 pb-10 pt-6">
+          <div className="flex flex-col items-center justify-center gap-6 text-center md:flex-row md:text-left">
+            <Link href="/" aria-label="ZPS-OMS home" className="flex h-[92px] w-[150px] shrink-0 items-center justify-center rounded-full bg-white px-4 py-2 shadow-[0_6px_20px_rgba(0,0,0,0.25)]">
+              <Crest className="h-[72px] w-[124px]" />
+            </Link>
             <div>
-              <p className="text-[18px] font-bold tracking-[0.32em] md:text-[22px]">ZAMBIA POLICE SERVICE</p>
-              <p className="mt-1 text-[13px] text-slate-300">ZPS-OMS · Operations · Coordination · Accountability</p>
+              <p className="text-[20px] font-bold tracking-[0.34em] md:text-[26px]">ZAMBIA POLICE SERVICE</p>
+              <p className="mt-2 text-[14px] text-white/90 md:text-[15px]">
+                <span className="font-semibold">ZPS-OMS</span> <span className="mx-2 text-white/50">|</span> Operations <span className="mx-1 text-white/60">•</span> Coordination{" "}
+                <span className="mx-1 text-white/60">•</span> Readiness <span className="mx-1 text-white/60">•</span> Accountability
+              </p>
             </div>
           </div>
-          <div className="mt-6 flex flex-col gap-3 border-t border-white/10 pt-4 text-[12px] text-slate-300 md:flex-row md:items-center md:justify-between">
-            <p>Proposed system under institutional review · Local prototype using synthetic data only · Not an authorised production police system.</p>
-            <nav aria-label="Footer" className="flex flex-wrap gap-4">
-              <Link href="/about" className="hover:text-white">About</Link>
-              <Link href="/modules" className="hover:text-white">Modules</Link>
-              <Link href="/contact" className="hover:text-white">Contact</Link>
-              <Link href="/login" className="hover:text-white">Login</Link>
-            </nav>
           </div>
         </div>
       </footer>

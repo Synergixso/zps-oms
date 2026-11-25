@@ -35,29 +35,21 @@ Empty states explain what is absent; validation errors appear per field and in a
 ## Accessibility (WCAG 2.2 AA target)
 Skip link; landmarks (`header`, `nav`, `main`, `footer`); `aria-current` on navigation; labelled inputs with `aria-invalid` + `aria-describedby`; visible `:focus-visible` outline; drawer closes on Escape; reduced-motion respected. **Not yet done:** automated axe scan, screen-reader walkthrough, 200 % zoom test (KNOWN_LIMITATIONS).
 
-## Landing page and public chrome (v0.1.1, from the supplied A4 portrait reference)
-Implemented after the reference composition: white header (crest │ "ZAMBIA POLICE SERVICE / OPERATIONS MANAGEMENT SYSTEM" / green ZPS-OMS pill, nav with green active underline, navy Login button); navy hero with eyebrow rule, large ZPS-OMS wordmark, two calls to action and four trust markers; green-white-blue wave divider (`<Wave>`, order preserved — never rotated); "Key System Capabilities" with eight cards; navy figures band; call-to-action panel; navy footer with crest and letter-spaced service name. Secondary public pages use the same navy `<PublicHero>`.
+## Landing page and public chrome (v0.1.3 — owner-approved design, DEC-025)
+The landing page implements the owner-approved A4 portrait design exactly in content and composition:
 
-**Deliberate departures from the reference (and why)**
+- **Header:** crest │ "ZAMBIA POLICE SERVICE / OPERATIONS MANAGEMENT SYSTEM" / green ZPS-OMS pill; Home, About, Features, Modules, Contact with a green active underline; navy Login button. Mobile: menu toggle.
+- **Hero:** approved photography (`public/hero/hero-01.webp`, `hero-02.webp`, cross-faded over 18 s; reduced motion shows the first image) anchored right and blended into the navy text panel; eyebrow "NATIONAL OPERATIONS PLATFORM"; ZPS-OMS wordmark; approved strapline; Access System (green, outlined) and Learn More (play icon); trust markers Secure · Integrated · Real-time · Centralised. The photograph's green-white-blue swoosh forms the hero's lower edge.
+- **Key System Capabilities:** eight cards with the approved wording and icon tiles (green, blue, purple, green / blue, orange, navy, green).
+- **Figures band:** 10 Provincial Divisions · 8 Divisional Formations · 8 Integrated Operations · One Operations Platform, over a deep-blue treatment of the hero photograph.
+- **Call to action:** approved vehicle photograph (`public/hero/cta-vehicle.webp`), "Modernising Police Operations Across Zambia", Access ZPS-OMS.
+- **Footer:** institutional wave, crest, letter-spaced "ZAMBIA POLICE SERVICE", "ZPS-OMS | Operations • Coordination • Readiness • Accountability".
 
-| Reference element | Implemented instead | Reason |
-|---|---|---|
-| Photographs of uniformed officers, flags, building, vehicles | **Superseded in v0.1.2:** the owner-supplied hero images are used (DEC-024), labelled "Illustrative imagery" | Owner instruction; publication approval still required |
-| Trust markers "Real-time", "Integrated" | "Secure", "Role-based", "Auditable", "Centralised" | No real-time operational data and no integrations exist (L5) |
-| "monitor operations, tasks and readiness in real time" | Administrative requests, approvals and outstanding actions | Readiness/tactical status is excluded (E1) |
-| "Track vehicles, utilisation" | Vehicle register, licence/insurance/service dates — administrative only | Tracking/utilisation excluded (M04) |
-| "8 Integrated Operations" figure | "13 Role-specific Workspaces" (count of the role catalogue) | Would be a fabricated statistic |
-| Figures shown without context | Each figure labelled as configured/provisional, plus a note that they are not operational data | I3 "no fake operational statistics" |
-| Multi-colour icon tiles (green, blue, purple, orange) | Green and blue tiles only | I3 "avoid random colourful icons" |
-| Footer tagline "…Readiness • Accountability" | "Operations · Coordination · Accountability" | Readiness excluded |
-| "restoring operational efficiency" | "supporting coordination, resource accountability and management reporting" | Avoid implying unverified current-state problems (PRD §4) |
+### Responsive behaviour
+- ≥1280 px: photograph occupies the right 78% of the hero at its natural 2:1 shape; text column up to 540 px.
+- 1024–1279 px: photograph occupies the right 62%; heading scales to 72 px and the text column to 430 px so faces stay clear of the text.
+- <1024 px: text on navy with the photograph directly beneath (4:3 on phones, 2:1 from 640 px); trust markers in two columns on phones.
+- Verified with no horizontal overflow at 375 px and visually at 375, 1024, 1200, 1440 and 1920 px.
 
-Approved photography can be added later in the hero's right-hand column once supplied with usage rights (DEC-010).
-
-### Hero photography (v0.1.2)
-- Files: `public/hero/hero-01.webp`, `public/hero/hero-02.webp` (1774×887 WebP, ~250 KB, supplied by the project owner). Rendered unmodified with `object-fit: cover`.
-- ≥1280 px: photo occupies the right 78% at its natural 2:1 shape; left edge and bottom-left fade into the navy panel so the text column sits on solid navy. The photo's own green-white-blue wave forms the hero's lower edge.
-- <1280 px: text on navy, photo below it (4:3 on phones, 2:1 from 640 px), so text never covers faces.
-- The two images cross-fade over 18 s (CSS only). With `prefers-reduced-motion`, only the first image is shown.
-- "Illustrative imagery" label top-right; images are decorative (`alt=""`), the hero is labelled by its heading.
-- Role-workspaces section (between capabilities and figures) carries the illustrative interface preview and lists dashboards from the enforced role catalogue.
+### Crest
+The crest is shown unmodified on a white field in the header and footer (`<Crest>`, object-fit: contain), as required by the branding rules.

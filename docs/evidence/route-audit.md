@@ -1,6 +1,6 @@
 # Route audit evidence
 
-Generated 2026-11-25T19:30:18.183Z against http://localhost:3100 with the synthetic dataset. ✓ = rendered, ✕ = access-denied page (audited), 404 = record outside scope (existence not disclosed), → = redirect, ERR = server error.
+Generated 2026-11-25T20:05:03.804Z against http://localhost:3100 with the synthetic dataset. ✓ = rendered, ✕ = access-denied page (audited), 404 = record outside scope (existence not disclosed), → = redirect, ERR = server error.
 
 **Server errors: 0**
 

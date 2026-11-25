@@ -2,6 +2,12 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.1.3] — 2026-11-25 — Landing page implemented to the approved design
+### Changed
+- Landing page now matches the owner-approved design in wording, figures, icon colours and composition (DEC-025): approved hero strapline and trust markers, capability card wording, "8 Integrated Operations" figure, CTA vehicle photograph and footer tagline.
+- Hero photograph is a true background on screens 1024 px and wider, tuned per breakpoint so faces never sit behind text; "Illustrative imagery" label and the extra role-workspaces section removed.
+- Footer rebuilt to the design (centred crest and service name); removed a sub-pixel line above the footer wave.
+
 ## [0.1.2] — 2026-11-25 — Photographic hero
 ### Changed
 - Landing-page hero uses the owner-supplied images with a responsive layout (photo right on wide screens, stacked on tablets and phones), slow cross-fade that respects reduced motion, and an "Illustrative imagery" label (DEC-024).
