@@ -12,7 +12,7 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-export type IconName = "home" | "inbox" | "file" | "building" | "truck" | "wrench" | "box" | "chart" | "users" | "key" | "shield" | "search" | "server" | "flow" | "bell" | "help" | "check" | "layers" | "arrow" | "user" | "lock" | "map" | "eye" | "car" | "play" | "network" | "tools" | "shieldCheck" | "bars" | "gear" | "target" | "scale" | "handshake" | "starShield" | "sitemap" | "clipboardCheck" | "star" | "chevron";
+export type IconName = "home" | "inbox" | "file" | "building" | "truck" | "wrench" | "box" | "chart" | "users" | "key" | "shield" | "search" | "server" | "flow" | "bell" | "help" | "check" | "layers" | "arrow" | "user" | "lock" | "map" | "eye" | "car" | "play" | "network" | "tools" | "shieldCheck" | "bars" | "gear" | "target" | "scale" | "handshake" | "starShield" | "sitemap" | "clipboardCheck" | "star" | "chevron" | "monitorNet" | "laptop" | "checkCircle" | "userCircle" | "bank";
 
 export const NAV: NavGroup[] = [
   {

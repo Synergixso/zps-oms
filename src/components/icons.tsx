@@ -38,6 +38,11 @@ const P: Record<IconName, string> = {
   clipboardCheck: "M9 4h6v3H9zM9 5H6a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-3M8.5 14l2.5 2.5 4.5-5",
   star: "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z",
   chevron: "M9 6l6 6-6 6",
+  monitorNet: "M3 4h18v12H3zM8 20h8M12 16v4M12 7v2M9 12V11h6v1M8 12h2v2H8zM14 12h2v2h-2zM11 6h2v2h-2z",
+  laptop: "M5 5h14v10H5zM2 19h20l-2-4H4z",
+  checkCircle: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM8 12.5l2.7 2.7L16.5 9.5",
+  userCircle: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6.5 18.5a6 6 0 0 1 11 0",
+  bank: "M3 10h18L12 4zM5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18",
   check: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11",
 };
 
