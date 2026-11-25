@@ -149,7 +149,7 @@ export default function Home() {
                 width={876}
                 height={396}
                 loading="lazy"
-                className="absolute inset-0 h-full w-full object-cover object-left"
+                className="absolute inset-0 h-full w-full object-cover object-[50%_60%]"
               />
               <div className="absolute inset-y-0 right-0 hidden w-16 bg-gradient-to-r from-transparent to-[#f3f6fb] md:block" aria-hidden />
             </div>
