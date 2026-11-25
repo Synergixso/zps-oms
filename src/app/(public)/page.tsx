@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@/components/icons";
+import { HeroEyebrow, PhotoHero } from "@/components/photo-hero";
 import type { IconName } from "@/lib/nav";
 import { FORMATIONS, PROVINCES } from "@/server/db/seed";
 
@@ -38,18 +39,6 @@ const TRUST: Array<[IconName, string]> = [
   ["network", "Centralised"],
 ];
 
-/** Hero photography (public/hero/*.webp), slowly cross-faded; reduced-motion shows the first image only. */
-function HeroImages({ className = "", position = "100% 100%" }: { className?: string; position?: string }) {
-  return (
-    <div className={`relative overflow-hidden ${className}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/hero/hero-01.webp" alt="" width={1774} height={887} fetchPriority="high" className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: position }} />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/hero/hero-02.webp" alt="" width={1774} height={887} loading="lazy" className="hero-fade absolute inset-0 h-full w-full object-cover" style={{ objectPosition: position }} />
-    </div>
-  );
-}
-
 export default function Home() {
   const stats: Array<[IconName, string, string]> = [
     ["map", String(PROVINCES.length), "Provincial Divisions"],
@@ -61,63 +50,47 @@ export default function Home() {
   return (
     <div className="print-a4">
       {/* ───────────────────────── Hero ───────────────────────── */}
-      <section className="relative isolate overflow-hidden bg-[#0d2149] text-white" aria-labelledby="hero-title">
-        {/* Photographic background (≥1024 px): image anchored right, blended into the navy text panel */}
-        <div className="absolute inset-y-0 right-0 -z-10 hidden w-[62%] lg:block xl:w-[78%]" aria-hidden>
-          <HeroImages className="h-full w-full" />
-          <div className="absolute inset-0 -left-px bg-[linear-gradient(90deg,#0d2149_0%,#0d2149_3%,rgba(13,33,73,0.9)_11%,rgba(13,33,73,0.4)_25%,rgba(13,33,73,0)_38%)]" />
-          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#0d2149]/40 to-transparent" />
-          <div className="absolute bottom-0 left-0 h-[30%] w-[42%] bg-gradient-to-t from-[#0d2149] via-[#0d2149]/70 to-transparent [mask-image:linear-gradient(90deg,#000_45%,transparent)]" />
+      <PhotoHero labelledBy="hero-title">
+        <HeroEyebrow>National Operations Platform</HeroEyebrow>
+        <h1
+          id="hero-title"
+          className="mt-4 text-[56px] font-extrabold leading-[0.95] tracking-tight [text-shadow:0_2px_18px_rgba(0,0,0,0.25)] md:text-[84px] lg:text-[72px] xl:text-[84px]"
+        >
+          ZPS-OMS
+        </h1>
+        <p className="mt-3 text-[23px] font-bold leading-[1.2] md:text-[31px] lg:text-[27px] xl:text-[31px]">
+          Zambia Police Service
+          <br />
+          Operations Management System
+        </p>
+        <p className="mt-5 max-w-[470px] text-[15.5px] leading-relaxed text-slate-100 md:text-[17px]">
+          A secure, integrated and modern platform for restoring operational efficiency, resource coordination and accountability across the DIG Operations, Provincial Divisions
+          and Divisional Units.
+        </p>
+        <div className="mt-8 flex flex-wrap gap-4">
+          <Link
+            href="/login"
+            className="group inline-flex items-center gap-2.5 rounded-lg border-2 border-[#4cd07d] bg-gradient-to-b from-[#1fa04f] to-[#147a36] px-7 py-3.5 text-[16px] font-bold text-white shadow-[0_10px_28px_-8px_rgba(22,130,59,0.8)] transition hover:-translate-y-0.5 hover:brightness-110"
+          >
+            Access System <Icon name="arrow" className="h-[18px] w-[18px] transition-transform group-hover:translate-x-0.5" />
+          </Link>
+          <Link
+            href="/about"
+            className="inline-flex items-center gap-2.5 rounded-lg border-2 border-white/85 px-7 py-3.5 text-[16px] font-bold text-white transition hover:bg-white/10"
+          >
+            Learn More <Icon name="play" className="h-5 w-5" />
+          </Link>
         </div>
-        <div className="pointer-events-none absolute -left-24 top-1/3 -z-10 h-[420px] w-[420px] rounded-full bg-[#1f5bc4]/25 blur-3xl" aria-hidden />
-
-        <div className="mx-auto max-w-[1280px] px-5 pb-10 pt-12 sm:px-8 md:pt-16 lg:flex lg:min-h-[600px] lg:items-center lg:pb-28 lg:pt-10 xl:min-h-[min(42vw,720px)]">
-          <div className="max-w-[560px] lg:max-w-[430px] xl:max-w-[540px]">
-            <p className="flex items-center gap-3 text-[12.5px] font-bold uppercase tracking-[0.2em] text-white">
-              <span className="h-[3px] w-10 rounded-full bg-zp-green" aria-hidden />
-              National Operations Platform
-            </p>
-            <h1 id="hero-title" className="mt-4 text-[56px] font-extrabold leading-[0.95] tracking-tight [text-shadow:0_2px_18px_rgba(0,0,0,0.25)] md:text-[84px] lg:text-[72px] xl:text-[84px]">
-              ZPS-OMS
-            </h1>
-            <p className="mt-3 text-[23px] font-bold leading-[1.2] md:text-[31px] lg:text-[27px] xl:text-[31px]">
-              Zambia Police Service
-              <br />
-              Operations Management System
-            </p>
-            <p className="mt-5 max-w-[470px] text-[15.5px] leading-relaxed text-slate-100 md:text-[17px]">
-              A secure, integrated and modern platform for restoring operational efficiency, resource coordination and accountability across the DIG Operations, Provincial
-              Divisions and Divisional Units.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link
-                href="/login"
-                className="group inline-flex items-center gap-2.5 rounded-lg border-2 border-[#4cd07d] bg-gradient-to-b from-[#1fa04f] to-[#147a36] px-7 py-3.5 text-[16px] font-bold text-white shadow-[0_10px_28px_-8px_rgba(22,130,59,0.8)] transition hover:-translate-y-0.5 hover:brightness-110"
-              >
-                Access System <Icon name="arrow" className="h-[18px] w-[18px] transition-transform group-hover:translate-x-0.5" />
-              </Link>
-              <Link href="/about" className="inline-flex items-center gap-2.5 rounded-lg border-2 border-white/85 px-7 py-3.5 text-[16px] font-bold text-white transition hover:bg-white/10">
-                Learn More <Icon name="play" className="h-5 w-5" />
-              </Link>
-            </div>
-            <ul className="mt-9 grid grid-cols-2 gap-x-4 gap-y-3 text-[14px] font-semibold text-white sm:flex sm:flex-wrap sm:items-center lg:flex-nowrap lg:text-[13.5px] xl:text-[14px]">
-              {TRUST.map(([icon, label], i) => (
-                <li key={label} className="flex items-center whitespace-nowrap">
-                  {i > 0 && <span className="mx-3 hidden h-6 w-px bg-white/35 sm:block xl:mx-4" aria-hidden />}
-                  <Icon name={icon} className="mr-2 h-5 w-5" />
-                  {label}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Photograph below the text on phones and tablets so faces are never covered */}
-        <div className="relative -mt-6 lg:hidden" aria-hidden>
-          <HeroImages className="aspect-[4/3] w-full sm:aspect-[2/1]" position="68% 100%" />
-          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#0d2149] to-transparent" />
-        </div>
-      </section>
+        <ul className="mt-9 grid grid-cols-2 gap-x-4 gap-y-3 text-[14px] font-semibold text-white sm:flex sm:flex-wrap sm:items-center lg:flex-nowrap lg:text-[13.5px] xl:text-[14px]">
+          {TRUST.map(([icon, label], i) => (
+            <li key={label} className="flex items-center whitespace-nowrap">
+              {i > 0 && <span className="mx-3 hidden h-6 w-px bg-white/35 sm:block xl:mx-4" aria-hidden />}
+              <Icon name={icon} className="mr-2 h-5 w-5" />
+              {label}
+            </li>
+          ))}
+        </ul>
+      </PhotoHero>
 
       {/* ───────────────────── Key System Capabilities ───────────────────── */}
       <section className="relative bg-[linear-gradient(180deg,#eef4fb_0%,#f7f9fc_40%,#ffffff_100%)] py-14 md:py-20">
@@ -170,7 +143,14 @@ export default function Home() {
           <div className="grid items-center overflow-hidden rounded-2xl border border-[#e3e9f2] bg-[linear-gradient(90deg,#f3f6fb_0%,#eef3fa_100%)] shadow-[0_6px_22px_rgba(13,33,73,0.08)] md:grid-cols-[minmax(260px,330px)_1fr_auto]">
             <div className="relative h-[190px] md:h-full md:min-h-[170px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/hero/cta-vehicle.webp" alt="Zambia Police Service vehicle" width={876} height={396} loading="lazy" className="absolute inset-0 h-full w-full object-cover object-left" />
+              <img
+                src="/hero/cta-vehicle.webp"
+                alt="Zambia Police Service vehicle"
+                width={876}
+                height={396}
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover object-left"
+              />
               <div className="absolute inset-y-0 right-0 hidden w-16 bg-gradient-to-r from-transparent to-[#f3f6fb] md:block" aria-hidden />
             </div>
             <div className="px-6 py-6 md:px-8">

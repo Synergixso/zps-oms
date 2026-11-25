@@ -2,6 +2,14 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.1.5] — 2026-11-25 — About page to the approved design
+### Added
+- About page implemented to the owner-approved "About ZPS-OMS" design: approved photographic hero ("About the Platform"), Our Purpose with image, Our Mission and Our Vision cards, five Objectives, and five Core Values (Integrity, Service, Professionalism, Accountability, Security).
+- Shared `PhotoHero` component (`src/components/photo-hero.tsx`) so the landing and About pages use the same approved hero.
+
+### Notes
+- The headquarters-building photograph in the design could not be extracted (the design file was not available on disk). `public/about/purpose.webp` currently holds a crop of the approved hero photography; replace it with the building photograph at the same path.
+
 ## [0.1.4] — 2026-11-25 — Footer copyright
 ### Added
 - Footer copyright line on public pages and on every signed-in back-office page: "© <current year> Zambia Police Service. All rights reserved. Designed and developed by SPOM Technical Services Section Team." The year is rendered in the browser so pre-built pages always show the current year.

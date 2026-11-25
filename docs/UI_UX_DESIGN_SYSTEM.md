@@ -53,3 +53,10 @@ The landing page implements the owner-approved A4 portrait design exactly in con
 
 ### Crest
 The crest is shown unmodified on a white field in the header and footer (`<Crest>`, object-fit: contain), as required by the branding rules.
+
+## About page (v0.1.5 — owner-approved design)
+- Hero: shared `PhotoHero` (same approved photography and responsive behaviour as the landing page), eyebrow "ABOUT ZPS-OMS", heading "About the Platform", approved strapline.
+- Our Purpose (green bar heading) with image `public/about/purpose.webp`; Our Mission (target icon) and Our Vision (eye icon) cards.
+- Our Objectives: five items in one bordered strip (gear green, layers blue, shield purple, bars navy, users green); 2 columns on phones, 3 on tablets, 5 on desktop.
+- Our Core Values: Integrity (navy), Service (green), Professionalism (blue), Accountability (purple), Security (green) as filled pills; stacked on phones.
+- Pending asset: the design's headquarters-building photograph should replace `public/about/purpose.webp` (same file name, ~1000×400 or larger, 5:2).
