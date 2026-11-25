@@ -2,6 +2,11 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.1.2] — 2026-11-25 — Photographic hero
+### Changed
+- Landing-page hero uses the owner-supplied images with a responsive layout (photo right on wide screens, stacked on tablets and phones), slow cross-fade that respects reduced motion, and an "Illustrative imagery" label (DEC-024).
+- New role-based workspaces section showing the interface preview and the dashboards from the role catalogue.
+
 ## [0.1.1] — 2026-11-25 — Public site aligned to A4 reference design
 ### Changed
 - Public header, navigation (active underline, mobile menu), landing page (hero, capabilities, figures band, call to action) and footer rebuilt after the supplied landing-page reference; secondary public pages share a navy hero with the green-white-blue wave.

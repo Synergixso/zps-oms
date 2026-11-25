@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Crest } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import type { IconName } from "@/lib/nav";
-import { SectionTitle, Wave } from "@/components/public-ui";
+import { SectionTitle } from "@/components/public-ui";
 import { ROLES } from "@/server/domain/catalogue";
 import { FORMATIONS, PROVINCES } from "@/server/db/seed";
 
@@ -11,9 +11,9 @@ export const metadata = { title: "Home" };
 /*
  * Landing page composed after the supplied A4 portrait reference.
  * Deliberate departures (see docs/UI_UX_DESIGN_SYSTEM.md §Landing page):
- *  - no officer photography, uniforms, insignia, flags, building or vehicle imagery
- *    (none approved; must not fabricate identities or insignia) — replaced by the
- *    unaltered crest and an illustrative interface preview;
+ *  - hero photography is the client-supplied illustrative imagery in public/hero (DEC-024);
+ *    it is labelled "Illustrative imagery" pending approved photography;
+ *  - the interface preview sits in the role-workspaces section;
  *  - "real-time", "readiness", "tracking" and "integrated operations" claims removed
  *    (excluded capabilities / no integrations exist);
  *  - figures are configured-directory counts only, labelled as such.
@@ -41,11 +41,8 @@ function PreviewPanel() {
   // Illustrative, non-data interface preview. Decorative only.
   const bars = [62, 48, 74, 40, 86, 58];
   return (
-    <div className="relative w-full max-w-[460px]" aria-hidden>
-      <div className="absolute -right-4 -top-4 hidden h-[120px] w-[200px] items-center justify-center rounded-2xl bg-white p-3 shadow-xl ring-1 ring-black/5 md:flex">
-        <Crest className="h-[90px] w-[155px]" />
-      </div>
-      <div className="rounded-2xl bg-white/95 p-4 shadow-2xl ring-1 ring-white/20 md:mt-28">
+    <div className="relative w-full max-w-[480px]" aria-hidden>
+      <div className="rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-white/20">
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full bg-zp-green" />
@@ -83,6 +80,21 @@ function PreviewPanel() {
   );
 }
 
+/**
+ * Supplied hero photography (public/hero/*.webp), cross-faded slowly.
+ * The second image starts at opacity 0, so with reduced motion only the first shows.
+ */
+function HeroImages({ className = "", position = "70% 100%" }: { className?: string; position?: string }) {
+  return (
+    <div className={`relative overflow-hidden ${className}`}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/hero/hero-01.webp" alt="" width={1774} height={887} fetchPriority="high" className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: position }} />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/hero/hero-02.webp" alt="" width={1774} height={887} loading="lazy" className="hero-fade absolute inset-0 h-full w-full object-cover" style={{ objectPosition: position }} />
+    </div>
+  );
+}
+
 export default function Home() {
   const stats: Array<[IconName, string, string, string]> = [
     ["map", String(PROVINCES.length), "Provincial Divisions", "Configured directory entries"],
@@ -93,46 +105,62 @@ export default function Home() {
   return (
     <div className="print-a4">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-[linear-gradient(135deg,#0d2149_0%,#12306b_50%,#133f91_100%)] text-white">
-        <div className="mx-auto grid max-w-[1180px] items-center gap-10 px-4 pb-4 pt-12 md:pt-16 lg:grid-cols-[1.1fr_1fr]">
-          <div>
-            <p className="flex items-center gap-3 text-[12px] font-bold uppercase tracking-[0.2em] text-emerald-300">
+      <section className="relative isolate overflow-hidden bg-[#0d2149] text-white" aria-labelledby="hero-title">
+        {/* Photographic backdrop — desktop */}
+        <div className="absolute inset-y-0 right-0 -z-10 hidden w-[78%] xl:block" aria-hidden>
+          <HeroImages className="h-full w-full" position="100% 100%" />
+          <div className="absolute inset-0 -left-px bg-[linear-gradient(90deg,#0d2149_0%,#0d2149_3%,rgba(13,33,73,0.88)_10%,rgba(13,33,73,0.35)_24%,rgba(13,33,73,0)_36%)]" />
+          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#0d2149]/40 to-transparent" />
+          <div className="absolute bottom-0 left-0 h-[30%] w-[42%] bg-gradient-to-t from-[#0d2149] via-[#0d2149]/70 to-transparent [mask-image:linear-gradient(90deg,#000_45%,transparent)]" />
+        </div>
+        <div className="mx-auto max-w-[1280px] px-4 pb-10 pt-12 sm:px-6 md:pt-16 xl:flex xl:min-h-[min(40vw,760px)] xl:items-center xl:pb-28 xl:pt-10">
+          <div className="max-w-[540px]">
+            <p className="flex items-center gap-3 text-[12px] font-bold uppercase tracking-[0.22em] text-emerald-300">
               <span className="h-[3px] w-10 rounded-full bg-zp-green" aria-hidden />
               National Operations Platform
             </p>
-            <h1 className="mt-4 text-[52px] font-extrabold leading-none tracking-tight md:text-[72px]">ZPS-OMS</h1>
-            <p className="mt-3 text-[22px] font-bold leading-snug md:text-[28px]">
+            <h1 id="hero-title" className="mt-5 text-[54px] font-extrabold leading-[0.95] tracking-tight drop-shadow-sm md:text-[80px]">
+              ZPS-OMS
+            </h1>
+            <p className="mt-4 text-[22px] font-bold leading-snug md:text-[30px]">
               Zambia Police Service
               <br />
               Operations Management System
             </p>
-            <p className="mt-5 max-w-xl text-[15.5px] leading-relaxed text-slate-200">
+            <p className="mt-5 max-w-[490px] text-[15.5px] leading-relaxed text-slate-200 md:text-[16.5px]">
               A secure, unified administrative platform supporting coordination, resource accountability and management reporting across the Office of the DIG Operations,
               the Provincial Police Divisions and Divisional Units.
             </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link href="/login" className="inline-flex items-center gap-2 rounded-lg bg-zp-green px-6 py-3 text-[15px] font-bold text-white shadow-lg ring-1 ring-emerald-400/40 hover:bg-zp-green-dark">
-                Access System <Icon name="arrow" className="h-4 w-4" />
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/login"
+                className="group inline-flex items-center gap-2 rounded-lg bg-zp-green px-6 py-3.5 text-[15px] font-bold text-white shadow-[0_10px_30px_-8px_rgba(22,130,59,0.7)] ring-1 ring-emerald-400/40 transition hover:-translate-y-0.5 hover:bg-zp-green-dark"
+              >
+                Access System <Icon name="arrow" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
-              <Link href="/about" className="inline-flex items-center gap-2 rounded-lg border-2 border-white/80 px-6 py-3 text-[15px] font-bold text-white hover:bg-white/10">
+              <Link href="/about" className="inline-flex items-center gap-2 rounded-lg border-2 border-white/80 px-6 py-3.5 text-[15px] font-bold text-white backdrop-blur-sm transition hover:bg-white/10">
                 Learn More <Icon name="eye" className="h-4 w-4" />
               </Link>
             </div>
-            <ul className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] font-semibold text-slate-100">
+            <ul className="mt-9 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] font-semibold text-slate-100">
               {TRUST.map(([icon, label], i) => (
                 <li key={label} className="flex items-center gap-2">
                   {i > 0 && <span className="mr-3 hidden h-5 w-px bg-white/25 sm:block" aria-hidden />}
-                  <Icon name={icon} className="h-[18px] w-[18px]" />
+                  <Icon name={icon} className="h-[18px] w-[18px] text-emerald-300" />
                   {label}
                 </li>
               ))}
             </ul>
           </div>
-          <div className="flex justify-center pb-6 lg:justify-end">
-            <PreviewPanel />
-          </div>
         </div>
-        <Wave fill="var(--color-canvas)" />
+        {/* Photograph — phones and tablets (text never covers faces) */}
+        <div className="relative xl:hidden" aria-hidden>
+          <HeroImages className="aspect-[4/3] w-full sm:aspect-[2/1]" position="70% 100%" />
+          <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#0d2149] to-transparent" />
+        </div>
+        <p className="absolute right-3 top-3 z-10 rounded bg-black/25 px-2 py-0.5 text-[10px] font-medium tracking-wide text-white/75 backdrop-blur-sm">
+          Illustrative imagery
+        </p>
       </section>
 
       {/* Capabilities */}
@@ -149,6 +177,42 @@ export default function Home() {
                 <p className="mt-2 text-[13.5px] leading-relaxed text-ink-2">{c.body}</p>
               </article>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Role-based workspaces */}
+      <section className="bg-white py-14 md:py-20">
+        <div className="mx-auto grid max-w-[1180px] items-center gap-12 px-4 lg:grid-cols-2">
+          <div>
+            <p className="flex items-center gap-3 text-[12px] font-bold uppercase tracking-[0.2em] text-zp-green">
+              <span className="h-[3px] w-8 rounded-full bg-zp-green" aria-hidden />
+              Role-based workspaces
+            </p>
+            <h2 className="mt-3 text-[28px] font-bold leading-tight text-[#0d2149] md:text-[34px]">Every office bearer sees exactly what their role permits</h2>
+            <p className="mt-4 text-[15px] leading-relaxed text-ink-2">
+              Dashboards, menus and actions are generated from each user&apos;s approved role, organisational scope and delegations, and every action is re-checked on the
+              server. No user sees another division&apos;s or formation&apos;s records by default.
+            </p>
+            <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+              {ROLES.slice(0, 8).map((r) => (
+                <li key={r.code} className="flex items-start gap-2.5 text-[14px] text-ink">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zp-green/10 text-zp-green">
+                    <Icon name="check" className="h-3.5 w-3.5" />
+                  </span>
+                  {r.dashboardTitle}
+                </li>
+              ))}
+            </ul>
+            <Link href="/modules" className="mt-8 inline-flex items-center gap-2 text-[15px] font-bold text-zp-blue hover:underline">
+              Explore the modules <Icon name="arrow" className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="relative rounded-3xl bg-[linear-gradient(135deg,#0d2149_0%,#133f91_100%)] p-6 shadow-xl md:p-10">
+            <div className="zp-band absolute inset-x-8 top-0 rounded-b" aria-hidden />
+            <div className="flex justify-center">
+              <PreviewPanel />
+            </div>
           </div>
         </div>
       </section>

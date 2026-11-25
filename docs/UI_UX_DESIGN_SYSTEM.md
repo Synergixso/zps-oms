@@ -42,7 +42,7 @@ Implemented after the reference composition: white header (crest │ "ZAMBIA POL
 
 | Reference element | Implemented instead | Reason |
 |---|---|---|
-| Photographs of uniformed officers, beret badges, shoulder flags, HQ building sign, national flag, marked police vehicle | Unaltered crest on a white card + an "Illustrative" interface preview; crest panel in the CTA | No approved photography; master prompt I3/I4 forbids fabricated officer identities, insignia and unofficial badges |
+| Photographs of uniformed officers, flags, building, vehicles | **Superseded in v0.1.2:** the owner-supplied hero images are used (DEC-024), labelled "Illustrative imagery" | Owner instruction; publication approval still required |
 | Trust markers "Real-time", "Integrated" | "Secure", "Role-based", "Auditable", "Centralised" | No real-time operational data and no integrations exist (L5) |
 | "monitor operations, tasks and readiness in real time" | Administrative requests, approvals and outstanding actions | Readiness/tactical status is excluded (E1) |
 | "Track vehicles, utilisation" | Vehicle register, licence/insurance/service dates — administrative only | Tracking/utilisation excluded (M04) |
@@ -53,3 +53,11 @@ Implemented after the reference composition: white header (crest │ "ZAMBIA POL
 | "restoring operational efficiency" | "supporting coordination, resource accountability and management reporting" | Avoid implying unverified current-state problems (PRD §4) |
 
 Approved photography can be added later in the hero's right-hand column once supplied with usage rights (DEC-010).
+
+### Hero photography (v0.1.2)
+- Files: ,  (1774×887 WebP, ~250 KB, supplied by the project owner). Rendered unmodified with .
+- ≥1280 px: photo occupies the right 78% at its natural 2:1 shape; left edge and bottom-left fade into the navy panel so the text column sits on solid navy. The photo's own green-white-blue wave forms the hero's lower edge.
+- <1280 px: text on navy, photo below it (4:3 on phones, 2:1 from 640 px), so text never covers faces.
+- The two images cross-fade over 18 s (CSS only). With , only the first image is shown.
+- "Illustrative imagery" label top-right; images are decorative (), the hero is labelled by its heading.
+- Role-workspaces section (between capabilities and figures) carries the illustrative interface preview and lists dashboards from the enforced role catalogue.

@@ -64,6 +64,25 @@ body {
   outline-offset: 2px;
 }
 
+/* Hero photograph cross-fade. Base opacity 0 so reduced-motion users see the first image only. */
+.hero-fade {
+  opacity: 0;
+  animation: hero-fade 18s ease-in-out infinite;
+}
+@keyframes hero-fade {
+  0%,
+  42% {
+    opacity: 0;
+  }
+  50%,
+  92% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;

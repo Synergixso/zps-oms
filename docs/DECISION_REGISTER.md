@@ -33,6 +33,7 @@ Status values: **Open** (no decision; blocks something) · **Proposed** (develop
 | DEC-021 | M07 Availability/Scheduling and M08 Correspondence | Master prompt F | Not implemented (later phase, separate approval) | Applied (user instruction) | DIG Ops / Security |
 | DEC-022 | Use of Claude Code and AI tooling on institutional material | Pack v1.2 rule 02 | Used on synthetic data only in this engagement | Open (Exit Gate 10) | Technical Services / Legal |
 | DEC-023 | Hosting, production data, security accreditation | Master prompt N | Out of scope; local only | Open | High Command / Technical Services |
+| DEC-024 | Hero photography | Project owner supplied two generated images (public/hero/hero-01.webp, hero-02.webp) on 25 Nov 2026 and instructed their use in the landing-page hero. They depict uniforms, insignia, a formation name (Kamfinsa Mobile Unit), firearms, riot shields and an armoured vehicle, and are not approved Service photography | Used as instructed, cross-faded, labelled "Illustrative imagery", decorative alt text. Must be replaced by, or approved as, official photography with usage rights before any institutional publication; tactical depictions may conflict with the administrative-only positioning (master prompt I4, DESIGN_SYSTEM data-visualisation guidance) | Applied (user instruction); publication approval Open | ZPS Public Relations / High Command |
 
 ## Architecture decision records
 
