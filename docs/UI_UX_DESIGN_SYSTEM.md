@@ -55,9 +55,9 @@ Implemented after the reference composition: white header (crest │ "ZAMBIA POL
 Approved photography can be added later in the hero's right-hand column once supplied with usage rights (DEC-010).
 
 ### Hero photography (v0.1.2)
-- Files: ,  (1774×887 WebP, ~250 KB, supplied by the project owner). Rendered unmodified with .
+- Files: `public/hero/hero-01.webp`, `public/hero/hero-02.webp` (1774×887 WebP, ~250 KB, supplied by the project owner). Rendered unmodified with `object-fit: cover`.
 - ≥1280 px: photo occupies the right 78% at its natural 2:1 shape; left edge and bottom-left fade into the navy panel so the text column sits on solid navy. The photo's own green-white-blue wave forms the hero's lower edge.
 - <1280 px: text on navy, photo below it (4:3 on phones, 2:1 from 640 px), so text never covers faces.
-- The two images cross-fade over 18 s (CSS only). With , only the first image is shown.
-- "Illustrative imagery" label top-right; images are decorative (), the hero is labelled by its heading.
+- The two images cross-fade over 18 s (CSS only). With `prefers-reduced-motion`, only the first image is shown.
+- "Illustrative imagery" label top-right; images are decorative (`alt=""`), the hero is labelled by its heading.
 - Role-workspaces section (between capabilities and figures) carries the illustrative interface preview and lists dashboards from the enforced role catalogue.
