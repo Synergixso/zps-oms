@@ -79,7 +79,7 @@ export default function About() {
             </div>
             <figure className="overflow-hidden rounded-2xl shadow-[0_10px_28px_rgba(13,33,73,0.16)] ring-1 ring-black/5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/about/purpose.webp" alt="Zambia Police Service officers" width={1000} height={400} loading="lazy" className="aspect-[5/2] w-full object-cover" />
+              <img src="/brand/hq-building.webp" alt="Zambia Police Service Headquarters" width={1000} height={400} loading="lazy" className="aspect-[5/2] w-full object-cover" />
             </figure>
           </div>
           <div className="flex flex-col gap-6 lg:pt-6">

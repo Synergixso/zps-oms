@@ -12,7 +12,7 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-export type IconName = "home" | "inbox" | "file" | "building" | "truck" | "wrench" | "box" | "chart" | "users" | "key" | "shield" | "search" | "server" | "flow" | "bell" | "help" | "check" | "layers" | "arrow" | "user" | "lock" | "map" | "eye" | "car" | "play" | "network" | "tools" | "shieldCheck" | "bars" | "gear" | "target" | "scale" | "handshake" | "starShield" | "sitemap" | "clipboardCheck" | "star" | "chevron" | "monitorNet" | "laptop" | "checkCircle" | "userCircle" | "bank";
+export type IconName = "home" | "inbox" | "file" | "building" | "truck" | "wrench" | "box" | "chart" | "users" | "key" | "shield" | "search" | "server" | "flow" | "bell" | "help" | "check" | "layers" | "arrow" | "user" | "lock" | "map" | "eye" | "car" | "play" | "network" | "tools" | "shieldCheck" | "bars" | "gear" | "target" | "scale" | "handshake" | "starShield" | "sitemap" | "clipboardCheck" | "star" | "chevron" | "monitorNet" | "laptop" | "checkCircle" | "userCircle" | "bank" | "phone" | "mail" | "headset" | "globe" | "pin" | "send" | "userPlus" | "info" | "chat" | "list";
 
 export const NAV: NavGroup[] = [
   {
@@ -30,6 +30,7 @@ export const NAV: NavGroup[] = [
       { href: "/app/fleet/maintenance", label: "Fleet maintenance", icon: "wrench", any: ["maintenance.view"] },
       { href: "/app/assets", label: "General assets", icon: "box", any: ["asset.view"] },
       { href: "/app/reports", label: "Reports", icon: "chart", any: ["report.view"] },
+      { href: "/app/messages", label: "Contact messages", icon: "mail", any: ["contact.view"] },
     ],
   },
   {

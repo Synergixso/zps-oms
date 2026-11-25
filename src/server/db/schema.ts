@@ -9,7 +9,11 @@
  * Every business table carries `synthetic` = 1. Real Police data must never
  * be loaded into this prototype.
  */
-export const SCHEMA_VERSION = 1;
+export const MIGRATIONS = [
+  { version: 1, description: "001 initial ZPS-OMS schema" },
+  { version: 2, description: "002 public contact messages" },
+] as const;
+export const SCHEMA_VERSION = MIGRATIONS[MIGRATIONS.length - 1].version;
 
 export const SCHEMA_SQL = /* sql */ `
 PRAGMA foreign_keys = ON;
@@ -364,4 +368,22 @@ CREATE INDEX IF NOT EXISTS ix_veh_org ON vehicles(custody_org_id);
 CREATE INDEX IF NOT EXISTS ix_asset_org ON assets(custody_org_id);
 CREATE INDEX IF NOT EXISTS ix_notif_user ON notifications(user_id, read_at);
 CREATE INDEX IF NOT EXISTS ix_audit_entity ON audit_events(entity_type, entity_id);
+
+-- Migration 002: messages submitted through the public Contact page ----------
+CREATE TABLE IF NOT EXISTS contact_messages (
+  id           TEXT PRIMARY KEY,
+  reference    TEXT NOT NULL UNIQUE,
+  full_name    TEXT NOT NULL,
+  email        TEXT NOT NULL,
+  phone        TEXT,
+  subject      TEXT NOT NULL CHECK (subject IN ('ENQUIRY','SUPPORT','ACCESS','FEEDBACK')),
+  message      TEXT NOT NULL,
+  status       TEXT NOT NULL CHECK (status IN ('NEW','HANDLED')) DEFAULT 'NEW',
+  handled_by   TEXT REFERENCES users(id),
+  handled_at   TEXT,
+  handled_note TEXT,
+  created_at   TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_contact_status ON contact_messages(status, created_at);
+CREATE INDEX IF NOT EXISTS ix_contact_email ON contact_messages(email, created_at);
 `;

@@ -2,6 +2,22 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.1.8] — 2026-11-25 — Contact page with working message form
+### Added
+- Contact page implemented to the owner-approved design: shared approved photo hero ("GET IN TOUCH / Contact ZPS-OMS"), Contact Information cards (phone, email, technical support, website — clickable tel/mailto/web links), Our Office, working "Send Us a Message" form, "For Faster Assistance" note and topic links (Enquiries, Support, Access, Feedback) that pre-select the form subject.
+- Messages are validated on the server, stored with a reference (CON-YYYY-NNNNNN), audited, and protected by a honeypot and a per-email hourly limit (5).
+- Back-office **Contact messages** inbox (`/app/messages`) for the HQ Operations Coordinator and Platform Administrator, with New/Handled filters and "Mark as handled". New permissions `contact.view`, `contact.manage`.
+- Database migration 002 (`contact_messages`); existing databases upgrade automatically without re-seeding.
+- 6 new tests (contact submission, validation, honeypot, rate limit, access control, v1→v2 upgrade).
+
+### Changed
+- One headquarters-photo slot (`public/brand/hq-building.webp`) now serves both the About and Contact pages.
+- Our Office names the "Deputy Inspector General of Police - Operations (DIG Operations)", matching the owner's correction on the About page.
+
+## [0.1.7] — 2026-11-25 — Technical Team page
+### Added
+- Technical Team page (`/technical-team`) implemented to the owner-approved design with the shared approved hero; replaces Modules in the public menu (the Modules page remains available at `/modules`).
+
 ## [0.1.6] — 2026-11-25 — Features page to the approved design
 ### Added
 - Features page implemented to the owner-approved "ZPS-OMS Modules" design: shared approved photo hero ("SYSTEM MODULES / ZPS-OMS Modules"), nine Core System Module cards with coloured accents and icon tiles, and the "Module Access by Role" strip (Superadmin, CRM Administrator, Divisional Commander, Division Staff Ops, General User) exactly as designed.

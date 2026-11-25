@@ -51,6 +51,8 @@ Approval authority is not a role permission: it requires an active delegation re
 | `platform.view` — View system health and configuration |  |  |  |  |  |  |  |  |  | N |  |  |  |
 | `platform.configure` — Change non-security application settings |  |  |  |  |  |  |  |  |  | N |  |  |  |
 | `workflow.view` — View workflow definitions | U | U |  |  |  |  |  |  | U | U |  |  |  |
+| `contact.view` — View messages submitted through the public Contact page |  | N |  |  |  |  |  |  |  | N |  |  |  |
+| `contact.manage` — Mark public contact messages as handled |  | N |  |  |  |  |  |  |  | N |  |  |  |
 
 ## Role catalogue
 

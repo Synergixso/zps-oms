@@ -1,7 +1,7 @@
 import { DatabaseSync } from "node:sqlite";
 import fs from "node:fs";
 import path from "node:path";
-import { SCHEMA_SQL, SCHEMA_VERSION } from "./schema";
+import { MIGRATIONS, SCHEMA_SQL, SCHEMA_VERSION } from "./schema";
 import { seedDatabase } from "./seed";
 
 export type DB = DatabaseSync;
@@ -11,16 +11,13 @@ export function openDatabase(file: string, opts: { seed?: boolean } = {}): DB {
   if (file !== ":memory:") fs.mkdirSync(path.dirname(file), { recursive: true });
   const db = new DatabaseSync(file);
   db.exec("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 3000;");
-  db.exec(SCHEMA_SQL);
-  const applied = db.prepare("SELECT version FROM schema_migrations WHERE version = ?").get(SCHEMA_VERSION);
-  if (!applied) {
-    db.prepare("INSERT INTO schema_migrations (version, applied_at, description) VALUES (?, ?, ?)").run(
-      SCHEMA_VERSION,
-      new Date().toISOString(),
-      "001 initial ZPS-OMS schema",
-    );
-    if (opts.seed !== false) seedDatabase(db);
-  }
+  db.exec(SCHEMA_SQL); // idempotent: every statement is CREATE … IF NOT EXISTS
+  const current = Number((db.prepare("SELECT MAX(version) AS v FROM schema_migrations").get() as { v: number | null }).v ?? 0);
+  const record = db.prepare("INSERT INTO schema_migrations (version, applied_at, description) VALUES (?, ?, ?)");
+  for (const m of MIGRATIONS) if (m.version > current) record.run(m.version, new Date().toISOString(), m.description);
+  // Seed only a brand-new database (never re-seed an existing one during an upgrade).
+  if (current === 0 && opts.seed !== false) seedDatabase(db);
+  if (current > SCHEMA_VERSION) throw new Error(`Database schema v${current} is newer than this application (v${SCHEMA_VERSION}).`);
   return db;
 }
 

@@ -9,7 +9,8 @@ Every application route, the permission(s) that gate it, and the roles that can 
 | `/about` | About ZPS-OMS | Principles, governance, status |
 | `/features` | Features | — |
 | `/modules` | Modules | MVP/later distinction |
-| `/contact` | Contact | **No contact details** until supplied by the Service |
+| `/technical-team` | Technical Team | Owner-approved design; in the public menu in place of Modules |
+| `/contact` | Contact | Owner-approved contact details; working message form (stored, audited, rate-limited) |
 | `/login` | Secure sign-in | Synthetic role simulator, clearly labelled; no registration |
 
 ## Shared shell (all authenticated)
@@ -45,6 +46,7 @@ Institutional band, crest lock-up, permission-filtered navigation, breadcrumb (o
 | `/app/security` | Security events | security.view | Security |
 | `/app/workflows` | Workflow definitions | workflow.view | DIG, HQC, Auditor, Platform |
 | `/app/platform` | System health | platform.view | Platform |
+| `/app/messages` | Contact messages inbox | contact.view | HQ Operations Coordinator, Platform Administrator |
 | `/app/notifications` | Notifications | authenticated | All |
 | `/app/profile` | My access (effective permissions) | authenticated | All |
 | `/app/help` | Help | authenticated | All |

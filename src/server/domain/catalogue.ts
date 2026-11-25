@@ -67,6 +67,9 @@ export const PERMISSIONS = {
   "platform.view": "View system health and configuration",
   "platform.configure": "Change non-security application settings",
   "workflow.view": "View workflow definitions",
+  // Public Contact page inbox
+  "contact.view": "View messages submitted through the public Contact page",
+  "contact.manage": "Mark public contact messages as handled",
 } as const;
 
 export type Permission = keyof typeof PERMISSIONS;
@@ -164,6 +167,8 @@ export const ROLES: RoleDef[] = [
       "report.view": N,
       "report.export": N,
       "workflow.view": U,
+      "contact.view": N,
+      "contact.manage": N,
     },
   },
   {
@@ -341,6 +346,8 @@ export const ROLES: RoleDef[] = [
       "platform.configure": N,
       "workflow.view": U,
       "org.view": N,
+      "contact.view": N,
+      "contact.manage": N,
     },
   },
   {

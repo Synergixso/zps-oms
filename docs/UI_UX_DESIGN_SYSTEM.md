@@ -65,3 +65,15 @@ The crest is shown unmodified on a white field in the header and footer (`<Crest
 - Hero: shared `PhotoHero`, eyebrow "SYSTEM MODULES", heading "ZPS-OMS Modules", approved strapline.
 - Core System Modules: nine cards (3 / 2 / 1 columns) each with a coloured left accent, gradient icon tile, title, description and chevron; cards link to the Modules page.
 - Module Access by Role: navy header bar and five role columns with tinted access pills, as designed (see DEC-026).
+
+## Technical Team page (v0.1.7 — owner-approved design)
+- Shared `PhotoHero` ("TECHNICAL SUPPORT & SERVICES / Technical Team").
+- Technical Services at Kamfinsa (two large cards), ZPS Technical Services Directorate (three cards), "How the technical functions are organised" (green Kamfinsa panel, navy Directorate panel), Published Leadership Positions. Cards link to the relevant structure panel.
+- Public menu: Home · About · Features · Technical Team · Contact.
+
+## Contact page (v0.1.8 — owner-approved design)
+- Shared `PhotoHero` ("GET IN TOUCH / Contact ZPS-OMS"); two columns (stacked below 1024 px).
+- Contact Information cards with gradient icon tiles; Our Office with location pin and the headquarters photo slot.
+- "Send Us a Message" form: icons inside fields, inline server-side errors, live 0 / 1,000 counter, confirmation with reference number; input preserved on error and cleared on success.
+- Topic band (Enquiries, Support, Access, Feedback) pre-selects the form subject via `?subject=`.
+- Pending asset: headquarters-building photograph at `public/brand/hq-building.webp` (shared with About).

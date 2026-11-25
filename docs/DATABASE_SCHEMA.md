@@ -16,7 +16,9 @@ notifications *─1 users;  report_definitions 1─* report_exports
 audit_events (append-only, hash-chained);  app_settings;  schema_migrations
 ```
 
-## Tables (22)
+## Tables (23)
+Migration 002 adds `contact_messages` (public Contact page: reference, sender, subject, message, NEW/HANDLED status, handled by/at/note).
+
 | Table | Purpose | Key constraints |
 |---|---|---|
 | `schema_migrations` | Applied migration versions | PK version |

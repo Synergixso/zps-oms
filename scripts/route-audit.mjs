@@ -38,7 +38,7 @@ const routes = [
   "/app/org", "/app/org/org_taz", "/app/org/changes",
   "/app/admin/users", `/app/admin/users/${R.firstUser}`, "/app/admin/roles", "/app/admin/reviews",
   "/app/audit", "/app/security", "/app/workflows", "/app/platform",
-  "/app/notifications", "/app/profile", "/app/help",
+  "/app/messages", "/app/notifications", "/app/profile", "/app/help",
 ];
 
 const users = db.prepare("SELECT u.id, u.display_name, (SELECT role_code FROM role_assignments a WHERE a.user_id=u.id AND a.revoked_at IS NULL LIMIT 1) role FROM users u WHERE u.status='ACTIVE' ORDER BY u.id").all();
