@@ -34,3 +34,22 @@ Empty states explain what is absent; validation errors appear per field and in a
 
 ## Accessibility (WCAG 2.2 AA target)
 Skip link; landmarks (`header`, `nav`, `main`, `footer`); `aria-current` on navigation; labelled inputs with `aria-invalid` + `aria-describedby`; visible `:focus-visible` outline; drawer closes on Escape; reduced-motion respected. **Not yet done:** automated axe scan, screen-reader walkthrough, 200 % zoom test (KNOWN_LIMITATIONS).
+
+## Landing page and public chrome (v0.1.1, from the supplied A4 portrait reference)
+Implemented after the reference composition: white header (crest │ "ZAMBIA POLICE SERVICE / OPERATIONS MANAGEMENT SYSTEM" / green ZPS-OMS pill, nav with green active underline, navy Login button); navy hero with eyebrow rule, large ZPS-OMS wordmark, two calls to action and four trust markers; green-white-blue wave divider (`<Wave>`, order preserved — never rotated); "Key System Capabilities" with eight cards; navy figures band; call-to-action panel; navy footer with crest and letter-spaced service name. Secondary public pages use the same navy `<PublicHero>`.
+
+**Deliberate departures from the reference (and why)**
+
+| Reference element | Implemented instead | Reason |
+|---|---|---|
+| Photographs of uniformed officers, beret badges, shoulder flags, HQ building sign, national flag, marked police vehicle | Unaltered crest on a white card + an "Illustrative" interface preview; crest panel in the CTA | No approved photography; master prompt I3/I4 forbids fabricated officer identities, insignia and unofficial badges |
+| Trust markers "Real-time", "Integrated" | "Secure", "Role-based", "Auditable", "Centralised" | No real-time operational data and no integrations exist (L5) |
+| "monitor operations, tasks and readiness in real time" | Administrative requests, approvals and outstanding actions | Readiness/tactical status is excluded (E1) |
+| "Track vehicles, utilisation" | Vehicle register, licence/insurance/service dates — administrative only | Tracking/utilisation excluded (M04) |
+| "8 Integrated Operations" figure | "13 Role-specific Workspaces" (count of the role catalogue) | Would be a fabricated statistic |
+| Figures shown without context | Each figure labelled as configured/provisional, plus a note that they are not operational data | I3 "no fake operational statistics" |
+| Multi-colour icon tiles (green, blue, purple, orange) | Green and blue tiles only | I3 "avoid random colourful icons" |
+| Footer tagline "…Readiness • Accountability" | "Operations · Coordination · Accountability" | Readiness excluded |
+| "restoring operational efficiency" | "supporting coordination, resource accountability and management reporting" | Avoid implying unverified current-state problems (PRD §4) |
+
+Approved photography can be added later in the hero's right-hand column once supplied with usage rights (DEC-010).

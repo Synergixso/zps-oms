@@ -2,6 +2,11 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.1.1] — 2026-11-25 — Public site aligned to A4 reference design
+### Changed
+- Public header, navigation (active underline, mobile menu), landing page (hero, capabilities, figures band, call to action) and footer rebuilt after the supplied landing-page reference; secondary public pages share a navy hero with the green-white-blue wave.
+- Departures from the reference (no fabricated photography/insignia, no real-time/readiness/tracking claims, labelled configured figures) recorded in `docs/UI_UX_DESIGN_SYSTEM.md`.
+
 ## [0.1.0] — 2026-11-25 — Local synthetic prototype
 ### Added
 - Repository placed under git; Phase 1 documentation packages preserved unchanged.

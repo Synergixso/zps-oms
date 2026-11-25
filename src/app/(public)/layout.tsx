@@ -1,58 +1,50 @@
 import Link from "next/link";
 import { Crest } from "@/components/ui";
-
-const LINKS = [
-  ["/", "Home"],
-  ["/about", "About"],
-  ["/features", "Features"],
-  ["/modules", "Modules"],
-  ["/contact", "Contact"],
-] as const;
+import { PublicNav } from "@/components/public-chrome";
+import { Wave } from "@/components/public-ui";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-white">
       <div className="zp-band" aria-hidden />
-      <header className="border-b border-line bg-white">
+      <header className="sticky top-0 z-30 border-b border-line bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <Link href="/" className="flex items-center gap-3" aria-label="ZPS-OMS home">
-            <span className="flex h-12 w-[82px] items-center justify-center rounded-md border border-line bg-white p-1">
-              <Crest className="h-10 w-[69px]" />
-            </span>
+          <Link href="/" className="flex items-center gap-3 sm:gap-4" aria-label="ZPS-OMS home">
+            <Crest className="h-[46px] w-[79px] sm:h-[56px] sm:w-[96px]" />
+            <span className="hidden h-12 w-px bg-line-2 sm:block" aria-hidden />
             <span className="leading-tight">
-              <span className="block text-[17px] font-bold tracking-wide text-ink">ZPS-OMS</span>
-              <span className="block text-[11.5px] text-muted">Zambia Police Service · Operations Management System</span>
+              <span className="block text-[15px] font-extrabold tracking-wide text-[#0d2149] sm:text-[19px]">ZAMBIA POLICE SERVICE</span>
+              <span className="block text-[10px] font-semibold tracking-[0.12em] text-ink-2 sm:text-[11.5px]">OPERATIONS MANAGEMENT SYSTEM</span>
+              <span className="mt-1 inline-block rounded-full bg-zp-green px-3 py-0.5 text-[11px] font-bold tracking-wider text-white sm:text-[13px]">ZPS-OMS</span>
             </span>
           </Link>
-          <nav aria-label="Public" className="flex flex-wrap items-center gap-1 text-[13.5px]">
-            {LINKS.map(([href, label]) => (
-              <Link key={href} href={href} className="rounded-md px-3 py-2 font-medium text-ink-2 hover:bg-slate-100 hover:text-ink">
-                {label}
-              </Link>
-            ))}
-            <Link href="/login" className="ml-1 rounded-md bg-zp-green px-4 py-2 font-semibold text-white hover:bg-zp-green-dark">
-              Secure sign-in
-            </Link>
-          </nav>
+          <PublicNav />
         </div>
       </header>
-      <div className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-center text-[12px] text-amber-900">
-        Proposed system under institutional review · Local prototype using synthetic data only · Not an authorised production police system
-      </div>
       <main id="main" className="flex-1">
         {children}
       </main>
-      <footer className="border-t border-line bg-canvas">
-        <div className="mx-auto flex max-w-[1180px] flex-col gap-2 px-4 py-6 text-[12px] text-muted md:flex-row md:items-center md:justify-between">
-          <p>ZPS-OMS · Proposed Zambia Police Service Operations Management System · Business sponsor (proposed): Office of the DIG Operations.</p>
-          <p className="flex items-center gap-2">
-            Institutional colours
-            <span className="inline-flex gap-0.5" aria-label="green, white, blue">
-              <span className="h-3 w-3 bg-zp-green" />
-              <span className="h-3 w-3 border border-line-2 bg-white" />
-              <span className="h-3 w-3 bg-zp-blue" />
+      <footer className="mt-auto bg-[#0d2149] text-white">
+        <Wave fill="#0d2149" className="-mb-px bg-white" />
+        <div className="mx-auto max-w-[1180px] px-4 pb-8 pt-4">
+          <div className="flex flex-col items-center gap-5 text-center md:flex-row md:text-left">
+            <span className="flex h-[78px] w-[124px] shrink-0 items-center justify-center rounded-xl bg-white p-2 shadow">
+              <Crest className="h-[62px] w-[107px]" />
             </span>
-          </p>
+            <div>
+              <p className="text-[18px] font-bold tracking-[0.32em] md:text-[22px]">ZAMBIA POLICE SERVICE</p>
+              <p className="mt-1 text-[13px] text-slate-300">ZPS-OMS · Operations · Coordination · Accountability</p>
+            </div>
+          </div>
+          <div className="mt-6 flex flex-col gap-3 border-t border-white/10 pt-4 text-[12px] text-slate-300 md:flex-row md:items-center md:justify-between">
+            <p>Proposed system under institutional review · Local prototype using synthetic data only · Not an authorised production police system.</p>
+            <nav aria-label="Footer" className="flex flex-wrap gap-4">
+              <Link href="/about" className="hover:text-white">About</Link>
+              <Link href="/modules" className="hover:text-white">Modules</Link>
+              <Link href="/contact" className="hover:text-white">Contact</Link>
+              <Link href="/login" className="hover:text-white">Login</Link>
+            </nav>
+          </div>
         </div>
       </footer>
     </div>

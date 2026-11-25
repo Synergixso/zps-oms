@@ -1,11 +1,12 @@
+import { PublicHero } from "@/components/public-ui";
 export const metadata = { title: "Contact" };
 
 export default function Contact() {
   return (
+    <>
+    <PublicHero eyebrow="Contact" title="Contact and support" />
     <div className="print-a4 mx-auto max-w-[820px] px-4 py-12">
-      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-zp-green">Contact</p>
-      <h1 className="mt-2 text-3xl font-bold">Contact and support</h1>
-      <div className="mt-6 rounded-[9px] border border-amber-300 bg-amber-50 p-5 text-[14px] text-amber-900">
+      <div className="rounded-[9px] border border-amber-300 bg-amber-50 p-5 text-[14px] text-amber-900">
         <p className="font-semibold">Official contact details have not yet been supplied.</p>
         <p className="mt-1">
           Contact channels for ZPS-OMS will be published here once provided and approved by the Zambia Police Service. No telephone numbers, e-mail addresses or postal
@@ -30,5 +31,6 @@ export default function Contact() {
         </section>
       </div>
     </div>
+    </>
   );
 }

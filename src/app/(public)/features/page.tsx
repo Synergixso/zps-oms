@@ -1,3 +1,4 @@
+import { PublicHero } from "@/components/public-ui";
 export const metadata = { title: "Features" };
 
 const FEATURES: Array<[string, string[]]> = [
@@ -11,11 +12,10 @@ const FEATURES: Array<[string, string[]]> = [
 
 export default function Features() {
   return (
+    <>
+    <PublicHero eyebrow="Features" title="Built for accountable administration">Capabilities of the proposed platform. Items are subject to institutional validation and approval.</PublicHero>
     <div className="print-a4 mx-auto max-w-[1180px] px-4 py-12">
-      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-zp-green">Features</p>
-      <h1 className="mt-2 text-3xl font-bold">Built for accountable administration</h1>
-      <p className="mt-2 max-w-3xl text-sm text-ink-2">Capabilities of the proposed platform. Items are subject to institutional validation and approval.</p>
-      <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
         {FEATURES.map(([t, items]) => (
           <section key={t} className="rounded-[9px] border border-line bg-white p-5">
             <h2 className="text-[15px] font-semibold">{t}</h2>
@@ -28,5 +28,6 @@ export default function Features() {
         ))}
       </div>
     </div>
+    </>
   );
 }

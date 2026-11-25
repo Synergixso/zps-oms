@@ -1,11 +1,12 @@
+import { PublicHero } from "@/components/public-ui";
 export const metadata = { title: "About" };
 
 export default function About() {
   return (
+    <>
+    <PublicHero eyebrow="About ZPS-OMS" title="A proposed administrative platform for the Operations Section" />
     <article className="print-a4 mx-auto max-w-[820px] px-4 py-12">
-      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-zp-green">About ZPS-OMS</p>
-      <h1 className="mt-2 text-3xl font-bold">A proposed administrative platform for the Operations Section</h1>
-      <div className="mt-6 space-y-5 text-[14.5px] leading-relaxed text-ink-2">
+      <div className="space-y-5 text-[14.5px] leading-relaxed text-ink-2">
         <p>
           The Zambia Police Service Operations Management System (ZPS-OMS) is a proposed centralised digital platform intended to support the administrative management,
           coordination, resource accountability and reporting functions of the Zambia Police Service Operations Section.
@@ -35,5 +36,6 @@ export default function About() {
         </p>
       </div>
     </article>
+    </>
   );
 }

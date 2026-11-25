@@ -1,3 +1,4 @@
+import { PublicHero } from "@/components/public-ui";
 export const metadata = { title: "Modules" };
 
 const MODULES: Array<[string, string, string, string]> = [
@@ -16,11 +17,10 @@ const MODULES: Array<[string, string, string, string]> = [
 
 export default function Modules() {
   return (
+    <>
+    <PublicHero eyebrow="Modules" title="Modular by design">The proposed module catalogue, with the MVP / later-phase distinction preserved.</PublicHero>
     <div className="print-a4 mx-auto max-w-[1180px] px-4 py-12">
-      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-zp-green">Modules</p>
-      <h1 className="mt-2 text-3xl font-bold">Modular by design</h1>
-      <p className="mt-2 max-w-3xl text-sm text-ink-2">The proposed module catalogue, with the MVP / later-phase distinction preserved.</p>
-      <div className="mt-8 overflow-x-auto rounded-[9px] border border-line">
+      <div className="overflow-x-auto rounded-[9px] border border-line">
         <table className="w-full min-w-[720px] text-left text-[13.5px]">
           <thead className="bg-canvas">
             <tr>
@@ -46,5 +46,6 @@ export default function Modules() {
         </table>
       </div>
     </div>
+    </>
   );
 }
