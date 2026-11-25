@@ -2,6 +2,10 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.1.13] — 2026-11-26 — Technical Team leadership
+### Changed
+- Technical Team page, Published Leadership Positions: "Deputy Officer-in-Charge – Tech" added at the top of the Kamfinsa Mobile Unit (Technical Services) list.
+
 ## [0.1.12] — 2026-11-26 — Armoured vehicle photo; menu always visible
 ### Changed
 - Home page call-to-action photograph replaced with the owner-supplied armoured vehicle (`public/hero/cta-vehicle.webp`, 1200×800), shown in full on desktop and phone.

@@ -189,11 +189,15 @@ export default function TechnicalTeam() {
               <div className="md:pr-6">
                 <p className="rounded-lg bg-[#e6f4ea] px-4 py-2 text-center text-[16px] font-bold text-[#0d1b3e]">Kamfinsa Mobile Unit (Technical Services)</p>
                 <ul className="mt-4 space-y-3 px-2">
-                  {["Engineering and Mechanical Services", "Information and Communications"].map((t) => (
-                    <li key={t} className="flex items-center gap-3 text-[15.5px] text-[#1f2d45]">
+                  {[
+                    ["Deputy Officer-in-Charge", "Tech"],
+                    ["Officer-in-Charge", "Engineering and Mechanical Services"],
+                    ["Officer-in-Charge", "Information and Communications"],
+                  ].map(([role, area]) => (
+                    <li key={`${role}-${area}`} className="flex items-center gap-3 text-[15.5px] text-[#1f2d45]">
                       <Icon name="userCircle" className="h-7 w-7 shrink-0 text-[#16823b]" />
                       <span>
-                        <strong className="font-bold text-[#0d1b3e]">Officer-in-Charge</strong> – {t}
+                        <strong className="font-bold text-[#0d1b3e]">{role}</strong> – {area}
                       </span>
                     </li>
                   ))}
