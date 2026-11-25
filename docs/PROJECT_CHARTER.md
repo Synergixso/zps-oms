@@ -4,7 +4,7 @@
 |---|---|
 | Project | Zambia Police Service Operations Management System (ZPS-OMS), code ZPS-OMS |
 | Institutional authority | Zambia Police Service High Command |
-| Proposed business sponsor | Office of the Deputy Inspector General – Operations |
+| Proposed business sponsor | Deputy Inspector General of Police - Operations (DIG Operations) |
 | Proposed technical authority | Technical Services Directorate (subject to confirmation) |
 | Status | Proposed software development project; **not authorised for production police operations** |
 | Current funding | ZMW 0 additional cash expenditure |

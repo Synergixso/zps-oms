@@ -12,6 +12,9 @@ describe("synthetic seed", () => {
     const statuses = all<{ status: string }>(db, "SELECT DISTINCT status FROM admin_requests").map((r) => r.status).sort();
     expect(statuses).toEqual(expect.arrayContaining(["APPROVED", "CANCELLED", "CLOSED", "DRAFT", "IN_PROGRESS", "REJECTED", "RETURNED", "SUBMITTED", "UNDER_REVIEW"]));
     expect(verifyAuditChain(db).ok).toBe(true);
+    expect(one<{ name: string }>(db, "SELECT name FROM org_units WHERE id = 'org_hq'")!.name).toBe(
+      "Service Headquarters — Deputy Inspector General of Police - Operations (DIG Operations)",
+    );
     // all users obviously synthetic
     for (const u of all<{ display_name: string; username: string }>(db, "SELECT display_name, username FROM users")) {
       expect(u.display_name).toMatch(/Demo/);

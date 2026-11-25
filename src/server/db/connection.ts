@@ -14,7 +14,11 @@ export function openDatabase(file: string, opts: { seed?: boolean } = {}): DB {
   db.exec(SCHEMA_SQL); // idempotent: every statement is CREATE … IF NOT EXISTS
   const current = Number((db.prepare("SELECT MAX(version) AS v FROM schema_migrations").get() as { v: number | null }).v ?? 0);
   const record = db.prepare("INSERT INTO schema_migrations (version, applied_at, description) VALUES (?, ?, ?)");
-  for (const m of MIGRATIONS) if (m.version > current) record.run(m.version, new Date().toISOString(), m.description);
+  for (const m of MIGRATIONS) {
+    if (m.version <= current) continue;
+    if (m.sql) db.exec(m.sql);
+    record.run(m.version, new Date().toISOString(), m.description);
+  }
   // Seed only a brand-new database (never re-seed an existing one during an upgrade).
   if (current === 0 && opts.seed !== false) seedDatabase(db);
   if (current > SCHEMA_VERSION) throw new Error(`Database schema v${current} is newer than this application (v${SCHEMA_VERSION}).`);

@@ -7,7 +7,7 @@
 | Status | Draft for institutional validation |
 
 ## 1. Vision
-A centralised administrative platform supporting coordination, resource accountability and management reporting for Operations office bearers at Service HQ (Office of the DIG Operations), the ten Provincial Police Divisions and authorised Divisional Units — without altering the chain of command or delegations.
+A centralised administrative platform supporting coordination, resource accountability and management reporting for Operations office bearers at Service HQ (Deputy Inspector General of Police - Operations (DIG Operations)), the ten Provincial Police Divisions and authorised Divisional Units — without altering the chain of command or delegations.
 
 ## 2. Users
 13 roles (USER_ROLES_AND_PERMISSIONS.md). Personas from PRD §5.2 retained; "Provincial administrative officer" is now **Division Staff Ops** (DEC-002).

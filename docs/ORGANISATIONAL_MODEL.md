@@ -13,7 +13,7 @@ Status: proposed model; organisational content is **synthetic and provisional** 
 
 | Type | Meaning | Seeded |
 |---|---|---|
-| `SERVICE_HQ` | Service Headquarters — Office of the DIG Operations (root, national scope anchor) | 1 |
+| `SERVICE_HQ` | Service Headquarters — Deputy Inspector General of Police - Operations (DIG Operations) (root, national scope anchor) | 1 |
 | `HQ_OFFICE` | Optional intermediate HQ office/directorate (e.g. supervisory positions between DIG Ops and formations) | 0 (DEC-004) |
 | `PROVINCIAL_DIVISION` | One of the ten Provincial Police Divisions | 10 |
 | `FORMATION` | Authorised Divisional Unit / formation | 8 |

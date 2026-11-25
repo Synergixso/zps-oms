@@ -2,7 +2,7 @@
 
 **Local synthetic-data prototype prepared for institutional review. Not an authorised production police system. Not connected to any Zambia Police Service network or data.**
 
-A secure, modular administrative operations-support application for the Office of the Deputy Inspector General – Operations, the ten Provincial Police Divisions and authorised Divisional Units: organisation registry, identity & access with delegated approvals, administrative request workflows, fleet maintenance, general asset accountability, role-specific dashboards, audited reporting and a tamper-evident audit trail.
+A secure, modular administrative operations-support application for the Deputy Inspector General of Police - Operations (DIG Operations), the ten Provincial Police Divisions and authorised Divisional Units: organisation registry, identity & access with delegated approvals, administrative request workflows, fleet maintenance, general asset accountability, role-specific dashboards, audited reporting and a tamper-evident audit trail.
 
 ## Quick start
 Requirements: Node.js ≥ 22.13 (uses the built-in `node:sqlite`; no database server, no paid services).

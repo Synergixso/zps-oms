@@ -7,6 +7,7 @@
  * - Vehicle and asset references use SYN- prefixes and cannot be real.
  */
 import type { DB } from "./connection";
+import { HQ_NAME } from "./schema";
 import { run } from "./connection";
 import { ASSET_CATEGORIES, REQUEST_CATEGORIES, ROLES, type RoleCode } from "../domain/catalogue";
 import { setClock } from "../domain/core";
@@ -89,7 +90,7 @@ export function seedDatabase(db: DB) {
   // Organisations ---------------------------------------------------------
   ins(`INSERT INTO org_units (id, code, name, short_name, unit_type, status, effective_from, approval_ref, validation_note, created_at)
        VALUES (?,?,?,?, 'SERVICE_HQ', 'ACTIVE', ?, NULL, ?, ?)`,
-    HQ_ID, "HQ-DIGOPS", "Service Headquarters — Office of the Deputy Inspector General (Operations)", "DIG Operations HQ", BASE,
+    HQ_ID, "HQ-DIGOPS", HQ_NAME, "DIG Operations HQ", BASE,
     "Root scope for national administration. Intermediate HQ supervisory positions are not modelled pending establishment confirmation (DEC-004).", t);
   for (const [id, code, name] of PROVINCES) {
     ins(`INSERT INTO org_units (id, code, name, unit_type, status, effective_from, validation_note, created_at) VALUES (?,?,?, 'PROVINCIAL_DIVISION', 'ACTIVE', ?,?,?)`, id, code, name, BASE, PROVISIONAL, t);

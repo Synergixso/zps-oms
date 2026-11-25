@@ -9,10 +9,21 @@
  * Every business table carries `synthetic` = 1. Real Police data must never
  * be loaded into this prototype.
  */
-export const MIGRATIONS = [
+/** Official title of the national office (owner-confirmed, 25 Nov 2026). */
+export const DIG_OPS_TITLE = "Deputy Inspector General of Police - Operations (DIG Operations)";
+export const HQ_NAME = `Service Headquarters — ${DIG_OPS_TITLE}`;
+const LEGACY_HQ_NAME = "Service Headquarters — Office of the Deputy Inspector General (Operations)";
+
+/** Ordered migrations. Structural DDL lives in SCHEMA_SQL (idempotent); `sql` holds one-off data changes. */
+export const MIGRATIONS: ReadonlyArray<{ version: number; description: string; sql?: string }> = [
   { version: 1, description: "001 initial ZPS-OMS schema" },
   { version: 2, description: "002 public contact messages" },
-] as const;
+  {
+    version: 3,
+    description: "003 correct the official DIG Operations title on the Service HQ record",
+    sql: `UPDATE org_units SET name = '${HQ_NAME}' WHERE id = 'org_hq' AND name = '${LEGACY_HQ_NAME}';`,
+  },
+];
 export const SCHEMA_VERSION = MIGRATIONS[MIGRATIONS.length - 1].version;
 
 export const SCHEMA_SQL = /* sql */ `

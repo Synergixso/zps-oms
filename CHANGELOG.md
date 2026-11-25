@@ -2,6 +2,11 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.1.9] — 2026-11-25 — Official title
+### Changed
+- The national office is named "Deputy Inspector General of Police - Operations (DIG Operations)" everywhere: Service HQ record (shown on sign-in, breadcrumbs and dashboards), public pages and project documents (DEC-027).
+- Migration 003 renames the Service HQ record in existing databases; migrations can now carry one-off data changes.
+
 ## [0.1.8] — 2026-11-25 — Contact page with working message form
 ### Added
 - Contact page implemented to the owner-approved design: shared approved photo hero ("GET IN TOUCH / Contact ZPS-OMS"), Contact Information cards (phone, email, technical support, website — clickable tel/mailto/web links), Our Office, working "Send Us a Message" form, "For Faster Assistance" note and topic links (Enquiries, Support, Access, Feedback) that pre-select the form subject.
