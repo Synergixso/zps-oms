@@ -129,6 +129,9 @@ export function seedDatabase(db: DB) {
   for (const c of ASSET_CATEGORIES) ins("INSERT INTO asset_categories (code, name, allowed) VALUES (?,?,1)", c.code, c.name);
   for (const r of REPORTS) ins("INSERT INTO report_definitions (code, name, description, permission, fields, owner_note) VALUES (?,?,?,?,?,?)",
     r.code, r.name, r.description, "report.view", JSON.stringify(r.fields), "Report owner to be nominated by the Service (DEC-012).");
+  ins("INSERT INTO report_definitions (code, name, description, permission, fields, owner_note) VALUES (?,?,?,?,?,?)",
+    "AUDIT_EVIDENCE", "Audit evidence export", "Filtered audit events for authorised audit evidence.", "audit.export",
+    JSON.stringify(["seq", "occurred_at", "actor_name", "action", "outcome", "category", "entity_type", "entity_id", "org_name", "details", "hash"]), "Internal Audit (to be confirmed).");
   ins("INSERT INTO app_settings (key, value, description) VALUES (?,?,?)", "maintenance.approval_threshold_zmw", "5000", "Synthetic threshold above which maintenance needs delegated approval (provisional).");
   ins("INSERT INTO app_settings (key, value, description) VALUES (?,?,?)", "request.sla_days", "10", "Days after submission before a request is flagged overdue (provisional).");
   ins("INSERT INTO app_settings (key, value, description) VALUES (?,?,?)", "integrations.external_notifications", "DISABLED", "Email/SMS/WhatsApp providers are disabled until approved (DEC-013).");

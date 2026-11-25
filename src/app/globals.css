@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+/*
+ * ZPS-OMS design tokens (UI_UX_DESIGN_SYSTEM.md).
+ * Institutional green/white/blue values are PROVISIONAL until the Service
+ * supplies an official brand guide (DEC-010).
+ */
+@theme {
+  --color-ink: #14283f;
+  --color-ink-2: #52667b;
+  --color-muted: #5c6f83;
+  --color-sidebar: #12283f;
+  --color-sidebar-2: #1b3552;
+  --color-canvas: #f4f6f8;
+  --color-surface: #ffffff;
+  --color-line: #e5eaf0;
+  --color-line-2: #d3dbe4;
+  --color-zp-green: #16823b;
+  --color-zp-green-dark: #116a30;
+  --color-zp-white: #ffffff;
+  --color-zp-blue: #133f91;
+  --color-ok: #31744c;
+  --color-ok-bg: #e8f3ec;
+  --color-warn: #8a5a14;
+  --color-warn-bg: #fbf1e0;
+  --color-err: #b33c38;
+  --color-err-bg: #fbeaea;
+  --color-info: #1f4f8f;
+  --color-info-bg: #e8eff9;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --radius-card: 9px;
+}
+
+html,
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/* Institutional colour band: green (top), white (middle), blue (bottom). */
+.zp-band {
+  height: 9px;
+  background: linear-gradient(
+    to bottom,
+    var(--color-zp-green) 0 3px,
+    var(--color-zp-white) 3px 6px,
+    var(--color-zp-blue) 6px 9px
+  );
+  border-bottom: 1px solid var(--color-line);
+}
+
+.crest {
+  object-fit: contain;
+}
+
+:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* A4 portrait print layout for public pages and reports. */
+@page {
+  size: A4 portrait;
+  margin: 15mm;
+}
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+  .print-a4 {
+    max-width: 180mm;
+    margin: 0 auto;
+  }
+}
