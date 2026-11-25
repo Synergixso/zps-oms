@@ -50,6 +50,11 @@ body {
   border-bottom: 1px solid var(--color-line);
 }
 
+/* Let grid children shrink so wide tables scroll inside their card instead of the page. */
+.grid > * {
+  min-width: 0;
+}
+
 .crest {
   object-fit: contain;
 }

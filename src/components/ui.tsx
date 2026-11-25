@@ -22,7 +22,7 @@ export function PageHeader({ eyebrow, title, description, actions }: { eyebrow?:
 
 export function Card({ title, subtitle, action, children, className = "", bodyClass = "p-4" }: { title?: ReactNode; subtitle?: ReactNode; action?: ReactNode; children: ReactNode; className?: string; bodyClass?: string }) {
   return (
-    <section className={`rounded-[9px] border border-line bg-surface shadow-[0_1px_2px_rgba(20,40,63,0.05)] ${className}`}>
+    <section className={`min-w-0 rounded-[9px] border border-line bg-surface shadow-[0_1px_2px_rgba(20,40,63,0.05)] ${className}`}>
       {(title || action) && (
         <header className="flex items-start justify-between gap-3 border-b border-line px-4 py-3">
           <div>

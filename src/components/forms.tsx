@@ -1,22 +1,33 @@
 "use client";
 
-import { createContext, useActionState, useContext, useEffect, useRef, type ReactNode } from "react";
-import { useFormStatus } from "react-dom";
+import { createContext, useActionState, useContext, useEffect, useRef, useTransition, type ReactNode } from "react";
 
 export type ActionState = { ok?: boolean; error?: string; message?: string; fieldErrors?: Record<string, string> } | null;
 type Action = (prev: ActionState, fd: FormData) => Promise<ActionState>;
 
 const FieldErrors = createContext<Record<string, string> | undefined>(undefined);
+const Pending = createContext(false);
 
 /** Form bound to a server action; shows server-side validation and authorisation errors. */
 export function ActionForm({ action, children, className = "space-y-4", resetOnSuccess = false }: { action: Action; children: ReactNode; className?: string; resetOnSuccess?: boolean }) {
-  const [state, formAction] = useActionState(action, null);
+  const [state, formAction, isPending] = useActionState(action, null);
+  const [, startTransition] = useTransition();
   const ref = useRef<HTMLFormElement>(null);
   useEffect(() => {
     if (state?.ok && resetOnSuccess) ref.current?.reset();
   }, [state, resetOnSuccess]);
+  // Submit via a transition instead of <form action> so React does not reset the
+  // user's input when the server returns a validation or authorisation error.
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+    const btn = submitter?.dataset.confirm;
+    if (btn && !window.confirm(btn)) return;
+    const fd = new FormData(e.currentTarget, submitter);
+    startTransition(() => formAction(fd));
+  };
   return (
-    <form ref={ref} action={formAction} className={className} noValidate>
+    <form ref={ref} onSubmit={onSubmit} className={className} noValidate>
       {state?.error && (
         <div role="alert" className="rounded-md border border-err/30 bg-err-bg px-3 py-2 text-sm text-err">
           {state.error}
@@ -27,13 +38,15 @@ export function ActionForm({ action, children, className = "space-y-4", resetOnS
           {state.message}
         </div>
       )}
-      <FieldErrors.Provider value={state?.fieldErrors}>{children}</FieldErrors.Provider>
+      <Pending.Provider value={isPending}>
+        <FieldErrors.Provider value={state?.fieldErrors}>{children}</FieldErrors.Provider>
+      </Pending.Provider>
     </form>
   );
 }
 
 export function Submit({ children, variant = "primary", name, value, confirm }: { children: ReactNode; variant?: "primary" | "secondary" | "danger"; name?: string; value?: string; confirm?: string }) {
-  const { pending } = useFormStatus();
+  const pending = useContext(Pending);
   const cls = {
     primary: "bg-zp-green text-white hover:bg-zp-green-dark border-transparent",
     secondary: "bg-white text-ink border-line-2 hover:bg-slate-50",
@@ -45,9 +58,7 @@ export function Submit({ children, variant = "primary", name, value, confirm }: 
       name={name}
       value={value}
       disabled={pending}
-      onClick={(e) => {
-        if (confirm && !window.confirm(confirm)) e.preventDefault();
-      }}
+      data-confirm={confirm}
       className={`inline-flex items-center justify-center gap-2 rounded-md border px-3.5 py-2 text-sm font-semibold shadow-sm disabled:cursor-wait disabled:opacity-60 ${cls}`}
     >
       {pending ? "Working…" : children}
