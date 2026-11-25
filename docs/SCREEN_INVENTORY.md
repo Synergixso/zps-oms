@@ -10,6 +10,7 @@ Every application route, the permission(s) that gate it, and the roles that can 
 | `/features` | Features | — |
 | `/modules` | Modules | MVP/later distinction |
 | `/technical-team` | Technical Team | Owner-approved design; in the public menu in place of Modules |
+| `/how-it-works` | How It Works | Owner-approved design; in the public menu |
 | `/contact` | Contact | Owner-approved contact details; working message form (stored, audited, rate-limited) |
 | `/login` | Secure sign-in | Synthetic role simulator, clearly labelled; no registration |
 

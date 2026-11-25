@@ -10,6 +10,7 @@ const LINKS = [
   ["/about", "About"],
   ["/features", "Features"],
   ["/technical-team", "Technical Team"],
+  ["/how-it-works", "How It Works"],
   ["/contact", "Contact"],
 ] as const;
 
@@ -39,11 +40,11 @@ export function PublicNav() {
   );
   return (
     <>
-      <nav aria-label="Public" className="hidden items-center gap-1 lg:flex">
+      <nav aria-label="Public" className="hidden items-center gap-1 xl:flex">
         {links}
         <span className="ml-4">{login}</span>
       </nav>
-      <div className="flex items-center gap-2 lg:hidden">
+      <div className="flex items-center gap-2 xl:hidden">
         {login}
         <button
           type="button"
@@ -59,7 +60,7 @@ export function PublicNav() {
         </button>
       </div>
       {open && (
-        <nav id="public-menu" aria-label="Public (mobile)" className="flex w-full flex-col border-t border-line pt-2 lg:hidden">
+        <nav id="public-menu" aria-label="Public (mobile)" className="flex w-full flex-col border-t border-line pt-2 xl:hidden">
           {links}
         </nav>
       )}

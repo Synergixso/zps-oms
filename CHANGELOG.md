@@ -2,6 +2,14 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.1.10] — 2026-11-26 — How It Works page
+### Added
+- How It Works page (`/how-it-works`) to the owner-approved design with the shared approved hero: five-step Operational Flow (Initiate, Review, Approve, Implement, Report & Monitor), Institutional Workflow Across Zambia (Service Headquarters, Provincial Police Divisions, Divisional Units & Formations), What ZPS-OMS Manages, and Key Benefits for Operations. Added to the public menu.
+
+### Changed
+- Public menu: Home · About · Features · Technical Team · How It Works · Contact. The full menu shows from 1280 px; narrower screens use the menu button so the header never wraps.
+- Home page call-to-action image now centre-crops, ready for the armoured-vehicle photograph at `public/hero/cta-vehicle.webp`.
+
 ## [0.1.9] — 2026-11-25 — Official title
 ### Changed
 - The national office is named "Deputy Inspector General of Police - Operations (DIG Operations)" everywhere: Service HQ record (shown on sign-in, breadcrumbs and dashboards), public pages and project documents (DEC-027).

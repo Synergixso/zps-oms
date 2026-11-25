@@ -77,3 +77,12 @@ The crest is shown unmodified on a white field in the header and footer (`<Crest
 - "Send Us a Message" form: icons inside fields, inline server-side errors, live 0 / 1,000 counter, confirmation with reference number; input preserved on error and cleared on success.
 - Topic band (Enquiries, Support, Access, Feedback) pre-selects the form subject via `?subject=`.
 - Pending asset: headquarters-building photograph at `public/brand/hq-building.webp` (shared with About).
+
+## How It Works page (v0.1.10 — owner-approved design)
+- Shared `PhotoHero` ("PROCESS OVERVIEW / How It Works").
+- Operational Flow: five tinted step cards (green, blue, purple, orange, green) with numbered badges and chevrons between them on desktop; 2 columns on tablets, 1 on phones.
+- Institutional Workflow: three trapezoid tier tiles (blue, green, blue) with up/down arrows and bullet panels; the HQ tier reads "Service Headquarters (DIG Operations)" per the official title (DEC-027).
+- What ZPS-OMS Manages (eight checked items) and Key Benefits for Operations (seven icons).
+
+## Public header breakpoints
+- ≥1280 px: full menu (six links + Login). <1280 px: Login + menu button with a drop-down list.
