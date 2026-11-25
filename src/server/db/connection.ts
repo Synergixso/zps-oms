@@ -1,61 +1,84 @@
-import { DatabaseSync } from "node:sqlite";
-import fs from "node:fs";
-import path from "node:path";
-import { MIGRATIONS, SCHEMA_SQL, SCHEMA_VERSION } from "./schema";
-import { seedDatabase } from "./seed";
+/**
+ * MySQL data-access layer (mysql2/promise, XAMPP MariaDB/MySQL).
+ *
+ * - `getDb()` returns the process-wide pool.
+ * - `all` / `one` / `run` run parameterised SQL (client-side escaping; never
+ *   interpolate user input into SQL text).
+ * - `tx(db, async (db) => …)` runs the callback on a dedicated connection inside
+ *   a transaction. The callback parameter deliberately shadows `db`, so every
+ *   statement in the body uses the transaction. Nested `tx` calls join the
+ *   outer transaction.
+ */
+import mysql, { type Pool, type PoolConnection, type ResultSetHeader } from "mysql2/promise";
 
-export type DB = DatabaseSync;
+export type DB = Pool | PoolConnection;
 
-/** Opens (and if needed migrates + seeds) a database. ':memory:' is used by tests. */
-export function openDatabase(file: string, opts: { seed?: boolean } = {}): DB {
-  if (file !== ":memory:") fs.mkdirSync(path.dirname(file), { recursive: true });
-  const db = new DatabaseSync(file);
-  db.exec("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 3000;");
-  db.exec(SCHEMA_SQL); // idempotent: every statement is CREATE … IF NOT EXISTS
-  const current = Number((db.prepare("SELECT MAX(version) AS v FROM schema_migrations").get() as { v: number | null }).v ?? 0);
-  const record = db.prepare("INSERT INTO schema_migrations (version, applied_at, description) VALUES (?, ?, ?)");
-  for (const m of MIGRATIONS) {
-    if (m.version <= current) continue;
-    if (m.sql) db.exec(m.sql);
-    record.run(m.version, new Date().toISOString(), m.description);
-  }
-  // Seed only a brand-new database (never re-seed an existing one during an upgrade).
-  if (current === 0 && opts.seed !== false) seedDatabase(db);
-  if (current > SCHEMA_VERSION) throw new Error(`Database schema v${current} is newer than this application (v${SCHEMA_VERSION}).`);
-  return db;
+const TX = Symbol("zps.inTransaction");
+type TxConnection = PoolConnection & { [TX]?: boolean };
+
+const POOL_OPTIONS = {
+  connectionLimit: 10,
+  decimalNumbers: true, // SUM()/AVG() as numbers, not strings
+  dateStrings: true,
+  timezone: "Z" as const,
+  multipleStatements: false,
+};
+
+export function createPool(url: string): Pool {
+  return mysql.createPool({ uri: url, ...POOL_OPTIONS });
 }
 
-const globalForDb = globalThis as unknown as { __zpsDb?: DB };
+const globalForDb = globalThis as unknown as { __zpsPool?: Pool };
 
-/** Process-wide database used by the Next.js server. */
-export function getDb(): DB {
-  if (!globalForDb.__zpsDb) {
-    const file = process.env.ZPS_DB_FILE ?? path.join(process.cwd(), "data", "zps-oms-synthetic.db");
-    globalForDb.__zpsDb = openDatabase(file);
+/** Process-wide pool for the Next.js server. Requires DATABASE_URL (see .env.example). */
+export function getDb(): Pool {
+  if (!globalForDb.__zpsPool) {
+    const url = process.env.DATABASE_URL;
+    if (!url) throw new Error("DATABASE_URL is not set. Copy .env.example to .env.local and start MySQL in XAMPP.");
+    globalForDb.__zpsPool = createPool(url);
   }
-  return globalForDb.__zpsDb;
-}
-
-/** Runs fn inside a transaction; rolls back on any thrown error. */
-export function tx<T>(db: DB, fn: () => T): T {
-  db.exec("BEGIN IMMEDIATE");
-  try {
-    const out = fn();
-    db.exec("COMMIT");
-    return out;
-  } catch (e) {
-    db.exec("ROLLBACK");
-    throw e;
-  }
+  return globalForDb.__zpsPool;
 }
 
 type Row = Record<string, unknown>;
-export function all<T = Row>(db: DB, sql: string, ...params: unknown[]): T[] {
-  return db.prepare(sql).all(...(params as never[])) as T[];
+
+export async function all<T = Row>(db: DB, sql: string, ...params: unknown[]): Promise<T[]> {
+  const [rows] = await db.query(sql, params);
+  return rows as T[];
 }
-export function one<T = Row>(db: DB, sql: string, ...params: unknown[]): T | undefined {
-  return db.prepare(sql).get(...(params as never[])) as T | undefined;
+
+export async function one<T = Row>(db: DB, sql: string, ...params: unknown[]): Promise<T | undefined> {
+  const rows = await all<T>(db, sql, ...params);
+  return rows[0];
 }
-export function run(db: DB, sql: string, ...params: unknown[]) {
-  return db.prepare(sql).run(...(params as never[]));
+
+export async function run(db: DB, sql: string, ...params: unknown[]): Promise<{ changes: number; insertId: number }> {
+  const [res] = await db.query(sql, params);
+  const h = res as ResultSetHeader;
+  return { changes: h.affectedRows, insertId: h.insertId };
+}
+
+/** Runs `fn` in a transaction; rolls back on any thrown error. */
+export async function tx<T>(db: DB, fn: (db: PoolConnection) => Promise<T>): Promise<T> {
+  const maybe = db as TxConnection;
+  if (maybe[TX]) return fn(maybe); // join the outer transaction
+  const conn = (await (db as Pool).getConnection()) as TxConnection;
+  try {
+    await conn.beginTransaction();
+    conn[TX] = true;
+    const out = await fn(conn);
+    await conn.commit();
+    return out;
+  } catch (e) {
+    await conn.rollback();
+    throw e;
+  } finally {
+    conn[TX] = false;
+    conn.release();
+  }
+}
+
+/** Placeholder list for an IN (...) clause; returns "NULL" for an empty list so the query stays valid and matches nothing. */
+export function inList(values: readonly unknown[]): string {
+  return values.length ? values.map(() => "?").join(",") : "NULL";
 }
