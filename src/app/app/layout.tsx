@@ -8,6 +8,7 @@ import { NAV } from "@/lib/nav";
 import { SideNav } from "@/components/shell";
 import { Crest } from "@/components/ui";
 import { Icon } from "@/components/icons";
+import { CurrentYear } from "@/components/current-year";
 
 export const dynamic = "force-dynamic";
 
@@ -63,13 +64,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <main id="main" className="mx-auto max-w-[1480px] px-4 py-6 lg:px-8">
           {children}
         </main>
-        <footer className="border-t border-line px-4 py-4 text-[11.5px] text-muted lg:px-8">
-          © ZPS-OMS local synthetic prototype · Not an authorised operational system · Institutional colour sequence{" "}
-          <span className="inline-flex translate-y-0.5 gap-0.5" aria-label="green, white, blue">
-            <span className="h-3 w-3 bg-zp-green" />
-            <span className="h-3 w-3 border border-line-2 bg-white" />
-            <span className="h-3 w-3 bg-zp-blue" />
-          </span>
+        <footer className="no-print border-t border-line px-4 py-4 text-[12px] text-muted lg:px-8">
+          <div className="mx-auto flex max-w-[1480px] flex-col items-center gap-2 text-center md:flex-row md:justify-between md:text-left">
+            <p>
+              © <CurrentYear /> Zambia Police Service. All rights reserved. Designed and developed by{" "}
+              <span className="font-semibold text-ink-2">SPOM Technical Services Section Team</span>.
+            </p>
+            <span className="inline-flex items-center gap-2">
+              ZPS-OMS
+              <span className="inline-flex gap-0.5" aria-label="Institutional colours: green, white, blue">
+                <span className="h-3 w-3 bg-zp-green" />
+                <span className="h-3 w-3 border border-line-2 bg-white" />
+                <span className="h-3 w-3 bg-zp-blue" />
+              </span>
+            </span>
+          </div>
         </footer>
       </div>
     </div>

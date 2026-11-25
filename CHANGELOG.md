@@ -4,7 +4,7 @@ All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
 ## [0.1.4] — 2026-11-25 — Footer copyright
 ### Added
-- Public footer copyright line: "© <current year> Zambia Police Service. All rights reserved. Designed and developed by SPOM Technical Services Section Team." The year is rendered in the browser so pre-built pages always show the current year.
+- Footer copyright line on public pages and on every signed-in back-office page: "© <current year> Zambia Police Service. All rights reserved. Designed and developed by SPOM Technical Services Section Team." The year is rendered in the browser so pre-built pages always show the current year.
 
 ## [0.1.3] — 2026-11-25 — Landing page implemented to the approved design
 ### Changed
