@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#10243a" />
+  <meta name="description" content="ZPS-OMS professional UI/UX concept. Synthetic demonstration data only." />
+  <title>ZPS-OMS | Zambia Police Service</title>
+  <link rel="icon" type="image/png" href="assets/zambia-police-service-crest.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="institutional-band" aria-label="Institutional colours: green, white and blue">
+    <span class="band-green"></span><span class="band-white"></span><span class="band-blue"></span>
+  </div>
+  <a class="skip-link" href="#mainContent">Skip to main content</a>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+      <div class="sidebar-brand">
+        <div class="crest-box"><img src="assets/zambia-police-service-crest.png" alt="Zambia Police Service crest" /></div>
+        <div class="brand-copy">
+          <div class="brand-title">ZPS-OMS</div>
+          <div class="brand-subtitle">Operations Management</div>
+        </div>
+        <button class="icon-btn mobile-close" id="closeSidebar" aria-label="Close navigation">×</button>
+      </div>
+      <div class="sidebar-context">
+        <span class="context-dot"></span>
+        <span>National Operations Workspace</span>
+      </div>
+      <nav class="nav-groups" aria-label="Application sections">
+        <div class="nav-group">
+          <div class="nav-heading">OVERVIEW</div>
+          <button class="nav-item active" data-page="overview"><span class="nav-icon" data-icon="dashboard"></span><span>Operations overview</span></button>
+        </div>
+        <div class="nav-group">
+          <div class="nav-heading">ORGANISATION</div>
+          <button class="nav-item" data-page="provinces"><span class="nav-icon" data-icon="map"></span><span>Provincial divisions</span><span class="nav-count">10</span></button>
+          <button class="nav-item" data-page="formations"><span class="nav-icon" data-icon="shield"></span><span>Divisional formations</span><span class="nav-count">08</span></button>
+        </div>
+        <div class="nav-group">
+          <div class="nav-heading">ADMINISTRATIVE SERVICES</div>
+          <button class="nav-item" data-page="fleet"><span class="nav-icon" data-icon="vehicle"></span><span>Fleet & transport</span></button>
+          <button class="nav-item" data-page="maintenance"><span class="nav-icon" data-icon="wrench"></span><span>Maintenance</span><span class="nav-indicator"></span></button>
+          <button class="nav-item" data-page="assets"><span class="nav-icon" data-icon="archive"></span><span>Assets & equipment</span></button>
+          <button class="nav-item" data-page="workflows"><span class="nav-icon" data-icon="workflow"></span><span>Administrative requests</span></button>
+        </div>
+        <div class="nav-group">
+          <div class="nav-heading">GOVERNANCE</div>
+          <button class="nav-item" data-page="reports"><span class="nav-icon" data-icon="chart"></span><span>Reports & insights</span></button>
+          <button class="nav-item" data-page="access"><span class="nav-icon" data-icon="users"></span><span>Users & permissions</span></button>
+        </div>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="environment-card">
+          <div class="environment-icon" data-icon="lock"></div>
+          <div><strong>Design environment</strong><span>Synthetic data · Local prototype</span></div>
+          <span class="environment-status">●</span>
+        </div>
+        <div class="sidebar-meta"><span>UI/UX CONCEPT</span><span>v0.2</span></div>
+      </div>
+    </aside>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <section class="workspace">
+      <header class="topbar">
+        <div class="topbar-start">
+          <button class="icon-btn menu-toggle" id="openSidebar" aria-label="Open navigation"><span data-icon="menu"></span></button>
+          <div class="breadcrumbs"><span>Zambia Police Service</span><i>/</i><strong id="breadcrumbTitle">Operations overview</strong></div>
+        </div>
+        <div class="topbar-end">
+          <div class="environment-label"><span class="environment-label-dot"></span> DEMONSTRATION</div>
+          <button class="icon-btn top-action" id="helpButton" aria-label="Help" title="Help"><span data-icon="help"></span></button>
+          <div class="topbar-divider"></div>
+          <button class="user-menu" id="userMenu" aria-label="Current demonstration user">
+            <span class="user-avatar">DO</span>
+            <span class="user-meta"><strong>Demo Officer</strong><small>National Operations · Viewer</small></span>
+            <span class="user-chevron" data-icon="chevronDown"></span>
+          </button>
+        </div>
+      </header>
+
+      <main class="main-content" id="mainContent" tabindex="-1">
+        <div class="demo-notice" role="note">
+          <span class="notice-icon" data-icon="info"></span>
+          <div><strong>Prototype environment</strong><span>All names, figures, references and transactions are synthetic examples. This interface is not connected to Zambia Police Service systems and must not contain live or personal police information.</span></div>
+          <span class="notice-tag">SAMPLE DATA</span>
+        </div>
+        <div id="pageView" aria-live="polite"></div>
+        <footer class="page-footer">
+          <span>© ZPS-OMS · Interface design concept · Not an authorised operational system</span>
+          <span class="footer-colours"><i class="swatch green"></i><i class="swatch white"></i><i class="swatch blue"></i><span>Institutional colour sequence</span></span>
+        </footer>
+      </main>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="modal-layer" id="modalLayer" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header"><div><div class="eyebrow">DEMONSTRATION ACTION</div><h2 id="modalTitle">Action details</h2></div><button class="icon-btn modal-x" id="modalX" aria-label="Close dialog">×</button></div>
+      <div class="modal-content" id="modalContent"></div>
+      <div class="modal-footer"><button class="btn btn-quiet" id="modalDismiss">Close</button><button class="btn btn-primary" id="modalPrimary">Acknowledge</button></div>
+    </section>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
