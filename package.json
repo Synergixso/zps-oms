@@ -9,7 +9,9 @@
     "start": "next start -p 3100",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "db:reset": "node --experimental-strip-types scripts/reset-db.ts"
+    "db:reset": "node scripts/reset-db.mjs",
+    "audit:routes": "node scripts/route-audit.mjs",
+    "docs:permissions": "node --experimental-strip-types scripts/gen-permission-matrix.mts"
   },
   "engines": {
     "node": ">=22.13"
