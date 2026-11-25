@@ -19,27 +19,27 @@ const CHANNELS: Array<{ icon: IconName; tile: string; label: string; lines: Arra
     tile: "bg-gradient-to-br from-[#22a650] to-[#137634]",
     label: "Phone (Operations Desk)",
     lines: [
-      { text: "+260 211 252 739", href: "tel:+260211252739" },
-      { text: "+260 211 252 740", href: "tel:+260211252740" },
+      { text: "+260 972 194 188", href: "tel:+260972194188" },
+      { text: "+260 953 489 727", href: "tel:+260953489727" },
     ],
   },
   {
     icon: "mail",
     tile: "bg-gradient-to-br from-[#2a6be0] to-[#1544a8]",
     label: "Email",
-    lines: [{ text: "zps-oms@zambia.police.gov.zm", href: "mailto:zps-oms@zambia.police.gov.zm" }],
+    lines: [{ text: "zps-oms@zambiapolice.org.zm", href: "mailto:zps-oms@zambiapolice.org.zm" }],
   },
   {
     icon: "headset",
     tile: "bg-gradient-to-br from-[#8360e6] to-[#5a3cc0]",
     label: "Technical Support",
-    lines: [{ text: "support@zps-oms.gov.zm", href: "mailto:support@zps-oms.gov.zm" }],
+    lines: [{ text: "support@zambiapolice.org.zm", href: "mailto:support@zambiapolice.org.zm" }],
   },
   {
     icon: "globe",
     tile: "bg-gradient-to-br from-[#1f4590] to-[#0d2149]",
     label: "Website",
-    lines: [{ text: "https://zps-oms.gov.zm", href: "https://zps-oms.gov.zm" }],
+    lines: [{ text: "https://zps-oms.zambiapolice.org.zm", href: "https://zps-oms.zambiapolice.org.zm" }],
   },
 ];
 
@@ -123,13 +123,15 @@ export default async function Contact({ searchParams }: { searchParams: Promise<
               <address className="mt-4 flex items-start gap-4 not-italic">
                 <Icon name="pin" className="mt-1 h-9 w-9 shrink-0 text-zp-green" />
                 <p className="text-[16px] leading-relaxed text-[#1f2d45]">
-                  <strong className="text-[17px] font-extrabold text-[#0d1b3e]">Zambia Police Service</strong>
+                  <strong className="text-[17px] font-extrabold text-[#0d1b3e]">Technical Services Section</strong>
                   <br />
-                  Deputy Inspector General of Police - Operations (DIG Operations)
+                  Kamfinsa Mobile Unit Division Headquarters
                   <br />
-                  Police Headquarters
+                  Box 21691
                   <br />
-                  Lusaka, Zambia
+                  Kamfinsa, Kitwe, 10101
+                  <br />
+                  ZAMBIA
                 </p>
               </address>
               <figure className="mt-5 overflow-hidden rounded-2xl shadow-[0_10px_28px_rgba(13,33,73,0.16)] ring-1 ring-black/5">

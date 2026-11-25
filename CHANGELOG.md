@@ -2,6 +2,10 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.1.11] — 2026-11-26 — Contact details
+### Changed
+- Contact page details (owner instruction): phones +260 972 194 188 / +260 953 489 727; email zps-oms@zambiapolice.org.zm; technical support support@zambiapolice.org.zm; website https://zps-oms.zambiapolice.org.zm; office address Technical Services Section, Kamfinsa Mobile Unit Division Headquarters, Box 21691, Kamfinsa, Kitwe, 10101, ZAMBIA.
+
 ## [0.1.10] — 2026-11-26 — How It Works page
 ### Added
 - How It Works page (`/how-it-works`) to the owner-approved design with the shared approved hero: five-step Operational Flow (Initiate, Review, Approve, Implement, Report & Monitor), Institutional Workflow Across Zambia (Service Headquarters, Provincial Police Divisions, Divisional Units & Formations), What ZPS-OMS Manages, and Key Benefits for Operations. Added to the public menu.
