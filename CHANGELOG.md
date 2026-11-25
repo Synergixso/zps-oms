@@ -5,6 +5,7 @@ All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 ## [0.1.5] — 2026-11-25 — About page to the approved design
 ### Added
 - About page implemented to the owner-approved "About ZPS-OMS" design: approved photographic hero ("About the Platform"), Our Purpose with image, Our Mission and Our Vision cards, five Objectives, and five Core Values (Integrity, Service, Professionalism, Accountability, Security).
+- Our Purpose names the "Deputy Inspector General of Police - Operations (DIG Operations)" (owner wording).
 - Shared `PhotoHero` component (`src/components/photo-hero.tsx`) so the landing and About pages use the same approved hero.
 
 ### Notes

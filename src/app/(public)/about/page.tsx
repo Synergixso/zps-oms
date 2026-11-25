@@ -73,7 +73,7 @@ export default function About() {
               <SectionHeading id="purpose">Our Purpose</SectionHeading>
               <p className="mt-4 pl-[17px] text-[16px] leading-relaxed text-[#1f2d45] md:text-[17px]">
                 The Zambia Police Service Operations Management System (ZPS-OMS) is a secure, integrated platform designed to support the{" "}
-                <strong className="font-bold text-[#0d1b3e]">Directorate of Operations</strong> (DIG Operations) in planning, coordinating, monitoring and managing police
+                <strong className="font-bold text-[#0d1b3e]">Deputy Inspector General of Police - Operations</strong> (DIG Operations) in planning, coordinating, monitoring and managing police
                 operations, resources and assets across all Provincial Divisions and Divisional Units.
               </p>
             </div>
