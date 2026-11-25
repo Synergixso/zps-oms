@@ -60,3 +60,8 @@ The crest is shown unmodified on a white field in the header and footer (`<Crest
 - Our Objectives: five items in one bordered strip (gear green, layers blue, shield purple, bars navy, users green); 2 columns on phones, 3 on tablets, 5 on desktop.
 - Our Core Values: Integrity (navy), Service (green), Professionalism (blue), Accountability (purple), Security (green) as filled pills; stacked on phones.
 - Pending asset: the design's headquarters-building photograph should replace `public/about/purpose.webp` (same file name, ~1000×400 or larger, 5:2).
+
+## Features page (v0.1.6 — owner-approved "ZPS-OMS Modules" design)
+- Hero: shared `PhotoHero`, eyebrow "SYSTEM MODULES", heading "ZPS-OMS Modules", approved strapline.
+- Core System Modules: nine cards (3 / 2 / 1 columns) each with a coloured left accent, gradient icon tile, title, description and chevron; cards link to the Modules page.
+- Module Access by Role: navy header bar and five role columns with tinted access pills, as designed (see DEC-026).

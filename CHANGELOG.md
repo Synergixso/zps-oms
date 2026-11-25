@@ -2,6 +2,10 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.1.6] — 2026-11-25 — Features page to the approved design
+### Added
+- Features page implemented to the owner-approved "ZPS-OMS Modules" design: shared approved photo hero ("SYSTEM MODULES / ZPS-OMS Modules"), nine Core System Module cards with coloured accents and icon tiles, and the "Module Access by Role" strip (Superadmin, CRM Administrator, Divisional Commander, Division Staff Ops, General User) exactly as designed.
+
 ## [0.1.5] — 2026-11-25 — About page to the approved design
 ### Added
 - About page implemented to the owner-approved "About ZPS-OMS" design: approved photographic hero ("About the Platform"), Our Purpose with image, Our Mission and Our Vision cards, five Objectives, and five Core Values (Integrity, Service, Professionalism, Accountability, Security).
