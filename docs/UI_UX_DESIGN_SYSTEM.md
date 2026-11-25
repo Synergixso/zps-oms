@@ -85,4 +85,6 @@ The crest is shown unmodified on a white field in the header and footer (`<Crest
 - What ZPS-OMS Manages (eight checked items) and Key Benefits for Operations (seven icons).
 
 ## Public header breakpoints
-- ≥1280 px: full menu (six links + Login). <1280 px: Login + menu button with a drop-down list.
+- ≥1280 px: full menu at standard size beside the brand.
+- 1024–1279 px: same inline menu, slightly compact (13.5 px links, smaller brand).
+- <1024 px: brand and Login on the first row; all six links always visible on a wrapped row beneath (no toggle).

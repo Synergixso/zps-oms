@@ -9,14 +9,14 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
     <div className="flex min-h-screen flex-col bg-white">
       <div className="zp-band" aria-hidden />
       <header className="sticky top-0 z-30 border-b border-line bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <Link href="/" className="flex items-center gap-3 sm:gap-4" aria-label="ZPS-OMS home">
-            <Crest className="h-[46px] w-[79px] sm:h-[56px] sm:w-[96px]" />
+        <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-x-2 gap-y-3 px-4 py-3 sm:gap-x-3">
+          <Link href="/" className="flex items-center gap-2.5 sm:gap-4" aria-label="ZPS-OMS home">
+            <Crest className="h-[40px] w-[69px] sm:h-[52px] sm:w-[89px] xl:h-[56px] xl:w-[96px]" />
             <span className="hidden h-12 w-px bg-line-2 sm:block" aria-hidden />
             <span className="leading-tight">
-              <span className="block text-[15px] font-extrabold tracking-wide text-[#0d2149] sm:text-[19px]">ZAMBIA POLICE SERVICE</span>
-              <span className="block text-[10px] font-semibold tracking-[0.12em] text-ink-2 sm:text-[11.5px]">OPERATIONS MANAGEMENT SYSTEM</span>
-              <span className="mt-1 inline-block rounded-full bg-zp-green px-3 py-0.5 text-[11px] font-bold tracking-wider text-white sm:text-[13px]">ZPS-OMS</span>
+              <span className="block text-[14px] font-extrabold tracking-wide text-[#0d2149] sm:text-[17px] xl:text-[19px]">ZAMBIA POLICE SERVICE</span>
+              <span className="block text-[9px] font-semibold tracking-[0.1em] text-ink-2 sm:text-[10.5px] xl:text-[11.5px]">OPERATIONS MANAGEMENT SYSTEM</span>
+              <span className="mt-1 inline-block rounded-full bg-zp-green px-3 py-0.5 text-[11px] font-bold tracking-wider text-white sm:text-[12px] xl:text-[13px]">ZPS-OMS</span>
             </span>
           </Link>
           <PublicNav />

@@ -141,17 +141,17 @@ export default function Home() {
       <section className="bg-white py-12 md:py-14">
         <div className="mx-auto max-w-[1180px] px-4">
           <div className="grid items-center overflow-hidden rounded-2xl border border-[#e3e9f2] bg-[linear-gradient(90deg,#f3f6fb_0%,#eef3fa_100%)] shadow-[0_6px_22px_rgba(13,33,73,0.08)] md:grid-cols-[minmax(260px,330px)_1fr_auto]">
-            <div className="relative h-[190px] md:h-full md:min-h-[170px]">
+            <div className="relative h-[220px] sm:h-[260px] md:h-full md:min-h-[200px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/hero/cta-vehicle.webp"
-                alt="Zambia Police Service vehicle"
-                width={876}
-                height={396}
+                alt="Zambia Police Service armoured vehicle"
+                width={1200}
+                height={800}
                 loading="lazy"
-                className="absolute inset-0 h-full w-full object-cover object-[50%_60%]"
+                className="absolute inset-0 h-full w-full object-cover object-[50%_62%]"
               />
-              <div className="absolute inset-y-0 right-0 hidden w-16 bg-gradient-to-r from-transparent to-[#f3f6fb] md:block" aria-hidden />
+              <div className="absolute inset-y-0 right-0 hidden w-10 bg-gradient-to-r from-transparent to-[#f3f6fb] md:block" aria-hidden />
             </div>
             <div className="px-6 py-6 md:px-8">
               <h2 className="text-[26px] font-extrabold leading-tight tracking-tight text-[#0d1b3e] md:text-[30px]">

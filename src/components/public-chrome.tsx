@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 import { Icon } from "./icons";
 
 const LINKS = [
@@ -14,56 +13,52 @@ const LINKS = [
   ["/contact", "Contact"],
 ] as const;
 
-/** Public navigation with active-page underline and a mobile toggle. */
+/**
+ * Public navigation — always visible on every screen size.
+ * ≥1024 px: inline beside the brand (compact up to 1280 px).
+ * <1024 px: a wrapped row of links beneath the brand (no toggle to open).
+ */
 export function PublicNav() {
   const path = usePathname();
-  const [open, setOpen] = useState(false);
-  const links = LINKS.map(([href, label]) => {
-    const active = href === "/" ? path === "/" : path.startsWith(href);
+  const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
+
+  const link = (href: string, label: string, size: string) => {
+    const active = isActive(href);
     return (
       <Link
         key={href}
         href={href}
         aria-current={active ? "page" : undefined}
-        onClick={() => setOpen(false)}
-        className={`relative px-3 py-2 text-[14px] font-semibold transition-colors ${active ? "text-zp-green" : "text-ink hover:text-zp-green"} after:absolute after:inset-x-3 after:-bottom-0.5 after:h-[3px] after:rounded-full ${active ? "after:bg-zp-green" : "after:bg-transparent"}`}
+        className={`relative whitespace-nowrap font-semibold transition-colors ${size} ${active ? "text-zp-green" : "text-ink hover:text-zp-green"} after:absolute after:-bottom-0.5 after:h-[3px] after:rounded-full ${active ? "after:bg-zp-green" : "after:bg-transparent"}`}
       >
         {label}
       </Link>
     );
-  });
+  };
+
   const login = (
-    <Link href="/login" className="inline-flex items-center gap-2 rounded-md bg-zp-blue px-4 py-2.5 text-[14px] font-semibold text-white shadow-sm hover:bg-[#0e3277]">
-      <Icon name="user" className="h-4 w-4" />
+    <Link
+      href="/login"
+      className="inline-flex items-center gap-2 whitespace-nowrap rounded-md bg-zp-blue px-3 py-2 text-[13.5px] font-semibold text-white shadow-sm hover:bg-[#0e3277] sm:px-4 sm:py-2.5 sm:text-[14px]"
+    >
+      <Icon name="user" className="hidden h-4 w-4 sm:block" />
       Login
     </Link>
   );
+
   return (
     <>
-      <nav aria-label="Public" className="hidden items-center gap-1 xl:flex">
-        {links}
-        <span className="ml-4">{login}</span>
+      {/* Laptops and desktops */}
+      <nav aria-label="Main" className="hidden items-center gap-0.5 lg:flex xl:gap-1">
+        {LINKS.map(([href, label]) => link(href, label, "px-2 py-2 text-[13.5px] after:inset-x-2 xl:px-3 xl:text-[14px] xl:after:inset-x-3"))}
+        <span className="ml-3 xl:ml-4">{login}</span>
       </nav>
-      <div className="flex items-center gap-2 xl:hidden">
-        {login}
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          aria-expanded={open}
-          aria-controls="public-menu"
-          aria-label={open ? "Close menu" : "Open menu"}
-          className="rounded-md border border-line-2 p-2 text-ink"
-        >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
-            <path d={open ? "M6 6l12 12M18 6 6 18" : "M4 6h16M4 12h16M4 18h16"} />
-          </svg>
-        </button>
-      </div>
-      {open && (
-        <nav id="public-menu" aria-label="Public (mobile)" className="flex w-full flex-col border-t border-line pt-2 xl:hidden">
-          {links}
-        </nav>
-      )}
+
+      {/* Tablets and phones: Login on the brand row, links always shown beneath */}
+      <div className="lg:hidden">{login}</div>
+      <nav aria-label="Main" className="order-last flex w-full flex-wrap justify-center gap-x-1 gap-y-1 border-t border-line pt-2 lg:hidden">
+        {LINKS.map(([href, label]) => link(href, label, "px-2.5 py-1.5 text-[14px] after:inset-x-2.5"))}
+      </nav>
     </>
   );
 }

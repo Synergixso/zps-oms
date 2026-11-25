@@ -2,6 +2,11 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.1.12] — 2026-11-26 — Armoured vehicle photo; menu always visible
+### Changed
+- Home page call-to-action photograph replaced with the owner-supplied armoured vehicle (`public/hero/cta-vehicle.webp`, 1200×800), shown in full on desktop and phone.
+- Public main menu is now visible on every screen size: inline beside the brand from 1024 px (compact until 1280 px), and as an always-visible row of links beneath the brand on tablets and phones. The drop-down menu button was removed.
+
 ## [0.1.11] — 2026-11-26 — Contact details
 ### Changed
 - Contact page details (owner instruction): phones +260 972 194 188 / +260 953 489 727; email zps-oms@zambiapolice.org.zm; technical support support@zambiapolice.org.zm; website https://zps-oms.zambiapolice.org.zm; office address Technical Services Section, Kamfinsa Mobile Unit Division Headquarters, Box 21691, Kamfinsa, Kitwe, 10101, ZAMBIA.
