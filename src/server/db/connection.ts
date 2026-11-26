@@ -10,6 +10,8 @@
  *   outer transaction.
  */
 import mysql, { type Pool, type PoolConnection, type ResultSetHeader } from "mysql2/promise";
+import { SQL_MODE } from "./sql-mode";
+export { SQL_MODE };
 
 export type DB = Pool | PoolConnection;
 
@@ -24,8 +26,15 @@ const POOL_OPTIONS = {
   multipleStatements: false,
 };
 
+/**
+ * Strict SQL mode on every connection, whatever the server default (XAMPP ships non-strict): an over-long or invalid
+ * value is an error, never a silent truncation, and local, CI and production behave the same (DEC-061).
+ */
+
 export function createPool(url: string): Pool {
-  return mysql.createPool({ uri: url, ...POOL_OPTIONS });
+  const pool = mysql.createPool({ uri: url, ...POOL_OPTIONS });
+  pool.pool.on("connection", (c) => { c.query(`SET SESSION sql_mode = '${SQL_MODE}'`); });
+  return pool;
 }
 
 const globalForDb = globalThis as unknown as { __zpsPool?: Pool };
@@ -78,7 +87,9 @@ export async function tx<T>(db: DB, fn: (db: PoolConnection) => Promise<T>): Pro
       throw e;
     }
   }
-  const conn = (await (db as Pool).getConnection()) as TxConnection;
+  // A pool lends a dedicated connection; a pooled connection outside a transaction is used as it is.
+  const owned = typeof (db as Pool).getConnection === "function";
+  const conn = (owned ? await (db as Pool).getConnection() : db) as TxConnection;
   try {
     await conn.beginTransaction();
     conn[TX] = true;

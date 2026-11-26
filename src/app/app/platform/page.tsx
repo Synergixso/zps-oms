@@ -3,9 +3,9 @@ import { pageAllowed } from "@/server/auth/guard";
 import { getDb, one } from "@/server/db/connection";
 import { verifyAuditChain } from "@/server/domain/audit";
 import { hasPermission } from "@/server/domain/policy";
-import { EDITABLE_SETTINGS, backupDir, platformOverview } from "@/server/domain/platform";
+import { EDITABLE_SETTINGS, backupDir, listRestoreChecks, platformOverview } from "@/server/domain/platform";
 import { SHOW_DEMO_ACCOUNTS } from "@/server/auth/session";
-import { backupAction, maintenanceAction, runJobsAction, settingAction, verifyBackupAction } from "@/server/actions/platform";
+import { backupAction, maintenanceAction, restoreDrillAction, runJobsAction, settingAction, verifyBackupAction } from "@/server/actions/platform";
 import { AccessDenied, Badge, Card, DL, Notice, PageHeader, Stat, Table, td, fmtDateTime } from "@/components/ui";
 import { ActionForm, Hidden, Submit, TextField } from "@/components/forms";
 
@@ -20,7 +20,7 @@ export default async function Platform() {
   const t0 = performance.now();
   await one(db, "SELECT 1 AS ok");
   const ms = Math.round((performance.now() - t0) * 10) / 10;
-  const [p, chain] = await Promise.all([platformOverview(db, actor), verifyAuditChain(db)]);
+  const [p, chain, restores] = await Promise.all([platformOverview(db, actor), verifyAuditChain(db), listRestoreChecks(db, actor)]);
   const configure = hasPermission(actor, "platform.configure");
   const operate = hasPermission(actor, "platform.operate");
   const lastBackup = p.backups.find((b) => b.status === "SUCCESS" && b.verified);
@@ -61,6 +61,19 @@ export default async function Platform() {
                 <td className={`${td} text-xs`}>{fmtDateTime(b.finished_at)}</td>
                 <td className={td}><Badge status={b.status === "SUCCESS" && b.verified ? "APPROVED" : b.status === "RUNNING" ? "PENDING" : "REJECTED"} label={b.status === "SUCCESS" && b.verified ? "verified" : b.status.toLowerCase()} />{b.message && <span className="block text-xs text-muted">{b.message}</span>}</td>
                 <td className={td}>{operate && b.status === "SUCCESS" && <ActionForm action={verifyBackupAction} className=""><Hidden name="id" value={String(b.id)} /><Submit variant="secondary">Re-verify</Submit></ActionForm>}</td>
+              </tr>
+            ))}
+          </Table>
+        </Card>
+
+        <Card title="Restore drills" subtitle="A backup is proven only by restoring it: scratch database, core tables, schema version and audit hash chain, then dropped" action={operate ? <ActionForm action={restoreDrillAction} className=""><Submit variant="secondary" confirm="Restore the latest verified backup into a scratch database now? The live database is not touched.">Run restore drill</Submit></ActionForm> : undefined} bodyClass="p-0">
+          <Table head={["Started", "Backup", "Result", "Details"]} empty="No restore drill has run yet. The automation engine runs one every few days once a verified backup exists.">
+            {restores.map((r) => (
+              <tr key={r.id}>
+                <td className={`${td} text-xs`}>{fmtDateTime(r.started_at)}</td>
+                <td className={`${td} tabular-nums`}>#{r.backup_id}</td>
+                <td className={td}><Badge status={r.status === "PASSED" ? "APPROVED" : r.status === "RUNNING" ? "PENDING" : "REJECTED"} label={r.status.toLowerCase()} /></td>
+                <td className={`${td} text-xs text-ink-2`}>{r.details}</td>
               </tr>
             ))}
           </Table>

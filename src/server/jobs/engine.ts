@@ -320,6 +320,23 @@ export const JOBS: JobDef[] = [
     },
   },
   {
+    name: "system.restore-drill",
+    title: "Backup restore drill",
+    description: "Every N days (backup.restore_drill_days) restores the latest verified backup into a scratch database, checks core tables, schema version and the audit hash chain, then drops it. Failures are logged and reported to technical operators.",
+    run: async (db) => {
+      const days = await setting(db, "backup.restore_drill_days", 7);
+      const recent = await one(db, "SELECT id FROM backup_restore_checks WHERE status IN ('PASSED','FAILED','RUNNING') AND started_at > ?", new Date(Date.now() - days * 86400000).toISOString());
+      if (recent) return { processed: 0, message: `Last drill within ${days} day(s)` };
+      if (!await one(db, "SELECT id FROM backup_runs WHERE status = 'SUCCESS' AND verified = 1 LIMIT 1")) return { processed: 0, message: "No verified backup to drill" };
+      const { runRestoreDrill } = await import("../domain/platform");
+      const r = await runRestoreDrill(db, null, null);
+      if (r.status !== "PASSED") {
+        for (const u of await usersWithPermissionAt(db, "platform.operate", "org_hq")) await notify(db, u, "Backup restore drill failed", r.details ?? "See the platform console.", "/app/platform", { category: "SYSTEM", dedupeKey: `restore-drill:${r.id}` });
+      }
+      return { processed: 1, message: `Restore drill ${r.status.toLowerCase()}: ${r.details ?? ""}`.slice(0, 300) };
+    },
+  },
+  {
     name: "system.housekeeping",
     title: "Session and log housekeeping",
     description: "Removes expired sessions and sign-in attempt records older than 90 days.",

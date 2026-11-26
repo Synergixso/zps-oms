@@ -2,7 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { getDb } from "../db/connection";
 import { requireActor } from "../auth/session";
-import { createBackup, runJobsNow, setMaintenanceMode, updateSetting, verifyBackup } from "../domain/platform";
+import { createBackup, restoreDrill, runJobsNow, setMaintenanceMode, updateSetting, verifyBackup } from "../domain/platform";
 import { str, toState, type ActionState } from "./result";
 
 export async function runJobsAction(_: ActionState, fd: FormData): Promise<ActionState> {
@@ -35,6 +35,18 @@ export async function verifyBackupAction(_: ActionState, fd: FormData): Promise<
     await verifyBackup(getDb(), actor, Number(str(fd, "id")));
     revalidatePath("/app/platform");
     return { ok: true, message: "Checksum matches; the backup file is unchanged." };
+  } catch (e) {
+    revalidatePath("/app/platform");
+    return toState(e);
+  }
+}
+
+export async function restoreDrillAction(): Promise<ActionState> {
+  const actor = await requireActor();
+  try {
+    const r = await restoreDrill(getDb(), actor);
+    revalidatePath("/app/platform");
+    return r.status === "PASSED" ? { ok: true, message: `Restore drill passed: ${r.details}` } : { error: `Restore drill failed: ${r.details}` };
   } catch (e) {
     revalidatePath("/app/platform");
     return toState(e);

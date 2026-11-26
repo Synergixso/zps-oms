@@ -92,3 +92,16 @@ The test found a defect, now fixed: after a switch, the shared layout (account m
 | Route audit (production build) | **83 routes × 54 accounts, 0 server errors** |
 | Phone-width review (production build) | **27 / 27, 0 overflow** |
 | Playwright | **8 / 8** |
+
+## 8. v0.7.0 verification run (26 November 2026)
+
+| Suite | Result |
+|---|---|
+| Type check | Clean |
+| Vitest (strict SQL mode) | **127 / 127** (17 files; adds restore drill, health, strict-mode, audit-chain concurrency) |
+| Production build | Succeeded, **0 warnings** |
+| Route audit (production build) | **83 routes × 54 accounts, 0 server errors** (the first run found 12 errors: the audit-truncation defect, now fixed) |
+| Audit chain after the concurrent route audit | 2,740 new events, **0 new breaks** (`npm run verify:audit`) |
+| Phone-width review | **27 / 27, 0 overflow** |
+| Playwright | **8 / 8**; e2e database chain clean |
+| GitHub Actions | Workflow added; not yet observed on GitHub (private repository) |

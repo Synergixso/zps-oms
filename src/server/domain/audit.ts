@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import type { DB } from "../db/connection";
-import { all, one, run } from "../db/connection";
+import { all, one, run, tx } from "../db/connection";
 import { newId, nowIso } from "./core";
 
 export type AuditCategory = "AUTH" | "IAM" | "BUSINESS" | "EXPORT" | "CONFIG" | "SECURITY" | "ORG";
@@ -34,28 +34,45 @@ function computeHash(prev: string, e: Record<string, unknown>) {
   return crypto.createHash("sha256").update(canonical).digest("hex");
 }
 
-/** Appends a hash-chained audit event. Secrets are never written (keys matching REDACT_KEYS are masked). */
+/** Column widths of audit_events: values are fitted BEFORE hashing, so the stored row always matches its hash. */
+const WIDTH = { action: 80, id40: 40 } as const;
+const fit = (v: string | null | undefined, n: number) => (v == null ? null : v.length > n ? `${v.slice(0, n - 1)}…` : v);
+
+/**
+ * Appends a hash-chained audit event. Secrets are never written (keys matching REDACT_KEYS are masked).
+ *
+ * Appends are serialised through the single-row `audit_chain_head` (SELECT … FOR UPDATE inside the caller's
+ * transaction, or a short transaction of its own): a concurrent append waits until the earlier one commits or rolls
+ * back, so the chain can never fork. An over-long action is shortened and the full text kept in `details`.
+ */
 export async function audit(db: DB, input: AuditInput) {
-  const prev = (await one<{ hash: string }>(db, "SELECT hash FROM audit_events ORDER BY seq DESC LIMIT 1"))?.hash ?? GENESIS;
-  const e = {
-    id: newId("aud"),
-    occurred_at: nowIso(),
-    actor_id: input.actorId,
-    action: input.action,
-    outcome: input.outcome ?? "SUCCESS",
-    entity_type: input.entityType ?? null,
-    entity_id: input.entityId ?? null,
-    org_unit_id: input.orgUnitId ?? null,
-    category: input.category,
-    details: redact(input.details),
-  };
-  const hash = computeHash(prev, e);
-  await run(
-    db,
-    `INSERT INTO audit_events (id, occurred_at, actor_id, action, outcome, entity_type, entity_id, org_unit_id, category, details, prev_hash, hash)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
-    e.id, e.occurred_at, e.actor_id, e.action, e.outcome, e.entity_type, e.entity_id, e.org_unit_id, e.category, e.details, prev, hash,
-  );
+  const action = fit(input.action, WIDTH.action)!;
+  const details = action === input.action ? input.details : { ...(input.details ?? {}), fullAction: input.action };
+  await tx(db, async (c) => {
+    const head = await one<{ last_hash: string }>(c, "SELECT last_hash FROM audit_chain_head WHERE id = 1 FOR UPDATE");
+    const prev = head?.last_hash ?? GENESIS;
+    const e = {
+      id: newId("aud"),
+      occurred_at: nowIso(),
+      actor_id: fit(input.actorId, WIDTH.id40),
+      action,
+      outcome: input.outcome ?? "SUCCESS",
+      entity_type: fit(input.entityType, WIDTH.id40),
+      entity_id: fit(input.entityId, WIDTH.id40),
+      org_unit_id: fit(input.orgUnitId, WIDTH.id40),
+      category: input.category,
+      details: redact(details),
+    };
+    const hash = computeHash(prev, e);
+    const r = await run(
+      c,
+      `INSERT INTO audit_events (id, occurred_at, actor_id, action, outcome, entity_type, entity_id, org_unit_id, category, details, prev_hash, hash)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+      e.id, e.occurred_at, e.actor_id, e.action, e.outcome, e.entity_type, e.entity_id, e.org_unit_id, e.category, e.details, prev, hash,
+    );
+    if (head) await run(c, "UPDATE audit_chain_head SET last_hash = ?, last_seq = ? WHERE id = 1", hash, r.insertId);
+    else await run(c, "INSERT INTO audit_chain_head (id, last_hash, last_seq) VALUES (1, ?, ?)", hash, r.insertId);
+  });
 }
 
 /** Recomputes the chain; returns the first broken sequence number, if any. */

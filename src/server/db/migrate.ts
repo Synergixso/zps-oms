@@ -20,17 +20,21 @@ export interface MigrationResult {
 
 const DIR = path.join(process.cwd(), "db", "migrations");
 
+/** Strict SQL mode for the migration connection (DEC-061). Same value as ./sql-mode.ts (a test keeps them equal); this file stays import-free because it also runs directly under Node. */
+export const SQL_MODE = "STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION";
+
 export function listMigrationFiles(dir = DIR): Array<{ version: number; name: string; file: string }> {
   return fs
-    .readdirSync(dir)
+    .readdirSync(/*turbopackIgnore: true*/ dir)
     .filter((f) => /^\d{3}_[a-z0-9_]+\.sql$/.test(f))
     .sort()
-    .map((f) => ({ version: Number(f.slice(0, 3)), name: f.replace(/\.sql$/, ""), file: path.join(dir, f) }));
+    .map((f) => ({ version: Number(f.slice(0, 3)), name: f.replace(/\.sql$/, ""), file: path.join(/*turbopackIgnore: true*/ dir, f) }));
 }
 
 /** Runs pending migrations against the database in `url`. */
 export async function migrate(url: string, dir = DIR): Promise<MigrationResult> {
   const conn = await mysql.createConnection({ uri: url, multipleStatements: true });
+  await conn.query(`SET SESSION sql_mode = '${SQL_MODE}'`);
   try {
     await conn.query(`CREATE TABLE IF NOT EXISTS schema_migrations (
       version INT NOT NULL PRIMARY KEY,

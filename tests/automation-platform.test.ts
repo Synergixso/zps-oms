@@ -6,7 +6,7 @@ import { all, one, run } from "@/server/db/connection";
 import { addDays, notify, setClock, today } from "@/server/domain/core";
 import { JOBS, runAllJobs, runJob } from "@/server/jobs/engine";
 import { completeTask, listTasks, preferences, savePreferences } from "@/server/domain/tasks";
-import { createBackup, maintenanceMode, platformOverview, setMaintenanceMode, updateSetting, verifyBackup } from "@/server/domain/platform";
+import { createBackup, maintenanceMode, platformOverview, restoreDrill, setMaintenanceMode, updateSetting, verifyBackup } from "@/server/domain/platform";
 import { createManpowerRequest, getManpowerRequest, manpowerAction, publishManpowerWorkflow, setRequirement } from "@/server/domain/manpower";
 import { listTenants, provisionFormationTenant } from "@/server/domain/tenants";
 import { areaDetail, updateArea } from "@/server/domain/assignments";
@@ -100,8 +100,17 @@ describe("platform administration (Module 15)", () => {
       const row = (await one<{ id: number; verified: number; status: string }>(db, "SELECT id, verified, status FROM backup_runs ORDER BY id DESC LIMIT 1"))!;
       expect(row).toMatchObject({ verified: 1, status: "SUCCESS" });
       await verifyBackup(db, plat, row.id);
+      // Restore drill: the backup restores into a scratch database with core tables and an intact audit chain.
+      const drill = await restoreDrill(db, await actor(db, "u_sec"), row.id);
+      expect(drill.status).toBe("PASSED");
+      expect(drill.tables_found).toBeGreaterThan(40);
+      expect(drill.schema_version).toBeGreaterThanOrEqual(10);
+      expect(drill.audit_events).toBeGreaterThan(0);
+      expect(await one(db, "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE '%_restorecheck'")).toBeUndefined();
+      await expect(restoreDrill(db, await actor(db, "u_dig"), row.id)).rejects.toThrow(/not authorised/);
       fs.appendFileSync(path.join(backupDir, b.file), "-- tampered\n");
       await expect(verifyBackup(db, plat, row.id)).rejects.toThrow(/Checksum mismatch/);
+      expect((await restoreDrill(db, plat, row.id)).status).toBe("FAILED");
       await expect(createBackup(db, await actor(db, "u_dig"))).rejects.toThrow(/not authorised/);
     });
   }, 120000);
@@ -177,4 +186,33 @@ describe("tenants, areas, reports and history", () => {
     expect(n).toBeGreaterThan(0);
     expect(Number((await one<{ c: number }>(db, "SELECT COUNT(*) AS c FROM sessions WHERE user_id = 'u_lsk_sops'"))!.c)).toBe(0);
   }));
+});
+
+describe("health and readiness", () => {
+  it("reports a ready, current schema without disclosing anything sensitive", () => withDb(async (db) => {
+    const { liveness, readiness } = await import("@/server/domain/health");
+    expect(liveness().status).toBe("ok");
+    const h = await readiness(db);
+    expect(h.status).toBe("ok");
+    expect(h.checks.schema.applied).toBe(h.checks.schema.expected);
+    const text = JSON.stringify(h);
+    for (const secret of ["zps_oms", "root", "127.0.0.1", "localhost", "demo."]) expect(text).not.toContain(secret);
+    await run(db, "UPDATE app_settings SET value = 'ON' WHERE `key` = 'platform.maintenance_mode'");
+    expect((await readiness(db)).status).toBe("degraded");
+  }));
+});
+
+describe("strict SQL mode (DEC-061)", () => {
+  it("every pooled connection is strict: over-long values are rejected, never truncated", () => withDb(async (db) => {
+    expect((await one<{ m: string }>(db, "SELECT @@SESSION.sql_mode AS m"))!.m).toContain("STRICT_TRANS_TABLES");
+    await expect(run(db, "UPDATE app_settings SET `key` = ? WHERE `key` = 'request.sla_days'", "x".repeat(200))).rejects.toThrow(/too long/i);
+  }));
+});
+
+describe("SQL mode consistency", () => {
+  it("migrations and application connections use the same strict mode", async () => {
+    const { SQL_MODE: app } = await import("@/server/db/sql-mode");
+    const { SQL_MODE: mig } = await import("@/server/db/migrate");
+    expect(mig).toBe(app);
+  });
 });

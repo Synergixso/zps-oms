@@ -2,6 +2,19 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.7.0] — 2026-11-26 — Operations: restore drills, health, CI, strict SQL
+### Added
+- Backup restore drills (migration 010): manual *Run restore drill* on System health and an automated drill every `backup.restore_drill_days` (default 7); restores into a scratch database, checks core tables, schema version and the audit hash chain, then drops it; failures notify technical operators.
+- `GET /api/health` (readiness, 503 when degraded) and `?probe=live` (liveness) for uptime monitoring; no sensitive data.
+- GitHub Actions CI (`.github/workflows/ci.yml`): type check, tests on MariaDB 10.4, production-dependency audit, build.
+### Fixed
+- **Audit chain forks under concurrency**: appends are now serialised through `audit_chain_head` (migration 011) inside the caller's transaction, so concurrent requests can no longer chain onto the same predecessor.
+- **Audit records truncated after hashing**: values are fitted to their columns before hashing (full action kept in details). Found because strict SQL mode turned the silent truncation into an error.
+- `scripts/verify-audit-chain.mjs` (`npm run verify:audit`): independent read-only verifier reporting content and link breaks separately.
+### Changed
+- Every database connection runs in strict SQL mode (XAMPP's default is non-strict), so over-long or invalid values are rejected instead of truncated.
+- Production build is warning-free: dynamic file access for migrations, backups and tools is excluded from build-time tracing.
+
 ## [0.6.0] — 2026-11-26 — Stores reporting, scheduled delivery, decision chains, Excel
 ### Added
 - Stores reports: stock position, movements (90 days), requisitions by store / requesting unit / status.

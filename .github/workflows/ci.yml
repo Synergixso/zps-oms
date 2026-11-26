@@ -1,0 +1,63 @@
+# ZPS-OMS continuous integration (GitHub Actions; synthetic data only).
+# Runs on every push and pull request: type check, unit/integration tests against MariaDB 10.4
+# (the XAMPP engine), dependency audit of production packages, and a production build.
+# Browser journeys (Playwright, Edge) and the route audit run locally against XAMPP (docs/development/TEST_RESULTS.md).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Debian container: its MariaDB client (mysqldump / mysql) matches the server, for backup and restore-drill tests.
+    container: node:22-bookworm
+    services:
+      mariadb:
+        image: mariadb:10.4
+        env:
+          MYSQL_ROOT_PASSWORD: ci_root_synthetic
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pci_root_synthetic"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      # Throw-away CI database credentials (service container only; never used anywhere else).
+      DATABASE_URL: mysql://root:ci_root_synthetic@mariadb:3306/zps_oms_ci
+      DATABASE_URL_TEST: mysql://root:ci_root_synthetic@mariadb:3306/zps_oms_test
+      MYSQLDUMP_PATH: mysqldump
+      MYSQL_CLIENT_PATH: mysql
+      ZPS_AUTOMATION: "off"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install MariaDB client tools
+        run: apt-get update && apt-get install -y --no-install-recommends mariadb-client
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Unit and integration tests (MariaDB 10.4)
+        run: npm test
+
+      - name: Dependency audit (production packages)
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Production build
+        run: npm run build
