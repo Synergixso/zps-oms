@@ -4,9 +4,10 @@ import { loadOr404 } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
 import { hasPermission } from "@/server/domain/policy";
 import { getSavedReport, runReport, shapeRows } from "@/server/domain/reports";
-import { saveReportAction } from "@/server/actions/reports";
+import { saveReportAction, scheduleReportAction } from "@/server/actions/reports";
+import { FREQUENCIES, FREQUENCY_LABEL } from "@/server/domain/report-schedules";
 import { Card, PageHeader, Table, td } from "@/components/ui";
-import { ActionForm, Hidden, Submit, TextField } from "@/components/forms";
+import { ActionForm, Hidden, Select, Submit, TextField } from "@/components/forms";
 
 export const metadata = { title: "Report" };
 
@@ -69,13 +70,25 @@ export default async function ReportView({ params, searchParams }: { params: Pro
               <form method="post" action={`/app/reports/${def.code}/export`} className="space-y-3">
                 {shaped.cols.map((f) => <input key={f} type="hidden" name="fields" value={f} />)}
                 <p className="text-xs text-muted">Exports the columns shown ({shaped.cols.length}).</p>
-                <button type="submit" className="w-full rounded-md bg-zp-green px-3 py-2 text-sm font-semibold text-white hover:bg-zp-green-dark">Download CSV (audited)</button>
+                <button type="submit" name="format" value="xlsx" className="w-full rounded-md bg-zp-green px-3 py-2 text-sm font-semibold text-white hover:bg-zp-green-dark">Download Excel (.xlsx)</button>
+                <button type="submit" name="format" value="csv" className="w-full rounded-md border border-line-2 px-3 py-2 text-sm font-semibold hover:bg-slate-50">Download CSV</button>
                 <p className="text-xs text-muted">Each export is recorded in the audit log and export register.</p>
               </form>
             ) : (
               <p className="text-sm text-muted">Your role does not include report export.</p>
             )}
           </Card>
+          {canExport && (
+            <Card title="Schedule delivery" subtitle="Generated at 06:00 Lusaka time and delivered inside ZPS-OMS (no e-mail)">
+              <ActionForm action={scheduleReportAction} className="space-y-2" resetOnSuccess>
+                <Hidden name="code" value={def.code} />
+                {saved?.report_code === def.code && <Hidden name="savedReportId" value={saved.id} />}
+                <Select label="Frequency" name="frequency" required defaultValue="WEEKLY" options={FREQUENCIES.map((f) => ({ value: f, label: FREQUENCY_LABEL[f] }))} />
+                <p className="text-xs text-muted">{saved?.report_code === def.code ? `Uses your saved view “${saved.name}”.` : "Uses all approved columns. Save a custom view first to schedule only some columns."} Runs under your current role context; each delivery is audited like a download.</p>
+                <Submit variant="secondary">Schedule</Submit>
+              </ActionForm>
+            </Card>
+          )}
         </div>
       </div>
     </>

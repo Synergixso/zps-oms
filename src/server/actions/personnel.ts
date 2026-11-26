@@ -385,3 +385,15 @@ export async function publishWorkflowAction(_: ActionState, fd: FormData): Promi
   }
   return done("New workflow version published; requests already submitted keep their version.", "/app/workflows");
 }
+
+export async function publishDecisionWorkflowAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  const actor = await requireActor();
+  try {
+    const steps = [1, 2, 3].map((i) => ({ authority: str(fd, `authority_${i}`), label: str(fd, `label_${i}`) })).filter((x) => x.authority && x.label);
+    const { publishDecisionWorkflow } = await import("../domain/decision-chains");
+    await publishDecisionWorkflow(getDb(), actor, str(fd, "domain"), steps, str(fd, "note"));
+  } catch (e) {
+    return toState(e);
+  }
+  return done("New decision chain version published; matters already raised keep their version.", "/app/workflows");
+}

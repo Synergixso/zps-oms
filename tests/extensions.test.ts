@@ -87,6 +87,6 @@ describe("saved custom reports (Module 12)", () => {
     expect((await listSavedReports(db, await actor(db, "u_hqstaff"))).some((r) => r.id === id)).toBe(false);
     await deleteSavedReport(db, naa, id);
     expect(await getSavedReport(db, naa, id)).toBeUndefined();
-    expect(REPORTS.length).toBe(11);
+    expect(REPORTS.length).toBe(14);
   }));
 });

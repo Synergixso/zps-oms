@@ -245,6 +245,65 @@ export const JOBS: JobDef[] = [
     },
   },
   {
+    name: "stores.reorder-and-requisitions",
+    title: "General stores reorder and requisition reminders",
+    description: "Gives store keepers a task for every item at or below its reorder level, reminds delegated approvers of requisitions awaiting a decision and store keepers of approved requisitions not yet issued; closes those tasks once resolved.",
+    run: async (db) => {
+      const t = today();
+      const decideDays = await setting(db, "stores.requisition_decision_days", 3);
+      const issueDays = await setting(db, "stores.requisition_issue_days", 2);
+      let n = 0;
+      // Reorder: one open task per item and keeper while the item stays at or below its reorder level.
+      const low = await all<{ id: string; code: string; name: string; org_unit_id: string; quantity_on_hand: number; reorder_level: number; unit_of_measure: string }>(db,
+        "SELECT id, code, name, org_unit_id, quantity_on_hand, reorder_level, unit_of_measure FROM store_items WHERE status = 'ACTIVE' AND quantity_on_hand <= reorder_level");
+      const lowIds = new Set(low.map((i) => i.id));
+      for (const i of low) {
+        for (const u of await usersWithPermissionAt(db, "stores.manage", i.org_unit_id)) {
+          if (await createTask(db, { userId: u, title: `Reorder ${i.code}: ${i.name}`, body: `${i.quantity_on_hand} ${i.unit_of_measure} on hand; reorder level ${i.reorder_level}.`, link: `/app/stores/${i.id}`, category: "ASSET", sourceKey: `stores-reorder:${i.id}:${u}` })) n++;
+        }
+      }
+      for (const o of await all<{ source_key: string }>(db, "SELECT DISTINCT source_key FROM administrative_tasks WHERE status = 'OPEN' AND source_key LIKE 'stores-reorder:%'")) {
+        const itemId = o.source_key.split(":")[1];
+        if (!lowIds.has(itemId)) await closeTasks(db, `stores-reorder:${itemId}:`);
+      }
+      // Requisitions waiting too long for a decision (delegated approvers, never the requester) or for issue (store keepers).
+      const reqs = await all<{ id: string; reference: string; status: string; requesting_unit_id: string; store_unit_id: string; requested_by: string; submitted_at: string | null; approved_at: string | null; purpose: string }>(db,
+        "SELECT id, reference, status, requesting_unit_id, store_unit_id, requested_by, submitted_at, approved_at, purpose FROM store_requisitions WHERE status IN ('SUBMITTED','APPROVED')");
+      const open = new Set<string>();
+      for (const r of reqs) {
+        if (r.status === "SUBMITTED" && r.submitted_at && r.submitted_at.slice(0, 10) <= addDays(t, -decideDays)) {
+          open.add(`srq-decide:${r.id}`);
+          for (const u of await delegatesAt(db, "STORES", r.requesting_unit_id)) {
+            if (u === r.requested_by) continue;
+            if (await createTask(db, { userId: u, title: `Decide stores requisition ${r.reference}`, body: r.purpose, link: `/app/stores/requisitions/${r.id}`, category: "APPROVAL", dueDate: t, sourceKey: `srq-decide:${r.id}:${u}` })) n++;
+          }
+        }
+        if (r.status === "APPROVED" && r.approved_at && r.approved_at.slice(0, 10) <= addDays(t, -issueDays)) {
+          open.add(`srq-issue:${r.id}`);
+          for (const u of await usersWithPermissionAt(db, "stores.manage", r.store_unit_id)) {
+            if (u === r.requested_by) continue;
+            if (await createTask(db, { userId: u, title: `Issue stores for ${r.reference}`, body: r.purpose, link: `/app/stores/requisitions/${r.id}`, category: "ASSET", dueDate: t, sourceKey: `srq-issue:${r.id}:${u}` })) n++;
+          }
+        }
+      }
+      for (const o of await all<{ source_key: string }>(db, "SELECT DISTINCT source_key FROM administrative_tasks WHERE status = 'OPEN' AND (source_key LIKE 'srq-decide:%' OR source_key LIKE 'srq-issue:%')")) {
+        const [kind, id] = o.source_key.split(":");
+        if (!open.has(`${kind}:${id}`)) await closeTasks(db, `${kind}:${id}:`);
+      }
+      return { processed: n, message: `${low.length} item(s) at or below reorder level; ${open.size} overdue requisition step(s)` };
+    },
+  },
+  {
+    name: "reports.scheduled-delivery",
+    title: "Scheduled report delivery",
+    description: "Generates due scheduled reports through the audited export path under the owner's role context, delivers them in the application, suspends schedules that are no longer authorised and removes deliveries older than 30 days.",
+    run: async (db) => {
+      const { runDueSchedules } = await import("../domain/report-schedules");
+      const r = await runDueSchedules(db);
+      return { processed: r.delivered + r.suspended + r.expired, message: `${r.delivered} delivered, ${r.suspended} suspended, ${r.expired} expired` };
+    },
+  },
+  {
     name: "system.backup-monitor",
     title: "Backup monitoring",
     description: "Warns platform administrators when the last verified database backup is older than the configured age.",
@@ -254,7 +313,7 @@ export const JOBS: JobDef[] = [
       const stale = !last || Date.now() - Date.parse(last.finished_at) > maxAge * 3600000;
       if (!stale) return { processed: 0, message: `Last verified backup ${last!.finished_at}` };
       let n = 0;
-      for (const u of await usersWithPermissionAt(db, "platform.configure", "org_hq")) {
+      for (const u of await usersWithPermissionAt(db, "platform.operate", "org_hq")) {
         if (await notify(db, u, "Database backup overdue", last ? `The last verified backup finished ${last.finished_at}.` : "No verified backup has been recorded.", "/app/platform", { category: "SYSTEM", dedupeKey: `backup:${today()}` })) n++;
       }
       return { processed: n, message: last ? `Last verified backup ${last.finished_at}` : "No verified backup" };

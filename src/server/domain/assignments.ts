@@ -22,6 +22,7 @@ import { all, one, run, tx } from "../db/connection";
 import { audit } from "./audit";
 import { addDays, conflict, forbidden, invalid, newId, notFound, notify, nowIso, today } from "./core";
 import { type Actor, approvalUnitFor, can, requirePermission, unitsFor } from "./policy";
+import { activeChainId, currentStep, levelApprover, type ChainState } from "./decision-chains";
 import { eligibilityOf, recordDisposition, type Disposition } from "./personnel";
 
 export const CURRENT_STATUSES = ["PENDING_APPROVAL", "APPROVED", "ACTIVE", "TRANSFER_PENDING"] as const;
@@ -92,6 +93,16 @@ async function nextRef(db: DB, prefix: string, table: string): Promise<string> {
   const r = await one<{ m: string | null }>(db, `SELECT MAX(reference) AS m FROM ${table} WHERE reference LIKE ?`, `${prefix}-${year}-%`);
   const n = r?.m ? Number(r.m.split("-")[2]) + 1 : 1;
   return `${prefix}-${year}-${String(n).padStart(5, "0")}`;
+}
+
+/** Chain state of a pending assignment approval / transfer release (Module 09 configurable chains). */
+async function assignmentChain(db: DB, a: { id: string; responsible_unit_id: string; created_by: string }): Promise<ChainState> {
+  const r = (await one<{ workflow_id: string | null; current_level: number }>(db, "SELECT workflow_id, current_level FROM personnel_assignments WHERE id = ?", a.id))!;
+  return { domain: "ASSIGNMENT", workflowId: r.workflow_id, level: r.current_level, baseUnitId: a.responsible_unit_id, entityId: a.id, originatorId: a.created_by };
+}
+async function releaseChain(db: DB, t: { id: string; releasing_unit_id: string; initiated_by: string }): Promise<ChainState> {
+  const r = (await one<{ workflow_id: string | null; current_level: number }>(db, "SELECT workflow_id, current_level FROM assignment_transfers WHERE id = ?", t.id))!;
+  return { domain: "TRANSFER_RELEASE", workflowId: r.workflow_id, level: r.current_level, baseUnitId: t.releasing_unit_id, entityId: t.id, originatorId: t.initiated_by };
 }
 
 async function notifyApprovers(db: DB, unitId: string, title: string, body: string, link: string) {
@@ -312,8 +323,12 @@ export async function assignmentDetail(db: DB, actor: Actor, id: string) {
   const transfers = await all<TransferRow>(db, `${TR_SELECT} WHERE t.assignment_id = ? OR t.new_assignment_id = ? ORDER BY t.initiated_at`, id, id);
   const dispositions = await all<{ seq: number; previous_status: string | null; new_status: string; reason: string; effective_date: string; actor_name: string | null; created_at: string }>(db,
     "SELECT d.*, u.display_name AS actor_name FROM disposition_history d LEFT JOIN users u ON u.id = d.authorised_by WHERE d.assignment_id = ? ORDER BY d.seq", id);
-  const approvalUnit = await approvalUnitFor(db, actor, "ASSIGNMENT", a.responsible_unit_id);
-  return { assignment: a, tenure, policy, actions, renewals, exceptions, transfers, dispositions, canApprove: !!approvalUnit };
+  // Pending approval follows the configured chain level; exceptions and renewals stay single delegated decisions.
+  const chain = a.status === "PENDING_APPROVAL" ? await assignmentChain(db, a) : null;
+  const approvalUnit = chain ? await levelApprover(db, actor, chain) : await approvalUnitFor(db, actor, "ASSIGNMENT", a.responsible_unit_id);
+  const level = chain ? await currentStep(db, chain) : null;
+  return { assignment: a, tenure, policy, actions, renewals, exceptions, transfers, dispositions, canApprove: !!approvalUnit,
+    approvalLevel: level && chain ? { level: chain.level, total: level.total, label: level.step.label } : null };
 }
 
 // ── Propose / approve ───────────────────────────────────────────────────────
@@ -357,6 +372,7 @@ async function insertAssignment(db: DB, input: {
     id, area.tenant_id, ref, input.personnelId, person.home_unit_id, area.responsible_unit_id, input.areaId, input.requestId || null, input.rosterVersionId ?? null,
     input.commencementDate, input.commencementDate, addDays(input.commencementDate, policy.minimumDays), input.status, input.overlapExceptionId || null,
     input.authorisedBy ?? null, input.authorisedUnitId ?? null, input.authorisedBy ? t : null, input.notes || null, input.actorId, t, t);
+  if (input.status === "PENDING_APPROVAL") await run(db, "UPDATE personnel_assignments SET workflow_id = ? WHERE id = ?", await activeChainId(db, "ASSIGNMENT"), id);
   if (input.overlapExceptionId) await run(db, "UPDATE assignment_exceptions SET status = 'USED' WHERE id = ?", input.overlapExceptionId);
   const disp: Disposition = input.status === "PENDING_APPROVAL" ? "AWAITING_APPROVAL" : input.status === "APPROVED" ? "APPROVED_PENDING" : "ACTIVE_ASSIGNMENT";
   await recordDisposition(db, { personnelId: input.personnelId, status: disp, reason: `Assignment ${ref} to ${area.name}`, actorId: input.actorId, effectiveDate: input.status === "ACTIVE" ? input.commencementDate : today(), assignmentId: id, reference: ref });
@@ -386,13 +402,28 @@ export async function proposeAssignment(db: DB, actor: Actor, input: z.input<typ
 export async function decideAssignment(db: DB, actor: Actor, id: string, decision: "APPROVE" | "REJECT", comment: string) {
   const a = await getAssignment(db, actor, id);
   if (a.status !== "PENDING_APPROVAL") throw conflict("Only assignments awaiting approval can be decided.");
-  const unit = await approvalUnitFor(db, actor, "ASSIGNMENT", a.responsible_unit_id);
-  if (!unit) {
-    await audit(db, { actorId: actor.userId, action: "authz.denied:assignment.approve", outcome: "DENIED", category: "SECURITY", entityType: "assignment", entityId: id });
-    throw forbidden("You do not hold delegated assignment approval authority for this unit.");
-  }
   if (a.created_by === actor.userId) throw forbidden("You cannot approve an assignment you proposed (separation of duties).");
+  const chain = await assignmentChain(db, a);
+  const unit = await levelApprover(db, actor, chain);
+  if (!unit) {
+    await audit(db, { actorId: actor.userId, action: "authz.denied:assignment.approve", outcome: "DENIED", category: "SECURITY", entityType: "assignment", entityId: id, details: { level: chain.level } });
+    throw forbidden("You do not hold delegated assignment approval authority for this approval level, or you already decided an earlier level.");
+  }
   if (decision === "REJECT" && comment.trim().length < 5) throw invalid("Record the reason for rejection.");
+  const step = await currentStep(db, chain);
+  const multi = step.total > 1;
+  if (decision === "APPROVE" && chain.level < step.total) {
+    // Intermediate level: record it and pass the matter to the next level.
+    await tx(db, async (db) => {
+      const n = await run(db, "UPDATE personnel_assignments SET workflow_id = COALESCE(workflow_id, ?), current_level = current_level + 1, updated_at = ?, version = version + 1 WHERE id = ? AND status = 'PENDING_APPROVAL' AND current_level = ?", step.chainId, nowIso(), id, chain.level);
+      if (!n.changes) throw conflict("This assignment was decided by someone else. Reload and try again.");
+      await logAction(db, "assignment", id, `APPROVE_L${chain.level}`, a.status, a.status, actor.userId, unit, `${step.step.label}${comment.trim() ? ` — ${comment.trim()}` : ""}`);
+      await audit(db, { actorId: actor.userId, action: "assignment.approve_level", category: "BUSINESS", entityType: "assignment", entityId: id, orgUnitId: a.responsible_unit_id, details: { ref: a.reference, level: chain.level, of: step.total } });
+    });
+    const next = await currentStep(db, { ...chain, level: chain.level + 1 });
+    await notifyApprovers(db, next.unitId, `Assignment ${a.reference}: level ${chain.level + 1} approval needed`, next.step.label, `/app/assignments/${id}`);
+    return;
+  }
   await tx(db, async (db) => {
     await lockPerson(db, a.personnel_id);
     if (decision === "APPROVE") {
@@ -401,7 +432,7 @@ export async function decideAssignment(db: DB, actor: Actor, id: string, decisio
       const to = a.commencement_date <= today() ? "ACTIVE" : "APPROVED";
       await run(db, "UPDATE personnel_assignments SET status = ?, authorised_by = ?, authorised_unit_id = ?, authorised_at = ?, updated_at = ?, version = version + 1 WHERE id = ?", to, actor.userId, unit, nowIso(), nowIso(), id);
       await recordDisposition(db, { personnelId: a.personnel_id, status: to === "ACTIVE" ? "ACTIVE_ASSIGNMENT" : "APPROVED_PENDING", reason: `Assignment ${a.reference} approved`, actorId: actor.userId, assignmentId: id, reference: a.reference });
-      await logAction(db, "assignment", id, "APPROVE", a.status, to, actor.userId, unit, comment);
+      await logAction(db, "assignment", id, multi ? `APPROVE_L${chain.level}` : "APPROVE", a.status, to, actor.userId, unit, comment);
     } else {
       await run(db, "UPDATE personnel_assignments SET status = 'REJECTED', updated_at = ?, version = version + 1 WHERE id = ?", nowIso(), id);
       await recordDisposition(db, { personnelId: a.personnel_id, status: "AVAILABLE_HOME", reason: `Assignment ${a.reference} rejected: ${comment.trim()}`, actorId: actor.userId, assignmentId: id, reference: a.reference });
@@ -605,11 +636,14 @@ export async function getTransfer(db: DB, actor: Actor, id: string) {
   await requirePermission(db, actor, "assignment.view");
   const t = await one<TransferRow & { home_unit_id: string }>(db, `${TR_SELECT.replace("SELECT t.*,", "SELECT t.*, a.home_unit_id,")} WHERE t.id = ?`, id);
   if (!t || ![t.releasing_unit_id, t.receiving_unit_id, t.home_unit_id].some((u) => can(actor, "assignment.view", u))) throw notFound();
-  const canRelease = t.status === "PENDING_RELEASE" && t.initiated_by !== actor.userId && !!(await approvalUnitFor(db, actor, "ASSIGNMENT", t.releasing_unit_id));
+  const chain = t.status === "PENDING_RELEASE" ? await releaseChain(db, t) : null;
+  const canRelease = !!chain && !!(await levelApprover(db, actor, chain));
+  const step = chain ? await currentStep(db, chain) : null;
+  const releaseLevel = chain && step ? { level: chain.level, total: step.total, label: step.step.label } : null;
   const canAccept = t.status === "PENDING_ACCEPTANCE" && t.initiated_by !== actor.userId && (can(actor, "assignment.receive", t.receiving_unit_id) || !!(await approvalUnitFor(db, actor, "ASSIGNMENT", t.receiving_unit_id)));
   const actions = await all<{ seq: number; action: string; comment: string | null; actor_name: string; created_at: string }>(db,
     "SELECT x.*, u.display_name AS actor_name FROM approval_actions x JOIN users u ON u.id = x.actor_id WHERE x.entity_type = 'transfer' AND x.entity_id = ? ORDER BY x.seq", id);
-  return { transfer: t, canRelease, canAccept, actions };
+  return { transfer: t, canRelease, canAccept, actions, releaseLevel };
 }
 
 export const transferSchema = z.object({
@@ -637,6 +671,7 @@ export async function initiateTransfer(db: DB, actor: Actor, assignmentId: strin
     await run(db, `INSERT INTO assignment_transfers (id, reference, assignment_id, personnel_id, from_area_id, to_area_id, releasing_unit_id, receiving_unit_id, justification, proposed_date, exception_id, status, initiated_by, initiated_at)
                    VALUES (?,?,?,?,?,?,?,?,?,?,?, 'PENDING_RELEASE', ?, ?)`,
       id, ref, assignmentId, a.personnel_id, a.area_id, d.toAreaId, a.responsible_unit_id, to.responsible_unit_id, d.justification, d.proposedDate, ex?.id ?? null, actor.userId, nowIso());
+    await run(db, "UPDATE assignment_transfers SET workflow_id = ? WHERE id = ?", await activeChainId(db, "TRANSFER_RELEASE"), id);
     await run(db, "UPDATE personnel_assignments SET status = 'TRANSFER_PENDING', updated_at = ?, version = version + 1 WHERE id = ?", nowIso(), assignmentId);
     await recordDisposition(db, { personnelId: a.personnel_id, status: "TRANSFER_PENDING", reason: `Transfer ${ref} to ${to.name} initiated`, actorId: actor.userId, assignmentId, reference: ref });
     await logAction(db, "transfer", id, "INITIATE", null, "PENDING_RELEASE", actor.userId, a.responsible_unit_id, d.justification);
@@ -657,12 +692,26 @@ export async function releaseDecision(db: DB, actor: Actor, transferId: string, 
   const { transfer: t, canRelease } = await getTransfer(db, actor, transferId);
   if (t.status !== "PENDING_RELEASE") throw conflict("This transfer is not awaiting a releasing decision.");
   if (t.initiated_by === actor.userId) throw forbidden("You cannot decide a transfer you initiated (separation of duties).");
-  if (!canRelease) throw forbidden("You do not hold delegated assignment approval authority for the releasing unit.");
+  if (!canRelease) throw forbidden("You do not hold delegated assignment approval authority for this releasing level, or you already decided an earlier level.");
   if (comment.trim().length < 5) throw invalid("Record the releasing decision note.");
+  const chain = await releaseChain(db, t);
+  const step = await currentStep(db, chain);
+  const releaser = (await levelApprover(db, actor, chain))!;
+  if (decision === "APPROVE" && chain.level < step.total) {
+    await tx(db, async (db) => {
+      const n = await run(db, "UPDATE assignment_transfers SET workflow_id = COALESCE(workflow_id, ?), current_level = current_level + 1 WHERE id = ? AND status = 'PENDING_RELEASE' AND current_level = ?", step.chainId, transferId, chain.level);
+      if (!n.changes) throw conflict("This transfer was decided by someone else. Reload and try again.");
+      await logAction(db, "transfer", transferId, `RELEASE_APPROVED_L${chain.level}`, "PENDING_RELEASE", "PENDING_RELEASE", actor.userId, releaser, `${step.step.label} — ${comment.trim()}`);
+      await audit(db, { actorId: actor.userId, action: "transfer.release.approve_level", category: "BUSINESS", entityType: "transfer", entityId: transferId, orgUnitId: t.releasing_unit_id, details: { level: chain.level, of: step.total } });
+    });
+    const next = await currentStep(db, { ...chain, level: chain.level + 1 });
+    await notifyApprovers(db, next.unitId, `Transfer ${t.reference}: level ${chain.level + 1} releasing decision needed`, next.step.label, `/app/transfers/${transferId}`);
+    return;
+  }
   await tx(db, async (db) => {
     if (decision === "APPROVE") {
       await run(db, "UPDATE assignment_transfers SET status = 'PENDING_ACCEPTANCE', released_by = ?, released_at = ? WHERE id = ?", actor.userId, nowIso(), transferId);
-      await logAction(db, "transfer", transferId, "RELEASE_APPROVED", "PENDING_RELEASE", "PENDING_ACCEPTANCE", actor.userId, t.releasing_unit_id, comment);
+      await logAction(db, "transfer", transferId, step.total > 1 ? `RELEASE_APPROVED_L${chain.level}` : "RELEASE_APPROVED", "PENDING_RELEASE", "PENDING_ACCEPTANCE", actor.userId, releaser, comment);
     } else {
       await run(db, "UPDATE assignment_transfers SET status = 'REJECTED', released_by = ?, released_at = ?, decision_comment = ? WHERE id = ?", actor.userId, nowIso(), comment.trim(), transferId);
       await revertTransfer(db, t, actor.userId, `Transfer ${t.reference} not released: ${comment.trim()}`);
@@ -760,12 +809,18 @@ export async function assignmentInbox(db: DB, actor: Actor) {
        FROM personnel_assignments a JOIN personnel_records p ON p.id = a.personnel_id JOIN operational_areas ar ON ar.id = a.area_id WHERE a.status = 'ACTIVE' AND p.disposition_status IN ('REVIEW_DUE','RENEWAL_PENDING')
      LIMIT 500`);
   const out: Array<(typeof pending)[number] & { href: string }> = [];
-  for (const r of pending) if (r.created_by !== actor.userId && (await approvalUnitFor(db, actor, "ASSIGNMENT", r.responsible_unit_id))) out.push({ ...r, href: `/app/assignments/${r.id}` });
+  for (const r of pending) {
+    if (r.created_by === actor.userId) continue;
+    const ok = r.kind === "Assignment approval"
+      ? await levelApprover(db, actor, await assignmentChain(db, r))
+      : await approvalUnitFor(db, actor, "ASSIGNMENT", r.responsible_unit_id);
+    if (ok) out.push({ ...r, href: `/app/assignments/${r.id}` });
+  }
   const transfers = await all<TransferRow>(db, `${TR_SELECT} WHERE t.status IN ('PENDING_RELEASE','PENDING_ACCEPTANCE') LIMIT 300`);
   for (const t of transfers) {
     if (t.initiated_by === actor.userId) continue;
     const ok = t.status === "PENDING_RELEASE"
-      ? !!(await approvalUnitFor(db, actor, "ASSIGNMENT", t.releasing_unit_id))
+      ? !!(await levelApprover(db, actor, await releaseChain(db, t)))
       : can(actor, "assignment.receive", t.receiving_unit_id) || !!(await approvalUnitFor(db, actor, "ASSIGNMENT", t.receiving_unit_id));
     if (ok) out.push({ id: t.id, reference: t.reference, full_name: t.full_name, area_name: `${t.from_area_name} → ${t.to_area_name}`, responsible_unit_id: t.releasing_unit_id, created_by: t.initiated_by, kind: t.status === "PENDING_RELEASE" ? "Transfer: releasing decision" : "Transfer: receiving acceptance", href: `/app/transfers/${t.id}` });
   }

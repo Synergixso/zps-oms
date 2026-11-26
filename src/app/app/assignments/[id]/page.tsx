@@ -102,7 +102,7 @@ export default async function AssignmentDetail({ params }: { params: Promise<{ i
 
         <div className="space-y-4">
           {a.status === "PENDING_APPROVAL" && d.canApprove && a.created_by !== actor.userId && (
-            <Card title="Approval decision">
+            <Card title="Approval decision" subtitle={d.approvalLevel && d.approvalLevel.total > 1 ? `Level ${d.approvalLevel.level} of ${d.approvalLevel.total}: ${d.approvalLevel.label}` : undefined}>
               <ActionForm action={assignmentWorkflowAction}>
                 <Hidden name="id" value={a.id} />
                 <TextArea label="Comment" name="comment" rows={2} />

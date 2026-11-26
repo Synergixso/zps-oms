@@ -38,6 +38,8 @@ Never: 01 Superadmin, 06 HQ Tech, 07/18/24 local system administrators (TECHNICA
 
 Manpower approval chains remain versioned and configurable (`workflow.configure`, held by 04 Commissioner – Operations HQ); a request keeps the chain version active when it was submitted (DEC-045).
 
+Since v0.6.0 the same applies to **assignment approval** and **transfer release** (DEC-058): 1–3 levels, each decided by an ASSIGNMENT delegation at the responsible/releasing unit or at HQ; no officer decides two levels of one matter; the default version 1 is a single level.
+
 ## 5. Evidence
 
 `tests/three-tier-roles.test.ts` (stores: requester refused, Station Inspector refused, commander refused without delegation, then permitted), `tests/access-control.test.ts` TS-03 (approval only after a recorded delegation), TS-15 (proposer cannot approve), `tests/auth-scope.test.ts` (delegations follow the hierarchy, not rank).

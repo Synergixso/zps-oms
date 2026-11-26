@@ -190,3 +190,46 @@ describe("general stores", () => {
     await expect(createRequisition(db, await actor(db, "u_rao"), { requestingUnitId: "org_cb_mufulira", storeUnitId: "org_cb_kitwe", purpose: "Cross-district attempt", lines: [{ itemId: item.id, quantity: 1 }] })).rejects.toThrow(/not authorised|own store/);
   }));
 });
+
+describe("stores reports, automation and HQ technical operations", () => {
+  it("stores reports are offered to stores holders only and stay within scope", () => withDb(async (db) => {
+    const { availableReports, runReport } = await import("@/server/domain/reports");
+    const keeper = await actor(db, "u_kit_stores");
+    expect(availableReports(keeper).map((r) => r.code)).toEqual(expect.arrayContaining(["STORES_STOCK", "STORES_MOVEMENTS", "STORES_REQUISITIONS"]));
+    expect(availableReports(await actor(db, "u_kitc_tech")).map((r) => r.code)).toEqual([]);
+    const stock = (await runReport(db, keeper, "STORES_STOCK")).rows;
+    expect(stock.length).toBeGreaterThan(0);
+    expect(stock.every((r) => String(r.store).startsWith("Kitwe District"))).toBe(true);
+    const total = stock.reduce((n, r) => n + Number(r.quantity_on_hand), 0);
+    expect(total).toBe(Number((await one<{ q: number }>(db, "SELECT SUM(quantity_on_hand) q FROM store_items WHERE org_unit_id = 'org_cb_kitwe' AND status = 'ACTIVE'"))!.q));
+    await expect(runReport(db, await actor(db, "u_mu_sec"), "STORES_STOCK")).rejects.toThrow(/not authorised/);
+  }));
+
+  it("the stores job raises reorder and overdue-requisition tasks and closes them once resolved", () => withDb(async (db) => {
+    const { JOB_BY_NAME } = await import("@/server/jobs/engine");
+    const job = JOB_BY_NAME["stores.reorder-and-requisitions"];
+    const usb = (await one<{ id: string }>(db, "SELECT id FROM store_items WHERE code = 'SYN-STO-4002'"))!; // 0 on hand, reorder level 2
+    await job.run(db);
+    expect((await one<{ c: number }>(db, "SELECT COUNT(*) c FROM administrative_tasks WHERE user_id = 'u_kitc_stores' AND status = 'OPEN' AND source_key LIKE ?", `stores-reorder:${usb.id}:%`))!.c).toBe(1);
+    // A requisition submitted 5 days ago and still undecided reaches the delegated approver, not the requester.
+    const req = (await one<{ id: string; requested_by: string }>(db, "SELECT id, requested_by FROM store_requisitions WHERE status = 'SUBMITTED' AND requesting_unit_id = 'org_cb_kitwe_central' LIMIT 1"))!;
+    await run(db, "UPDATE store_requisitions SET submitted_at = ? WHERE id = ?", new Date(Date.now() - 5 * 864e5).toISOString(), req.id);
+    await job.run(db);
+    const deciders = (await all<{ user_id: string }>(db, "SELECT user_id FROM administrative_tasks WHERE status = 'OPEN' AND source_key LIKE ?", `srq-decide:${req.id}:%`)).map((r) => r.user_id);
+    expect(deciders).toContain("u_kitc_cmd");
+    expect(deciders).not.toContain(req.requested_by);
+    // Resolution closes the tasks on the next run.
+    await recordMovement(db, await actor(db, "u_kitc_stores"), usb.id, { type: "RECEIPT", quantity: 10, reference: "SYN-GRV-T2", counterparty: "Supplier" });
+    await requisitionAction(db, await actor(db, "u_kitc_cmd"), req.id, "REJECT", { comment: "Not required this month (synthetic)." });
+    await job.run(db);
+    expect((await one<{ c: number }>(db, "SELECT COUNT(*) c FROM administrative_tasks WHERE status = 'OPEN' AND (source_key LIKE ? OR source_key LIKE ?)", `stores-reorder:${usb.id}:%`, `srq-decide:${req.id}:%`))!.c).toBe(0);
+  }));
+
+  it("HQ Tech operates jobs (platform.operate) but cannot change settings (platform.configure)", () => withDb(async (db) => {
+    const { runJobsNow, updateSetting } = await import("@/server/domain/platform");
+    const hq = await actor(db, "u_sec");
+    await expect(runJobsNow(db, hq, "system.housekeeping")).resolves.toBeDefined();
+    await expect(updateSetting(db, hq, "backup.max_age_hours", "48")).rejects.toThrow(/not authorised/);
+    await expect(runJobsNow(db, await actor(db, "u_kit_tech"), "system.housekeeping")).rejects.toThrow(/not authorised/);
+  }));
+});

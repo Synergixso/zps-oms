@@ -81,3 +81,14 @@ After the fixes: 0 overflow on all 27, route audit 0 server errors, Vitest 108/1
 `e2e/flows.spec.ts` › *context switching*: `demo.fleet.officer` (MTO at Lusaka Division and at the Mobile Unit) switches context from the account menu. The menu marks the active context, the dashboard and notice show its scope, the selected context's vehicle opens (200) and the other context's vehicle is not disclosed (404), in both directions; a single-assignment user sees no switcher.
 
 The test found a defect, now fixed: after a switch, the shared layout (account menu and notice) could be served from the client router cache and show the previous context, while the page itself and every server check already used the new one. `switchContext` now revalidates the `/app` layout before redirecting.
+
+## 7. v0.6.0 verification run (26 November 2026)
+
+| Suite | Result |
+|---|---|
+| Type check | Clean |
+| Vitest | **121 / 121** (16 files; adds stores reports, stores job, HQ technical operations, scheduled delivery, decision chains, .xlsx) |
+| Production build | Succeeded |
+| Route audit (production build) | **83 routes × 54 accounts, 0 server errors** |
+| Phone-width review (production build) | **27 / 27, 0 overflow** |
+| Playwright | **8 / 8** |

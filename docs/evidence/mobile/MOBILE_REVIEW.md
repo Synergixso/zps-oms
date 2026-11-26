@@ -1,6 +1,6 @@
 # Phone-width review (375 × 812)
 
-Generated 2026-11-26T12:25:02.217Z against http://localhost:3300. Overflow = horizontal page overflow in CSS pixels (0 = none). Synthetic data only.
+Generated 2026-11-26T14:33:19.992Z against http://localhost:3300. Overflow = horizontal page overflow in CSS pixels (0 = none). Synthetic data only.
 
 | No. | Role | Account | Route | HTTP | Overflow | Elements past the edge |
 |--:|---|---|---|:-:|--:|---|

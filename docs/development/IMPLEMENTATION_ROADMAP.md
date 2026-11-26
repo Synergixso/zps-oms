@@ -22,3 +22,9 @@ Order follows Master Execution Prompt Part XIV. Phases already delivered are kep
 | 15 | Platform administration | Partial | Automation engine with job logs; backup management with mysqldump verification; migration history; error log; maintenance mode; version |
 | 16 | Integration and e2e testing | Ongoing | Extend Playwright to Tests A–J in Part XII |
 | 17 | Scheduling and correspondence | Later phase | Only after institutional approval |
+
+## Update — v0.6.0 (26 November 2026)
+
+All phases above are implemented and tested. Delivered since v0.4.0: the three-tier 27-role back offices (v0.5.0), phone-width review (v0.5.1), context-switch browser test (v0.5.2), and in v0.6.0 stores reports and automation, `platform.operate` enforcement for HQ Tech, scheduled report delivery, configurable assignment/transfer approval chains and native .xlsx export.
+
+Remaining work depends on Service decisions, not engineering: modules 16 (administrative scheduling) and 17 (correspondence) are later-phase by design; SSO and the production database accounts await institutional decisions; delegations, permission templates and tenure rules await validation (DEC-008, DEC-055).

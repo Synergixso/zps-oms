@@ -22,6 +22,7 @@ export default async function Platform() {
   const ms = Math.round((performance.now() - t0) * 10) / 10;
   const [p, chain] = await Promise.all([platformOverview(db, actor), verifyAuditChain(db)]);
   const configure = hasPermission(actor, "platform.configure");
+  const operate = hasPermission(actor, "platform.operate");
   const lastBackup = p.backups.find((b) => b.status === "SUCCESS" && b.verified);
   const failedJobs = p.jobs.filter((j) => j.last?.status === "FAILED").length;
   return (
@@ -38,20 +39,20 @@ export default async function Platform() {
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-2">
-        <Card title="Automation engine" subtitle="In-process scheduler; every run is recorded" action={configure ? <ActionForm action={runJobsAction} className=""><Submit variant="secondary">Run all jobs now</Submit></ActionForm> : undefined} bodyClass="p-0">
+        <Card title="Automation engine" subtitle="In-process scheduler; every run is recorded" action={operate ? <ActionForm action={runJobsAction} className=""><Submit variant="secondary">Run all jobs now</Submit></ActionForm> : undefined} bodyClass="p-0">
           <Table head={["Job", "Last run", "Result", ""]}>
             {p.jobs.map((j) => (
               <tr key={j.name}>
                 <td className={td}><span className="font-semibold">{j.title}</span><span className="block text-xs text-muted">{j.description}</span></td>
                 <td className={`${td} text-xs`}>{j.last ? `${fmtDateTime(j.last.started_at)} (${j.last.trigger_type.toLowerCase()})` : "Never"}</td>
                 <td className={td}>{j.last ? <><Badge status={j.last.status === "SUCCESS" ? "APPROVED" : j.last.status === "FAILED" ? "REJECTED" : "PENDING"} label={j.last.status.toLowerCase()} /><span className="block text-xs text-muted">{j.last.processed} item(s){j.last.attempts > 1 ? ` · ${j.last.attempts} attempts` : ""}{j.last.message ? ` · ${j.last.message}` : ""}</span></> : "—"}</td>
-                <td className={td}>{configure && <ActionForm action={runJobsAction} className=""><Hidden name="job" value={j.name} /><Submit variant="secondary">Run</Submit></ActionForm>}</td>
+                <td className={td}>{operate && <ActionForm action={runJobsAction} className=""><Hidden name="job" value={j.name} /><Submit variant="secondary">Run</Submit></ActionForm>}</td>
               </tr>
             ))}
           </Table>
         </Card>
 
-        <Card title="Database backups" subtitle={`mysqldump to ${backupDir()} · verified by completion marker and SHA-256`} action={configure ? <ActionForm action={backupAction} className=""><Submit>Create backup now</Submit></ActionForm> : undefined} bodyClass="p-0">
+        <Card title="Database backups" subtitle={`mysqldump to ${backupDir()} · verified by completion marker and SHA-256`} action={operate ? <ActionForm action={backupAction} className=""><Submit>Create backup now</Submit></ActionForm> : undefined} bodyClass="p-0">
           <Table head={["File", "Size", "Finished", "Status", ""]} empty="No backups recorded yet.">
             {p.backups.map((b) => (
               <tr key={b.id}>
@@ -59,7 +60,7 @@ export default async function Platform() {
                 <td className={td}>{kb(b.size_bytes)}</td>
                 <td className={`${td} text-xs`}>{fmtDateTime(b.finished_at)}</td>
                 <td className={td}><Badge status={b.status === "SUCCESS" && b.verified ? "APPROVED" : b.status === "RUNNING" ? "PENDING" : "REJECTED"} label={b.status === "SUCCESS" && b.verified ? "verified" : b.status.toLowerCase()} />{b.message && <span className="block text-xs text-muted">{b.message}</span>}</td>
-                <td className={td}>{configure && b.status === "SUCCESS" && <ActionForm action={verifyBackupAction} className=""><Hidden name="id" value={String(b.id)} /><Submit variant="secondary">Re-verify</Submit></ActionForm>}</td>
+                <td className={td}>{operate && b.status === "SUCCESS" && <ActionForm action={verifyBackupAction} className=""><Hidden name="id" value={String(b.id)} /><Submit variant="secondary">Re-verify</Submit></ActionForm>}</td>
               </tr>
             ))}
           </Table>

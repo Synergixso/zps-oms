@@ -3,18 +3,22 @@ import { requireActor } from "@/server/auth/session";
 import { getDb } from "@/server/db/connection";
 import { DomainError } from "@/server/domain/core";
 import { exportRoster, ROSTER_STATUS_LABEL } from "@/server/domain/manpower";
+import { buildXlsx } from "@/server/lib/xlsx";
 
 const csv = (v: unknown) => {
   const s = String(v ?? "");
   return `"${(/^[=+\-@]/.test(s) ? `'${s}` : s).replace(/"/g, '""')}"`;
 };
 
-/** Audited CSV export (opens in Excel). */
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+const i = (v: string) => Number(v);
+
+/** Audited export: native Excel workbook (?format=xlsx) or CSV. */
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const actor = await requireActor();
   const { id } = await params;
   try {
-    const r = await exportRoster(getDb(), actor, id, "csv");
+    const xlsx = req.nextUrl.searchParams.get("format") === "xlsx";
+    const r = await exportRoster(getDb(), actor, id, xlsx ? "xlsx" : "csv");
     const head = [
       ["ZPS-OMS roster - SYNTHETIC DEMONSTRATION DATA"],
       ["Request", r.request.reference, r.request.purpose],
@@ -25,11 +29,22 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       ["No.", "Personnel record", "Service number", "Name", "Rank", "Home unit", "Contributed by", "Source", "Issues"],
     ];
     const body = r.entries.map((e, i) => [String(i + 1), e.personnel_id, e.service_number, e.full_name, e.rank_name, e.home_unit_name, e.contributor_unit_name ?? "-", e.source.toLowerCase(), e.issues ?? ""]);
+    const base = `roster-${r.request.reference}-v${r.version.version_no}-SYNTHETIC`;
+    if (xlsx) {
+      const book = buildXlsx({ sheetName: `Roster v${r.version.version_no}`, notes: head.slice(0, 5).map((x) => x.join(" · ")), header: head[6], rows: body.map((row) => [i(row[0]), ...row.slice(1)]) });
+      return new NextResponse(new Uint8Array(book), {
+        headers: {
+          "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "Content-Disposition": `attachment; filename="${base}.xlsx"`,
+          "Cache-Control": "no-store",
+        },
+      });
+    }
     const text = [...head, ...body].map((row) => row.map(csv).join(",")).join("\r\n");
     return new NextResponse("﻿" + text, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="roster-${r.request.reference}-v${r.version.version_no}-SYNTHETIC.csv"`,
+        "Content-Disposition": `attachment; filename="${base}.csv"`,
         "Cache-Control": "no-store",
       },
     });

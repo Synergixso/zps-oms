@@ -730,7 +730,7 @@ export async function amendRoster(db: DB, actor: Actor, versionId: string, reaso
 }
 
 /** Auditable export of a roster (CSV). */
-export async function exportRoster(db: DB, actor: Actor, versionId: string, format: "csv" | "print" | "pdf") {
+export async function exportRoster(db: DB, actor: Actor, versionId: string, format: "csv" | "xlsx" | "print" | "pdf") {
   const r = await getRoster(db, actor, versionId);
   if (!r.can.export) {
     await audit(db, { actorId: actor.userId, action: "authz.denied:roster.export", outcome: "DENIED", category: "SECURITY", entityType: "roster", entityId: versionId });

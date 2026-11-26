@@ -2,6 +2,17 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.6.0] — 2026-11-26 — Stores reporting, scheduled delivery, decision chains, Excel
+### Added
+- Stores reports: stock position, movements (90 days), requisitions by store / requesting unit / status.
+- Automation job `stores.reorder-and-requisitions`: reorder tasks for store keepers, overdue-decision tasks for delegated approvers (never the requester) and overdue-issue tasks for store keepers; tasks close automatically once resolved.
+- Scheduled report delivery (`reports.scheduled-delivery` job; migration 008): daily / weekly / monthly, in-application only, owner-only audited downloads, automatic suspension when the role context or permission is gone.
+- Configurable, versioned approval chains for assignment approval and transfer release (migration 009), published on the Workflow definitions page; level shown on the decision cards; inboxes and notifications follow the current level.
+- Native Excel (.xlsx) export for management reports and rosters (dependency-free writer).
+- Tests: `report-schedules`, `decision-chains`, `xlsx`, stores reports / job / HQ technical operations (121 tests).
+### Fixed
+- `platform.operate` was defined but not enforced: HQ Tech could not run jobs or backups. Job runs and backups now require `platform.operate`; settings and maintenance mode remain `platform.configure`.
+
 ## [0.5.2] — 2026-11-26 — Context switcher browser test
 ### Added
 - Playwright journey for context switching (menu state, scope shown, records of the other context not disclosed, no switcher for single-assignment users).

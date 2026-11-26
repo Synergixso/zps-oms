@@ -7,7 +7,8 @@ import { AccessDenied, Badge, Card, Notice, PageHeader, Table, td, fmtDate } fro
 import { ActionForm, Select, Submit, TextArea, TextField } from "@/components/forms";
 import { MPR_CATEGORIES, listManpowerWorkflows } from "@/server/domain/manpower";
 import { hasPermission } from "@/server/domain/policy";
-import { publishWorkflowAction } from "@/server/actions/personnel";
+import { publishDecisionWorkflowAction, publishWorkflowAction } from "@/server/actions/personnel";
+import { DECISION_DOMAINS, listDecisionWorkflows } from "@/server/domain/decision-chains";
 
 export const metadata = { title: "Workflow definitions" };
 
@@ -18,13 +19,14 @@ export default async function Workflows() {
     getDb(),
     "SELECT w.*, c.name FROM workflow_definitions w JOIN request_categories c ON c.code = w.category_code ORDER BY c.name, w.version",
   );
-  const mpw = await listManpowerWorkflows(getDb());
+  const [mpw, dwf] = await Promise.all([listManpowerWorkflows(getDb()), listDecisionWorkflows(getDb())]);
+  const decisionAuthority = [{ value: "RESPONSIBLE_UNIT", label: "Responsible / releasing unit of the record" }, { value: "HQ", label: "National HQ (Service Headquarters)" }];
   const configure = hasPermission(actor, "workflow.configure");
   const authority = [{ value: "APPROVAL_UNIT", label: "Approval authority named on the request" }, { value: "HQ", label: "National HQ (Service Headquarters)" }];
   return (
     <>
       <PageHeader eyebrow="Module 09 · Workflow configuration" title="Workflow definitions" description="Versioned definitions. Every request action records the definition version it was processed under." />
-      <div className="mb-4"><Notice tone="warn" title="Provisional routing">These chains are not an approved Zambia Police Service delegation matrix (DEC-008). Manpower chains can be republished by the HQ Operations Coordinator; every version is kept and audited, and submitted requests stay on the version they started with. Administrative request definitions are changed through migrations.</Notice></div>
+      <div className="mb-4"><Notice tone="warn" title="Provisional routing">These chains are not an approved Zambia Police Service delegation matrix (DEC-008). Manpower, assignment-approval and transfer-release chains can be republished by the Commissioner – Operations HQ (`workflow.configure`); every version is kept and audited, and submitted requests stay on the version they started with. Administrative request definitions are changed through migrations.</Notice></div>
       <div className="space-y-4">
         <div className="grid gap-4 lg:grid-cols-3">
           <Card title="Manpower request approval chains" subtitle="Each level is decided by an officer holding a MANPOWER delegation at that authority; no one decides two levels of the same request" className="lg:col-span-2" bodyClass="p-0">
@@ -55,7 +57,38 @@ export default async function Workflows() {
                 <Submit confirm="Publish this version? It applies to requests submitted from now on.">Publish version</Submit>
               </ActionForm>
             </Card>
-          ) : <Notice tone="info">Approval chains are published by the HQ Operations Coordinator through an approved change process.</Notice>}
+          ) : <Notice tone="info">Approval chains are published by the Commissioner – Operations HQ through an approved change process.</Notice>}
+        </div>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <Card title="Assignment approval and transfer release chains" subtitle="Each level needs an ASSIGNMENT delegation at that authority; the proposer never decides and no one decides two levels" className="lg:col-span-2" bodyClass="p-0">
+            <Table head={["Decision", "Version", "Approval levels", "Status", "Published"]}>
+              {dwf.map((w) => (
+                <tr key={w.id}>
+                  <td className={`${td} font-semibold`}>{DECISION_DOMAINS[w.domain]}</td>
+                  <td className={td}>v{w.version}</td>
+                  <td className={td}>{w.steps.map((s) => `L${s.level}: ${s.label}`).join(" → ")}{w.note && <span className="block text-xs text-muted">{w.note}</span>}</td>
+                  <td className={td}><Badge status={w.status} /></td>
+                  <td className={`${td} text-xs`}>{fmtDate(w.created_at)}{w.created_by_name ? ` · ${w.created_by_name}` : ""}</td>
+                </tr>
+              ))}
+            </Table>
+          </Card>
+          {configure && (
+            <Card title="Publish a decision chain version" subtitle="Pending matters keep the version they were raised under">
+              <ActionForm action={publishDecisionWorkflowAction}>
+                <Select label="Decision" name="domain" required options={Object.entries(DECISION_DOMAINS).map(([value, label]) => ({ value, label }))} />
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="rounded-md border border-line p-2">
+                    <p className="text-xs font-bold text-ink-2">Level {i}{i === 1 ? " (required)" : ""}</p>
+                    <Select label="Authority" name={`authority_${i}`} placeholder={i === 1 ? undefined : "None"} defaultValue={i === 1 ? "RESPONSIBLE_UNIT" : ""} options={decisionAuthority} />
+                    <TextField label="Label" name={`label_${i}`} required={i === 1} />
+                  </div>
+                ))}
+                <TextArea label="Approval reference and reason" name="note" rows={2} required />
+                <Submit confirm="Publish this version? It applies to matters raised from now on.">Publish version</Submit>
+              </ActionForm>
+            </Card>
+          )}
         </div>
         <Card title="Administrative request definitions" bodyClass="p-0">
           <Table head={["Category", "Version", "Approval levels", "Status", "Note", "Created"]}>

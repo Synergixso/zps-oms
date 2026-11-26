@@ -6,6 +6,7 @@
 import type { DB } from "../db/connection";
 import { all, one, run } from "../db/connection";
 import { audit } from "./audit";
+import { buildXlsx } from "../lib/xlsx";
 import type { Permission } from "./catalogue";
 import { forbidden, invalid, newId, nowIso, today } from "./core";
 import { type Actor, type Scope, hasPermission, requirePermission, scopeFor } from "./policy";
@@ -182,6 +183,27 @@ export const REPORTS: ReportDef[] = [
     domain: ["manpower.view", "assignment.view", "workflow.view"],
     fields: ["organisation", "record_type", "action", "count"],
   },
+  {
+    code: "STORES_STOCK",
+    name: "General stores stock position",
+    description: "Active store items per store and category: total quantity on hand, items at or below the reorder level and items out of stock.",
+    domain: ["stores.view"],
+    fields: ["store", "category", "items", "quantity_on_hand", "at_or_below_reorder", "out_of_stock"],
+  },
+  {
+    code: "STORES_MOVEMENTS",
+    name: "General stores movements (last 90 days)",
+    description: "Receipts, issues, returns and adjustments per store in the last 90 days: number of transactions and net quantity.",
+    domain: ["stores.view"],
+    fields: ["store", "movement", "transactions", "net_quantity"],
+  },
+  {
+    code: "STORES_REQUISITIONS",
+    name: "Stores requisitions by store, requesting unit and status",
+    description: "Requisitions per store and requesting unit by status, with the age in days of the oldest one still open.",
+    domain: ["stores.view"],
+    fields: ["store", "requesting_unit", "status", "count", "oldest_open_days"],
+  },
 ];
 
 export function availableReports(actor: Actor): ReportDef[] {
@@ -275,6 +297,31 @@ async function reportRows(db: DB, code: string, scope: Scope): Promise<Record<st
       return await all(db, `SELECT o.name AS organisation, REPLACE(x.entity_type, '_', ' ') AS record_type, LOWER(REPLACE(x.action, '_', ' ')) AS action, COUNT(*) AS count
                        FROM approval_actions x JOIN org_units o ON o.id = x.org_unit_id WHERE x.created_at >= ? AND ${o.sql}
                        GROUP BY o.name, x.entity_type, x.action ORDER BY o.name, x.entity_type, count DESC`, new Date(Date.parse(t) - 90 * 86400000).toISOString(), ...o.params);
+    case "STORES_STOCK":
+      return await all(db, `SELECT o.name AS store, c.name AS category, COUNT(*) AS items, SUM(i.quantity_on_hand) AS quantity_on_hand,
+                        SUM(i.quantity_on_hand <= i.reorder_level) AS at_or_below_reorder, SUM(i.quantity_on_hand = 0) AS out_of_stock
+                       FROM store_items i JOIN org_units o ON o.id = i.org_unit_id JOIN store_categories c ON c.code = i.category_code
+                      WHERE i.status = 'ACTIVE' AND ${o.sql} GROUP BY o.name, c.name ORDER BY o.name, c.name`, ...o.params);
+    case "STORES_MOVEMENTS":
+      return await all(db, `SELECT o.name AS store, LOWER(t.txn_type) AS movement, COUNT(*) AS transactions, SUM(t.quantity) AS net_quantity
+                       FROM store_transactions t JOIN store_items i ON i.id = t.item_id JOIN org_units o ON o.id = i.org_unit_id
+                      WHERE t.created_at >= ? AND ${o.sql} GROUP BY o.name, t.txn_type ORDER BY o.name, t.txn_type`, new Date(Date.parse(t) - 90 * 86400000).toISOString(), ...o.params);
+    case "STORES_REQUISITIONS": {
+      const now = Date.parse(nowIso());
+      const rows = await all<{ store: string; requesting_unit: string; status: string; created_at: string }>(db,
+        `SELECT o.name AS store, ro.name AS requesting_unit, r.status, COALESCE(r.submitted_at, r.created_at) AS created_at
+           FROM store_requisitions r JOIN org_units o ON o.id = r.store_unit_id JOIN org_units ro ON ro.id = r.requesting_unit_id
+          WHERE ${o.sql} ORDER BY o.name, ro.name, r.status`, ...o.params);
+      const out = new Map<string, { store: string; requesting_unit: string; status: string; count: number; oldest_open_days: number | string }>();
+      for (const x of rows) {
+        const k = `${x.store}\u0000${x.requesting_unit}\u0000${x.status}`;
+        const e = out.get(k) ?? { store: x.store, requesting_unit: x.requesting_unit, status: x.status.toLowerCase(), count: 0, oldest_open_days: "" };
+        e.count++;
+        if (["DRAFT", "SUBMITTED", "APPROVED"].includes(x.status)) e.oldest_open_days = Math.max(Number(e.oldest_open_days || 0), daysBetween(x.created_at, now));
+        out.set(k, e);
+      }
+      return [...out.values()];
+    }
   }
   throw invalid("Unknown report.");
 }
@@ -291,7 +338,7 @@ export async function runReport(db: DB, actor: Actor, code: string) {
 }
 
 /** Exports an approved report as CSV. Requested fields outside the definition are refused. */
-export async function exportReport(db: DB, actor: Actor, code: string, requestedFields?: string[]) {
+export async function exportReport(db: DB, actor: Actor, code: string, requestedFields?: string[], opts: { sortField?: string | null; sortDir?: "asc" | "desc"; source?: "interactive" | "scheduled"; format?: "csv" | "xlsx" } = {}) {
   const def = REPORTS.find((r) => r.code === code);
   if (!def) throw invalid("Unknown report.");
   await requirePermission(db, actor, "report.export", undefined, { type: "report", id: code });
@@ -301,24 +348,26 @@ export async function exportReport(db: DB, actor: Actor, code: string, requested
     await audit(db, { actorId: actor.userId, action: "report.export", outcome: "DENIED", category: "EXPORT", entityType: "report", entityId: code, details: { unauthorisedFields: bad } });
     throw forbidden(`Field(s) not approved for export in this report: ${bad.join(", ")}.`);
   }
-  const { rows } = await runReport(db, actor, code);
+  const { rows: raw } = await runReport(db, actor, code);
+  const rows = opts.sortField ? shapeRows(def, raw, fields, opts.sortField, opts.sortDir ?? "asc").rows : raw;
   const esc = (v: unknown) => {
     const s = String(v ?? "");
     const safe = /^[=+\-@]/.test(s) ? `'${s}` : s; // CSV formula-injection guard
     return /[",\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
   };
   const exportScope = scopeFor(actor, "report.export");
-  const csv = [
-    "# ZPS-OMS SYNTHETIC DEMONSTRATION DATA - not Zambia Police Service records",
-    `# Report: ${def.name}; generated ${nowIso()}; scope: ${exportScope.national ? "national" : exportScope.units.join("|")}`,
-    fields.join(","),
-    ...rows.map((r) => fields.map((f) => esc(r[f])).join(",")),
-  ].join("\n");
+  const format = opts.format ?? "csv";
+  const notes = [
+    "ZPS-OMS SYNTHETIC DEMONSTRATION DATA - not Zambia Police Service records",
+    `Report: ${def.name}; generated ${nowIso()}; scope: ${exportScope.national ? "national" : exportScope.units.join("|")}`,
+  ];
+  const csv = [...notes.map((n) => `# ${n}`), fields.join(","), ...rows.map((r) => fields.map((f) => esc(r[f])).join(","))].join("\n");
+  const xlsx = format === "xlsx" ? buildXlsx({ sheetName: def.code, notes, header: fields, rows: rows.map((r) => fields.map((f) => r[f])) }) : undefined;
   const id = newId("exp");
   await run(db, "INSERT INTO report_exports (id, report_code, user_id, filters, fields, row_count, created_at) VALUES (?,?,?,?,?,?,?)",
-    id, code, actor.userId, JSON.stringify({ scope: exportScope }), JSON.stringify(fields), rows.length, nowIso());
-  await audit(db, { actorId: actor.userId, action: "report.export", category: "EXPORT", entityType: "report", entityId: code, details: { exportId: id, fields, rows: rows.length } });
-  return { filename: `zps-oms-${code.toLowerCase()}-${today()}.csv`, csv };
+    id, code, actor.userId, JSON.stringify({ scope: exportScope, format }), JSON.stringify(fields), rows.length, nowIso());
+  await audit(db, { actorId: actor.userId, action: "report.export", category: "EXPORT", entityType: "report", entityId: code, details: { exportId: id, fields, rows: rows.length, source: opts.source ?? "interactive", format } });
+  return { filename: `zps-oms-${code.toLowerCase()}-${today()}.${format}`, csv, xlsx, rows: rows.length };
 }
 
 // ---- Saved custom reports ---------------------------------------------------

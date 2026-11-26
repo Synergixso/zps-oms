@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getDb } from "../db/connection";
 import { requireActor } from "../auth/session";
 import { deleteSavedReport, saveReport } from "../domain/reports";
+import { cancelSchedule, createSchedule } from "../domain/report-schedules";
 import { str, toState, type ActionState } from "./result";
 
 export async function saveReportAction(_: ActionState, fd: FormData): Promise<ActionState> {
@@ -28,4 +29,26 @@ export async function deleteSavedReportAction(_: ActionState, fd: FormData): Pro
   }
   revalidatePath("/app/reports");
   return { ok: true, message: "Saved report removed." };
+}
+
+export async function scheduleReportAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  const actor = await requireActor();
+  try {
+    await createSchedule(getDb(), actor, { code: str(fd, "code"), frequency: str(fd, "frequency"), savedReportId: str(fd, "savedReportId") || null });
+  } catch (e) {
+    return toState(e);
+  }
+  revalidatePath("/app/reports");
+  return { ok: true, message: "Scheduled. Each delivery appears under Reports → My deliveries and in your notifications." };
+}
+
+export async function cancelScheduleAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  const actor = await requireActor();
+  try {
+    await cancelSchedule(getDb(), actor, str(fd, "id"));
+  } catch (e) {
+    return toState(e);
+  }
+  revalidatePath("/app/reports");
+  return { ok: true, message: "Schedule cancelled." };
 }

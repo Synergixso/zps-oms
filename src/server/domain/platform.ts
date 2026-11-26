@@ -49,7 +49,8 @@ export async function platformOverview(db: DB, actor: Actor) {
 }
 
 export async function runJobsNow(db: DB, actor: Actor, job?: string) {
-  await requirePermission(db, actor, "platform.configure", HQ_ID);
+  // Technical operations (Superadmin and HQ Tech); settings and maintenance mode stay platform.configure.
+  await requirePermission(db, actor, "platform.operate", HQ_ID);
   if (job && !JOBS.some((j) => j.name === job)) throw invalid("Unknown job.");
   await audit(db, { actorId: actor.userId, action: "platform.jobs.run", category: "CONFIG", details: { job: job ?? "ALL" } });
   if (job) return [{ name: job, ...(await runJob(db, job, "MANUAL", actor.userId)) }];
@@ -96,7 +97,7 @@ const dumpBinary = () => process.env.MYSQLDUMP_PATH ?? (process.platform === "wi
 
 /** Runs mysqldump into the backup folder and verifies the result. */
 export async function createBackup(db: DB, actor: Actor) {
-  await requirePermission(db, actor, "platform.configure", HQ_ID);
+  await requirePermission(db, actor, "platform.operate", HQ_ID);
   if (await one(db, "SELECT id FROM backup_runs WHERE status = 'RUNNING' AND started_at > ?", new Date(Date.now() - 30 * 60000).toISOString())) throw conflict("A backup is already running.");
   const c = connectionParts();
   const dir = backupDir();
@@ -134,7 +135,7 @@ export async function createBackup(db: DB, actor: Actor) {
 
 /** Re-verifies an existing backup file against its recorded checksum. */
 export async function verifyBackup(db: DB, actor: Actor, id: number) {
-  await requirePermission(db, actor, "platform.configure", HQ_ID);
+  await requirePermission(db, actor, "platform.operate", HQ_ID);
   const b = await one<{ file_name: string; sha256: string | null }>(db, "SELECT file_name, sha256 FROM backup_runs WHERE id = ?", id);
   if (!b?.file_name || !b.sha256) throw invalid("Backup not found or never completed.");
   const full = path.join(backupDir(), path.basename(b.file_name));

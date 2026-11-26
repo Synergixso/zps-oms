@@ -16,7 +16,7 @@ export default async function TransferDetail({ params }: { params: Promise<{ id:
   const { id } = await params;
   const actor = await requireActor();
   if (!(await pageAllowed(actor, "assignment.view"))) return <AccessDenied what="transfers" />;
-  const { transfer: t, canRelease, canAccept, actions } = await loadOr404(() => getTransfer(getDb(), actor, id));
+  const { transfer: t, canRelease, canAccept, actions, releaseLevel } = await loadOr404(() => getTransfer(getDb(), actor, id));
   const stepIdx = STEPS.findIndex(([s]) => s === t.status);
   return (
     <>
@@ -46,7 +46,7 @@ export default async function TransferDetail({ params }: { params: Promise<{ id:
         </div>
         <div className="space-y-4">
           {canRelease && (
-            <Card title="Releasing decision" subtitle={`On behalf of ${t.releasing_unit_name}`}>
+            <Card title="Releasing decision" subtitle={releaseLevel && releaseLevel.total > 1 ? `Level ${releaseLevel.level} of ${releaseLevel.total}: ${releaseLevel.label}` : `On behalf of ${t.releasing_unit_name}`}>
               <ActionForm action={transferWorkflowAction}>
                 <Hidden name="id" value={t.id} />
                 <TextArea label="Decision note" name="comment" rows={2} required />

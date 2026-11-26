@@ -17,11 +17,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cod
   const { code } = await params;
   const fd = await req.formData();
   const fields = fd.getAll("fields").filter((f): f is string => typeof f === "string");
+  const format = fd.get("format") === "xlsx" ? "xlsx" : "csv";
   try {
-    const { filename, csv } = await exportReport(getDb(), actor, code, fields);
-    return new NextResponse(csv, {
+    const { filename, csv, xlsx } = await exportReport(getDb(), actor, code, fields, { format });
+    return new NextResponse(xlsx ? new Uint8Array(xlsx) : csv, {
       headers: {
-        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Type": xlsx ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : "text/csv; charset=utf-8",
         "Content-Disposition": `attachment; filename="${filename}"`,
         "Cache-Control": "no-store",
       },
