@@ -1,6 +1,6 @@
 {
   "name": "zps-oms",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "description": "ZPS-OMS local synthetic-data prototype. Not an authorised production police system.",
   "scripts": {
@@ -21,6 +21,7 @@
   "dependencies": {
     "mysql2": "^3.24.6",
     "next": "^16.4.6",
+    "pdfkit": "^0.15.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "server-only": "^0.0.1",
@@ -30,6 +31,7 @@
     "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4.3.5",
     "@types/node": "^22.20.7",
+    "@types/pdfkit": "^0.13.9",
     "@types/react": "^19.3.3",
     "@types/react-dom": "^19.3.0",
     "tailwindcss": "^4.3.5",

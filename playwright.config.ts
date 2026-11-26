@@ -24,9 +24,10 @@ export default defineConfig({
   },
   webServer: {
     command: "npx next dev -p 3200",
-    url: "http://localhost:3200/login",
+    // A page that does not query the database: global setup creates zps_oms_e2e after the server is up.
+    url: "http://localhost:3200/about",
     timeout: 240_000,
     reuseExistingServer: false,
-    env: { DATABASE_URL: e2eDatabaseUrl(), NEXT_DIST_DIR: ".next-e2e", ZPS_SHOW_DEMO_ACCOUNTS: "1" },
+    env: { DATABASE_URL: e2eDatabaseUrl(), NEXT_DIST_DIR: ".next-e2e", ZPS_SHOW_DEMO_ACCOUNTS: "1", ZPS_AUTOMATION: "off" },
   },
 });

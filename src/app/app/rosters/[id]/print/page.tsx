@@ -19,7 +19,7 @@ export default async function RosterPrint({ params }: { params: Promise<{ id: st
     <div className="print-a4 mx-auto max-w-[900px] bg-white p-6 text-[12.5px] text-black">
       <div className="no-print mb-4 flex items-center justify-between">
         <Link href={`/app/rosters/${id}`} className="text-sm text-zp-blue hover:underline">← Back to roster</Link>
-        <PrintButton />
+        <span className="flex gap-2"><a href={`/app/rosters/${id}/pdf`} className="rounded-md border border-line-2 px-3.5 py-2 text-sm font-semibold text-ink hover:bg-slate-50">Download PDF</a><PrintButton label="Print" /></span>
       </div>
       <header className="flex items-center gap-4 border-b-2 border-black pb-3">
         <Crest className="h-[56px] w-[96px]" />

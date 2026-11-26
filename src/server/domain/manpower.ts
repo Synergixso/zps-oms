@@ -19,7 +19,7 @@ import type { DB } from "../db/connection";
 import { all, one, run, tx } from "../db/connection";
 import { audit } from "./audit";
 import { PROHIBITED_TERMS } from "./catalogue";
-import { conflict, forbidden, invalid, newId, notFound, notify, nowIso, today } from "./core";
+import { addDays, conflict, forbidden, invalid, newId, notFound, notify, nowIso, today } from "./core";
 import { type Actor, approvalUnitFor, can, requirePermission, unitsFor } from "./policy";
 import { eligibilityOf } from "./personnel";
 import { _insertAssignment } from "./assignments";
@@ -59,6 +59,9 @@ async function nextRef(db: DB): Promise<string> {
   return `MPR-${year}-${String(n).padStart(5, "0")}`;
 }
 
+/** Roster reference derived from the request: MPR-2026-00012 v2 → RST-2026-00012-V2. */
+export const rosterRef = (requestRef: string, version: number) => `RST-${requestRef.slice(4)}-V${version}`;
+
 const inList = (ids: string[]) => ids.map(() => "?").join(",");
 
 // ── Requests ────────────────────────────────────────────────────────────────
@@ -67,7 +70,8 @@ export interface MprRow {
   category: MprCategory; purpose: string; area_id: string | null; area_name: string | null; total_required: number; personnel_categories: string;
   commencement_date: string; duration_days: number; justification: string; approval_unit_id: string; approval_unit_name: string;
   status: string; submitted_at: string | null; decided_at: string | null; created_at: string; updated_at: string; version: number;
-  allocated: number; contributed: number; accepted_units: number; contribution_units: number;
+  allocated: number; contributed: number; accepted_units: number; contribution_units: number; contribution_deadline: string | null;
+  workflow_id: string | null; current_level: number;
 }
 const MPR_SELECT = `SELECT m.*, ru.name AS requesting_unit_name, u.display_name AS requested_by_name, ar.name AS area_name, au.name AS approval_unit_name,
        COALESCE((SELECT SUM(c.required_count) FROM manpower_contributions c WHERE c.request_id = m.id), 0) AS allocated,
@@ -171,6 +175,59 @@ const MPR_TRANSITIONS: Record<MprAction, { from: string[]; to: string }> = {
   COMPLETE: { from: ["APPROVED"], to: "COMPLETED" },
 };
 
+export interface WorkflowStep { level: number; authority: "APPROVAL_UNIT" | "HQ"; label: string }
+export interface ManpowerWorkflow { id: string; category: string; version: number; steps: WorkflowStep[]; status: string; note: string | null; created_at: string; created_by_name: string | null }
+
+export async function listManpowerWorkflows(db: DB): Promise<ManpowerWorkflow[]> {
+  const rows = await all<Omit<ManpowerWorkflow, "steps"> & { steps: string }>(db,
+    "SELECT w.*, u.display_name AS created_by_name FROM manpower_workflows w LEFT JOIN users u ON u.id = w.created_by ORDER BY w.category, w.version DESC");
+  return rows.map((r) => ({ ...r, steps: JSON.parse(r.steps) as WorkflowStep[] }));
+}
+
+async function workflowFor(db: DB, m: { category: string; workflow_id: string | null }): Promise<{ id: string; steps: WorkflowStep[] }> {
+  const row = m.workflow_id
+    ? await one<{ id: string; steps: string }>(db, "SELECT id, steps FROM manpower_workflows WHERE id = ?", m.workflow_id)
+    : await one<{ id: string; steps: string }>(db, "SELECT id, steps FROM manpower_workflows WHERE category = ? AND status = 'ACTIVE' ORDER BY version DESC LIMIT 1", m.category);
+  if (!row) return { id: "", steps: [{ level: 1, authority: "APPROVAL_UNIT", label: "Approval authority named on the request" }] };
+  return { id: row.id, steps: JSON.parse(row.steps) as WorkflowStep[] };
+}
+
+/** The unit whose MANPOWER delegation decides the request's current level, and the step itself. */
+export async function currentApprovalStep(db: DB, m: MprRow) {
+  const wf = await workflowFor(db, m);
+  const step = wf.steps[Math.min(m.current_level, wf.steps.length) - 1] ?? wf.steps[0];
+  return { step, total: wf.steps.length, unitId: step.authority === "HQ" ? "org_hq" : m.approval_unit_id };
+}
+
+/** True when the actor may decide the request at its current approval level (delegation, not the originator, not an earlier-level approver). */
+export async function canDecideManpower(db: DB, actor: Actor, m: MprRow): Promise<string | null> {
+  if (!["SUBMITTED", "UNDER_REVIEW", "RECOMMENDED"].includes(m.status) || m.requested_by === actor.userId) return null;
+  const { unitId } = await currentApprovalStep(db, m);
+  const unit = await approvalUnitFor(db, actor, "MANPOWER", unitId);
+  if (!unit) return null;
+  const earlier = await one(db, "SELECT 1 AS x FROM approval_actions WHERE entity_type = 'manpower_request' AND entity_id = ? AND actor_id = ? AND action LIKE 'APPROVE_L%' AND seq > COALESCE((SELECT MAX(seq) FROM approval_actions WHERE entity_type = 'manpower_request' AND entity_id = ? AND action IN ('SUBMIT','RESUBMIT')), 0)", m.id, actor.userId, m.id);
+  return earlier ? null : unit;
+}
+
+const WF_STEP = z.object({ authority: z.enum(["APPROVAL_UNIT", "HQ"]), label: z.string().trim().min(3).max(120) });
+
+/** Publishes a new version of a category's approval chain; the previous active version is retired. Submitted requests keep their version. */
+export async function publishManpowerWorkflow(db: DB, actor: Actor, category: string, steps: Array<{ authority: string; label: string }>, note: string) {
+  await requirePermission(db, actor, "workflow.configure", "org_hq", { type: "workflow" });
+  if (!(category in MPR_CATEGORIES)) throw invalid("Unknown manpower category.");
+  const parsed = z.array(WF_STEP).min(1, "Define at least one approval level.").max(3, "At most three approval levels.").parse(steps);
+  if (note.trim().length < 10) throw invalid("Record the approval reference and reason for the change (at least 10 characters).");
+  const id = newId("mpw");
+  await tx(db, async (db) => {
+    const v = Number((await one<{ v: number }>(db, "SELECT COALESCE(MAX(version), 0) AS v FROM manpower_workflows WHERE category = ?", category))?.v ?? 0) + 1;
+    await run(db, "UPDATE manpower_workflows SET status = 'RETIRED' WHERE category = ? AND status = 'ACTIVE'", category);
+    await run(db, "INSERT INTO manpower_workflows (id, category, version, steps, status, note, created_by, created_at) VALUES (?,?,?,?, 'ACTIVE', ?,?,?)",
+      id, category, v, JSON.stringify(parsed.map((st, i) => ({ level: i + 1, ...st }))), note.trim(), actor.userId, nowIso());
+    await audit(db, { actorId: actor.userId, action: "workflow.manpower.publish", category: "CONFIG", entityType: "workflow", entityId: id, details: { category, version: v, steps: parsed, note: note.trim() } });
+  });
+  return id;
+}
+
 export async function manpowerAction(db: DB, actor: Actor, id: string, action: MprAction, comment = "") {
   const m = await getManpowerRequest(db, actor, id);
   const tr = MPR_TRANSITIONS[action];
@@ -184,7 +241,8 @@ export async function manpowerAction(db: DB, actor: Actor, id: string, action: M
     await requirePermission(db, actor, "manpower.review", m.requesting_unit_id, { type: "manpower_request", id });
     if (m.requested_by === actor.userId && action !== "RETURN") throw forbidden("You cannot review a request you originated.");
   } else if (action === "APPROVE" || action === "REJECT") {
-    unit = await approvalUnitFor(db, actor, "MANPOWER", m.approval_unit_id);
+    if (m.requested_by === actor.userId) throw forbidden("You cannot approve a request you originated (separation of duties).");
+    unit = await canDecideManpower(db, actor, m);
     if (!unit) {
       await audit(db, { actorId: actor.userId, action: "authz.denied:manpower.approve", outcome: "DENIED", category: "SECURITY", entityType: "manpower_request", entityId: id });
       throw forbidden("You do not hold delegated manpower approval authority for this request.");
@@ -194,11 +252,29 @@ export async function manpowerAction(db: DB, actor: Actor, id: string, action: M
     await requirePermission(db, actor, "manpower.review", m.requesting_unit_id, { type: "manpower_request", id });
   }
   if (["RETURN", "REJECT"].includes(action) && comment.trim().length < 5) throw invalid("Record the reason.");
+  const { step, total } = await currentApprovalStep(db, m);
+  const intermediate = action === "APPROVE" && m.current_level < total;
+  if (intermediate) {
+    await tx(db, async (db) => {
+      const n = await run(db, "UPDATE manpower_requests SET status = 'UNDER_REVIEW', current_level = current_level + 1, updated_at = ?, version = version + 1 WHERE id = ? AND status = ? AND current_level = ?", nowIso(), id, m.status, m.current_level);
+      if (!n.changes) throw conflict("The request was changed by someone else. Reload and try again.");
+      await logAction(db, "manpower_request", id, `APPROVE_L${m.current_level}`, m.status, "UNDER_REVIEW", actor.userId, unit, `${step.label}${comment ? ` — ${comment}` : ""}`);
+      await audit(db, { actorId: actor.userId, action: "manpower.request.approve_level", category: "BUSINESS", entityType: "manpower_request", entityId: id, orgUnitId: m.requesting_unit_id, details: { ref: m.reference, level: m.current_level, of: total } });
+    });
+    const next = await currentApprovalStep(db, { ...m, current_level: m.current_level + 1 });
+    const t = nowIso();
+    const approvers = await all<{ user_id: string }>(db, `SELECT DISTINCT d.user_id FROM delegations d JOIN org_unit_closure c ON c.ancestor_id = d.org_unit_id AND c.descendant_id = ?
+       WHERE d.domain = 'MANPOWER' AND d.revoked_at IS NULL AND (d.valid_to IS NULL OR d.valid_to > ?)`, next.unitId, t);
+    for (const a of approvers) if (a.user_id !== actor.userId) await notify(db, a.user_id, `${m.reference}: level ${m.current_level + 1} approval needed`, next.step.label, `/app/manpower/${id}`, { category: "APPROVAL" });
+    return;
+  }
+  const wfId = action === "SUBMIT" && !m.workflow_id ? (await workflowFor(db, m)).id || null : m.workflow_id;
   await tx(db, async (db) => {
+    if (action === "SUBMIT" || action === "RETURN") await run(db, "UPDATE manpower_requests SET current_level = 1, workflow_id = ? WHERE id = ?", wfId, id);
     const n = await run(db, `UPDATE manpower_requests SET status = ?, updated_at = ?, version = version + 1 ${action === "SUBMIT" ? ", submitted_at = ?" : ["APPROVE", "REJECT"].includes(action) ? ", decided_at = ?" : ""} WHERE id = ? AND status = ?`,
       ...[tr.to, nowIso(), ...(action === "SUBMIT" || ["APPROVE", "REJECT"].includes(action) ? [nowIso()] : []), id, m.status]);
     if (!n.changes) throw conflict("The request was changed by someone else. Reload and try again.");
-    await logAction(db, "manpower_request", id, m.status === "RETURNED" && action === "SUBMIT" ? "RESUBMIT" : action, m.status, tr.to, actor.userId, unit, comment || null);
+    await logAction(db, "manpower_request", id, m.status === "RETURNED" && action === "SUBMIT" ? "RESUBMIT" : action === "APPROVE" && total > 1 ? `APPROVE_L${m.current_level}` : action, m.status, tr.to, actor.userId, unit, comment || null);
     await audit(db, { actorId: actor.userId, action: `manpower.request.${action.toLowerCase()}`, category: "BUSINESS", entityType: "manpower_request", entityId: id, orgUnitId: m.requesting_unit_id, details: { ref: m.reference, from: m.status, to: tr.to } });
   });
   if (action !== "SUBMIT" && action !== "TAKE_REVIEW") await notify(db, m.requested_by, `${m.reference}: ${MPR_STATUS_LABEL[tr.to]}`, comment || `Status changed to ${MPR_STATUS_LABEL[tr.to].toLowerCase()}.`, `/app/manpower/${id}`);
@@ -218,9 +294,9 @@ export async function approvalUnitsFor(db: DB, unitId: string) {
 export interface ContributionRow {
   id: string; request_id: string; request_ref: string; purpose: string; contributing_unit_id: string; unit_name: string; required_count: number; rank_note: string | null;
   status: string; revision: number; submitted_by_name: string | null; submitted_at: string | null; reviewed_by_name: string | null; reviewed_at: string | null; review_comment: string | null;
-  entries: number; request_status: string; commencement_date: string; requesting_unit_id: string;
+  entries: number; request_status: string; commencement_date: string; requesting_unit_id: string; contribution_deadline: string | null;
 }
-const C_SELECT = `SELECT c.*, m.reference AS request_ref, m.purpose, m.status AS request_status, m.commencement_date, m.requesting_unit_id, o.name AS unit_name,
+const C_SELECT = `SELECT c.*, m.reference AS request_ref, m.purpose, m.status AS request_status, m.commencement_date, m.requesting_unit_id, m.contribution_deadline, o.name AS unit_name,
        su.display_name AS submitted_by_name, rv.display_name AS reviewed_by_name,
        (SELECT COUNT(*) FROM manpower_contribution_entries e WHERE e.contribution_id = c.id) AS entries
   FROM manpower_contributions c JOIN manpower_requests m ON m.id = c.request_id JOIN org_units o ON o.id = c.contributing_unit_id
@@ -231,7 +307,7 @@ export async function requestContributions(db: DB, actor: Actor, requestId: stri
   return all<ContributionRow>(db, `${C_SELECT} WHERE c.request_id = ? ORDER BY o.name`, requestId);
 }
 
-export async function setRequirement(db: DB, actor: Actor, requestId: string, input: { unitId: string; count: number; rankNote?: string }) {
+export async function setRequirement(db: DB, actor: Actor, requestId: string, input: { unitId: string; count: number; rankNote?: string; deadline?: string }) {
   const m = await getManpowerRequest(db, actor, requestId);
   await requirePermission(db, actor, "manpower.review", m.requesting_unit_id, { type: "manpower_request", id: requestId });
   if (m.status !== "APPROVED") throw conflict("Contribution requirements are distributed after the request is approved.");
@@ -243,7 +319,11 @@ export async function setRequirement(db: DB, actor: Actor, requestId: string, in
   const existing = await one<{ id: string; status: string; required_count: number }>(db, "SELECT id, status, required_count FROM manpower_contributions WHERE request_id = ? AND contributing_unit_id = ?", requestId, input.unitId);
   const others = Number((await one<{ s: number }>(db, "SELECT COALESCE(SUM(required_count),0) AS s FROM manpower_contributions WHERE request_id = ? AND contributing_unit_id <> ?", requestId, input.unitId))?.s ?? 0);
   if (others + count > m.total_required) throw invalid(`This would allocate ${others + count} officers; the request requires ${m.total_required}.`);
+  if (input.deadline && (!/^\d{4}-\d{2}-\d{2}$/.test(input.deadline) || input.deadline < today())) throw invalid("The contribution deadline must be today or later.");
+  const defaultDays = Number((await one<{ value: string }>(db, "SELECT value FROM app_settings WHERE `key` = 'manpower.default_deadline_days'"))?.value) || 7;
   await tx(db, async (db) => {
+    if (input.deadline) await run(db, "UPDATE manpower_requests SET contribution_deadline = ? WHERE id = ?", input.deadline, requestId);
+    else await run(db, "UPDATE manpower_requests SET contribution_deadline = ? WHERE id = ? AND contribution_deadline IS NULL", addDays(today(), defaultDays), requestId);
     if (existing) {
       if (existing.status === "ACCEPTED") throw conflict("This unit's contribution has already been accepted.");
       await run(db, "UPDATE manpower_contributions SET required_count = ?, rank_note = ? WHERE id = ?", count, input.rankNote?.trim() || null, existing.id);
@@ -260,7 +340,7 @@ export async function setRequirement(db: DB, actor: Actor, requestId: string, in
     `SELECT DISTINCT ra.user_id FROM role_assignments ra JOIN org_unit_closure c ON c.ancestor_id = ra.org_unit_id AND c.descendant_id = ?
        JOIN role_permissions rp ON rp.role_code = ra.role_code AND rp.permission = 'manpower.contribute'
       WHERE ra.revoked_at IS NULL AND (ra.valid_to IS NULL OR ra.valid_to > ?) AND (c.depth = 0 OR rp.coverage <> 'UNIT')`, input.unitId, t);
-  for (const r of recipients) await notify(db, r.user_id, `Contribution requested: ${m.reference}`, `${unit.name} is asked to contribute ${count} officer(s).`, `/app/manpower/contributions`);
+  for (const r of recipients) await notify(db, r.user_id, `Contribution requested: ${m.reference}`, `${unit.name} is asked to contribute ${count} officer(s).`, `/app/manpower/contributions`, { category: "MANPOWER" });
 }
 
 export async function removeRequirement(db: DB, actor: Actor, contributionId: string) {
@@ -507,7 +587,7 @@ export async function buildRoster(db: DB, actor: Actor, requestId: string) {
   const id = newId("rv");
   await tx(db, async (db) => {
     const no = Number((await one<{ n: number }>(db, "SELECT COALESCE(MAX(version_no),0) AS n FROM roster_versions WHERE request_id = ?", requestId))?.n ?? 0) + 1;
-    await run(db, "INSERT INTO roster_versions (id, request_id, version_no, status, created_by, created_at) VALUES (?,?,?, 'DRAFT', ?, ?)", id, requestId, no, actor.userId, nowIso());
+    await run(db, "INSERT INTO roster_versions (id, request_id, version_no, reference, status, created_by, created_at) VALUES (?,?,?,?, 'DRAFT', ?, ?)", id, requestId, no, rosterRef(m.reference, no), actor.userId, nowIso());
     for (const e of accepted) {
       const s = await snapshot(db, e.personnel_id);
       await run(db, "INSERT IGNORE INTO roster_entries (id, version_id, personnel_id, contribution_id, source, service_number, full_name, rank_code, home_unit_id, added_by, added_at) VALUES (?,?,?,?, 'CONTRIBUTION', ?,?,?,?,?,?)",
@@ -637,7 +717,7 @@ export async function amendRoster(db: DB, actor: Actor, versionId: string, reaso
   const id = newId("rv");
   await tx(db, async (db) => {
     const no = Number((await one<{ n: number }>(db, "SELECT COALESCE(MAX(version_no),0) AS n FROM roster_versions WHERE request_id = ?", r.request.id))?.n ?? 0) + 1;
-    await run(db, "INSERT INTO roster_versions (id, request_id, version_no, status, based_on_id, amendment_reason, created_by, created_at) VALUES (?,?,?, 'AMENDED', ?,?,?,?)", id, r.request.id, no, versionId, reason.trim(), actor.userId, nowIso());
+    await run(db, "INSERT INTO roster_versions (id, request_id, version_no, reference, status, based_on_id, amendment_reason, created_by, created_at) VALUES (?,?,?,?, 'AMENDED', ?,?,?,?)", id, r.request.id, no, rosterRef(r.request.reference, no), versionId, reason.trim(), actor.userId, nowIso());
     for (const e of r.entries) {
       await run(db, "INSERT INTO roster_entries (id, version_id, personnel_id, contribution_id, source, service_number, full_name, rank_code, home_unit_id, added_by, added_at) VALUES (?,?,?,?, 'CARRIED', ?,?,?,?,?,?)",
         newId("re"), id, e.personnel_id, e.contribution_id, e.service_number, e.full_name, e.rank_code, e.home_unit_id, actor.userId, nowIso());
@@ -650,7 +730,7 @@ export async function amendRoster(db: DB, actor: Actor, versionId: string, reaso
 }
 
 /** Auditable export of a roster (CSV). */
-export async function exportRoster(db: DB, actor: Actor, versionId: string, format: "csv" | "print") {
+export async function exportRoster(db: DB, actor: Actor, versionId: string, format: "csv" | "print" | "pdf") {
   const r = await getRoster(db, actor, versionId);
   if (!r.can.export) {
     await audit(db, { actorId: actor.userId, action: "authz.denied:roster.export", outcome: "DENIED", category: "SECURITY", entityType: "roster", entityId: versionId });
@@ -692,7 +772,7 @@ export async function manpowerInbox(db: DB, actor: Actor) {
   const out: Array<{ kind: string; reference: string; title: string; href: string }> = [];
   const mine = await listManpowerRequests(db, actor, { status: "OPEN" }).catch(() => []);
   for (const m of mine) {
-    if (["SUBMITTED", "UNDER_REVIEW", "RECOMMENDED"].includes(m.status) && m.requested_by !== actor.userId && (await approvalUnitFor(db, actor, "MANPOWER", m.approval_unit_id))) out.push({ kind: "Manpower approval", reference: m.reference, title: m.purpose, href: `/app/manpower/${m.id}` });
+    if (await canDecideManpower(db, actor, m)) out.push({ kind: "Manpower approval", reference: m.reference, title: m.purpose, href: `/app/manpower/${m.id}` });
     else if (m.status === "SUBMITTED" && m.requested_by !== actor.userId && can(actor, "manpower.review", m.requesting_unit_id)) out.push({ kind: "Manpower review", reference: m.reference, title: m.purpose, href: `/app/manpower/${m.id}` });
   }
   const units = unitsFor(actor, "manpower.contribute");

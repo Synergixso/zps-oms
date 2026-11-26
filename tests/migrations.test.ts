@@ -38,6 +38,11 @@ describe("database migrations", () => {
       await recreateDatabase(url);
       fs.writeFileSync(path.join(dir, "001_probe.sql"), "CREATE TABLE probe (id INT PRIMARY KEY);");
       await migrate(url, dir);
+      // Line-ending conversion (e.g. git autocrlf on another machine) is not an edit.
+      fs.writeFileSync(path.join(dir, "002_probe.sql"), "CREATE TABLE probe2 (\n  id INT PRIMARY KEY\n);\n");
+      await migrate(url, dir);
+      fs.writeFileSync(path.join(dir, "002_probe.sql"), "CREATE TABLE probe2 (\r\n  id INT PRIMARY KEY\r\n);\r\n");
+      await expect(migrate(url, dir)).resolves.toBeTruthy();
       fs.writeFileSync(path.join(dir, "001_probe.sql"), "CREATE TABLE probe (id INT PRIMARY KEY, x INT);");
       await expect(migrate(url, dir)).rejects.toThrow(/checksum|edited|modified/i);
     } finally {

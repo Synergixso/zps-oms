@@ -17,6 +17,8 @@ export function LoginForm({ action }: { action: Action }) {
   const [show, setShow] = useState(false);
   return (
     <form
+      // POST even before hydration, so credentials can never appear in the URL, history or server logs.
+      method="post"
       noValidate
       onSubmit={(e) => {
         e.preventDefault();

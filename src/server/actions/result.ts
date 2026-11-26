@@ -14,6 +14,7 @@ export function toState(e: unknown): ActionState {
   }
   if (e && typeof e === "object" && "digest" in e && String((e as { digest: string }).digest).startsWith("NEXT_REDIRECT")) throw e;
   console.error("[zps-oms] unexpected action error:", e instanceof Error ? e.name + ": " + e.message : "unknown");
+  void import("../domain/platform").then(({ logError }) => import("../db/connection").then(({ getDb }) => logError(getDb(), "server-action", e))).catch(() => {});
   return { error: "An unexpected error occurred. The action was not completed." };
 }
 

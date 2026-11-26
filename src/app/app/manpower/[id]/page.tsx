@@ -2,8 +2,8 @@ import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
 import { loadOr404, pageAllowed } from "@/server/auth/guard";
 import { all, getDb } from "@/server/db/connection";
-import { approvalUnitFor, can } from "@/server/domain/policy";
-import { MPR_CATEGORIES, MPR_STATUS_LABEL, ROSTER_STATUS_LABEL, getManpowerRequest, listRosters, requestContributions, requestHistory } from "@/server/domain/manpower";
+import { can } from "@/server/domain/policy";
+import { MPR_CATEGORIES, MPR_STATUS_LABEL, ROSTER_STATUS_LABEL, canDecideManpower, currentApprovalStep, getManpowerRequest, listRosters, requestContributions, requestHistory } from "@/server/domain/manpower";
 import { scopedUnits, unitOptions } from "@/server/domain/lookup";
 import { selectableAreas } from "@/server/domain/assignments";
 import { buildRosterAction, manpowerWorkflowAction, removeRequirementAction, setRequirementAction, updateManpowerAction } from "@/server/actions/personnel";
@@ -22,7 +22,8 @@ export default async function ManpowerDetail({ params }: { params: Promise<{ id:
   const [contribs, rosters, history] = await Promise.all([requestContributions(db, actor, id), listRosters(db, actor, id), requestHistory(db, "manpower_request", id)]);
   const originator = can(actor, "manpower.create", m.requesting_unit_id);
   const reviewer = can(actor, "manpower.review", m.requesting_unit_id);
-  const approver = m.requested_by !== actor.userId && !!(await approvalUnitFor(db, actor, "MANPOWER", m.approval_unit_id));
+  const approver = !!(await canDecideManpower(db, actor, m));
+  const level = await currentApprovalStep(db, m);
   const builder = can(actor, "roster.build", m.requesting_unit_id);
   const editable = originator && ["DRAFT", "RETURNED"].includes(m.status);
   const distributing = reviewer && m.status === "APPROVED";
@@ -57,8 +58,8 @@ export default async function ManpowerDetail({ params }: { params: Promise<{ id:
             <DL items={[
               ["Reference", m.reference], ["Requesting unit", m.requesting_unit_name], ["Requesting officer", m.requested_by_name], ["Category", MPR_CATEGORIES[m.category]],
               ["Duty-area reference", m.area_name ?? "—"], ["Required personnel", String(m.total_required)], ["Personnel categories", m.personnel_categories],
-              ["Proposed commencement", fmtDate(m.commencement_date)], ["Proposed duration", `${m.duration_days} days`], ["Approval authority", m.approval_unit_name],
-              ["Submitted", fmtDateTime(m.submitted_at)], ["Decided", fmtDateTime(m.decided_at)], ["Justification", m.justification],
+              ["Proposed commencement", fmtDate(m.commencement_date)], ["Proposed duration", `${m.duration_days} days`], ["Approval authority", m.approval_unit_name], ["Approval chain", ["SUBMITTED", "UNDER_REVIEW", "RECOMMENDED"].includes(m.status) ? `Level ${Math.min(m.current_level, level.total)} of ${level.total}: ${level.step.label}` : `${level.total} level(s)`],
+              ["Contribution deadline", m.contribution_deadline ? fmtDate(m.contribution_deadline) : "—"], ["Submitted", fmtDateTime(m.submitted_at)], ["Decided", fmtDateTime(m.decided_at)], ["Justification", m.justification],
             ]} />
           </Card>
           <Card title="Contributions from units" subtitle={`${m.allocated} of ${m.total_required} allocated · ${m.contributed} officers offered · ${accepted} unit(s) accepted`} bodyClass="p-0">
@@ -123,6 +124,7 @@ export default async function ManpowerDetail({ params }: { params: Promise<{ id:
                 <Select label="Contributing unit" name="unitId" required placeholder="Select unit" options={unitOptions(units)} />
                 <TextField label="Officers required" name="count" type="number" required />
                 <TextField label="Rank / category note" name="rankNote" />
+                <TextField label="Contribution deadline" name="deadline" type="date" defaultValue={m.contribution_deadline ?? ""} hint="Applies to all units; defaults to 7 days. Reminders are sent automatically." />
                 <Submit>Send requirement</Submit>
               </ActionForm>
             </Card>

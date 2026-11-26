@@ -46,7 +46,11 @@ export async function migrate(url: string, dir = DIR): Promise<MigrationResult> 
       const checksum = crypto.createHash("sha256").update(sql).digest("hex");
       const prev = applied.get(m.version);
       if (prev) {
-        if (prev.checksum !== checksum) throw new Error(`Migration ${m.name} was modified after being applied. Create a new migration instead.`);
+        // Line-ending conversion by git on another machine is not an edit: also accept the LF and CRLF forms.
+        const sha = (text: string) => crypto.createHash("sha256").update(text).digest("hex");
+        const lf = sql.replace(/\r\n/g, "\n");
+        const same = [checksum, sha(lf), sha(lf.replace(/\n/g, "\r\n"))].includes(prev.checksum);
+        if (!same) throw new Error(`Migration ${m.name} was modified after being applied. Create a new migration instead.`);
         continue;
       }
       // DDL auto-commits in MySQL; each migration is written to be safe to re-run only via a fresh database.

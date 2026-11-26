@@ -99,7 +99,7 @@ async function notifyApprovers(db: DB, unitId: string, title: string, body: stri
   const users = await all<{ user_id: string }>(db,
     `SELECT DISTINCT d.user_id FROM delegations d JOIN org_unit_closure c ON c.ancestor_id = d.org_unit_id AND c.descendant_id = ?
       WHERE d.domain = 'ASSIGNMENT' AND d.revoked_at IS NULL AND (d.valid_to IS NULL OR d.valid_to > ?)`, unitId, t);
-  for (const u of users) await notify(db, u.user_id, title, body, link);
+  for (const u of users) await notify(db, u.user_id, title, body, link, { category: "APPROVAL" });
 }
 
 // ── Operational areas ───────────────────────────────────────────────────────
@@ -160,6 +160,37 @@ export async function setAreaStatus(db: DB, actor: Actor, id: string, status: "A
   }
   await run(db, "UPDATE operational_areas SET status = ? WHERE id = ?", status, id);
   await audit(db, { actorId: actor.userId, action: `area.${status.toLowerCase()}`, category: "BUSINESS", entityType: "area", entityId: id, orgUnitId: a.responsible_unit_id });
+}
+
+export async function updateArea(db: DB, actor: Actor, id: string, input: { name: string; description?: string; reason: string }) {
+  const a = await one<{ responsible_unit_id: string; name: string; description: string | null }>(db, "SELECT responsible_unit_id, name, description FROM operational_areas WHERE id = ?", id);
+  if (!a || !can(actor, "area.view", a.responsible_unit_id)) throw notFound();
+  await requirePermission(db, actor, "area.manage", a.responsible_unit_id, { type: "area", id });
+  const name = input.name.trim();
+  const description = input.description?.trim() || null;
+  if (name.length < 5 || name.length > 120) throw invalid("The name must be 5–120 characters.");
+  if (LOCATION_WORDS.test(`${name} ${description ?? ""}`)) throw invalid("Operational areas are administrative duty-area records. Do not record coordinates, routes, patrol or position details.");
+  if (input.reason.trim().length < 5) throw invalid("Record the reason for the change.");
+  await run(db, "UPDATE operational_areas SET name = ?, description = ? WHERE id = ?", name, description, id);
+  await audit(db, { actorId: actor.userId, action: "area.update", category: "BUSINESS", entityType: "area", entityId: id, orgUnitId: a.responsible_unit_id, details: { from: { name: a.name, description: a.description }, to: { name, description }, reason: input.reason.trim() } });
+}
+
+export async function areaDetail(db: DB, actor: Actor, id: string) {
+  await requirePermission(db, actor, "area.view");
+  const area = await one<AreaRow & { created_at: string; tenant_id: string }>(db,
+    `SELECT a.*, o.name AS unit_name, (SELECT COUNT(*) FROM personnel_assignments x WHERE x.area_id = a.id AND x.status IN ('ACTIVE','TRANSFER_PENDING')) AS active_count
+       FROM operational_areas a JOIN org_units o ON o.id = a.responsible_unit_id WHERE a.id = ?`, id);
+  if (!area || !can(actor, "area.view", area.responsible_unit_id)) throw notFound();
+  const stats = await one<{ total: number; current: number; closed: number; transferred_in: number; transferred_out: number }>(db,
+    `SELECT COUNT(*) AS total, SUM(status IN ('PENDING_APPROVAL','APPROVED','ACTIVE','TRANSFER_PENDING')) AS current, SUM(status = 'CLOSED') AS closed,
+            (SELECT COUNT(*) FROM assignment_transfers t WHERE t.to_area_id = ? AND t.status = 'COMPLETED') AS transferred_in,
+            (SELECT COUNT(*) FROM assignment_transfers t WHERE t.from_area_id = ? AND t.status = 'COMPLETED') AS transferred_out
+       FROM personnel_assignments WHERE area_id = ?`, id, id, id);
+  const history = await all<{ id: string; reference: string; status: string; close_reason: string | null; commencement_date: string; ended_on: string | null; full_name: string; rank_name: string }>(db,
+    `SELECT a.id, a.reference, a.status, a.close_reason, a.commencement_date, a.ended_on, CONCAT(p.surname, ', ', p.first_names) AS full_name, r.name AS rank_name
+       FROM personnel_assignments a JOIN personnel_records p ON p.id = a.personnel_id JOIN ranks r ON r.code = p.rank_code WHERE a.area_id = ? ORDER BY a.commencement_date DESC LIMIT 200`, id);
+  const canSeeAssignments = can(actor, "assignment.view", area.responsible_unit_id);
+  return { area, stats, history: canSeeAssignments ? history : [], canSeeAssignments };
 }
 
 // ── Assignment register ─────────────────────────────────────────────────────
@@ -504,7 +535,7 @@ export async function releaseAssignment(db: DB, actor: Actor, id: string, input:
 // ── Renewal ─────────────────────────────────────────────────────────────────
 export async function markRenewalPending(db: DB, actor: Actor, id: string, note: string) {
   const a = await getAssignment(db, actor, id);
-  await requirePermission(db, actor, "assignment.propose", a.responsible_unit_id, { type: "assignment", id });
+  await requirePermission(db, actor, "assignment.renew", a.responsible_unit_id, { type: "assignment", id });
   if (a.status !== "ACTIVE") throw conflict("Only active assignments can be put forward for renewal.");
   const tenure = computeTenure(a, await tenurePolicy(db));
   if (!tenure.reviewEligible) throw conflict(`Not yet in the review window. The review date is ${a.review_date}.`);
@@ -593,8 +624,8 @@ export async function initiateTransfer(db: DB, actor: Actor, assignmentId: strin
   const d = transferSchema.parse(input);
   const to = await one<{ responsible_unit_id: string; status: string; name: string }>(db, "SELECT responsible_unit_id, status, name FROM operational_areas WHERE id = ?", d.toAreaId);
   if (!to || to.status !== "ACTIVE") throw invalid("Select an active receiving area.");
-  if (!(can(actor, "assignment.propose", a.responsible_unit_id) || can(actor, "assignment.propose", to.responsible_unit_id))) {
-    await requirePermission(db, actor, "assignment.propose", a.responsible_unit_id, { type: "assignment", id: assignmentId });
+  if (!(can(actor, "assignment.transfer", a.responsible_unit_id) || can(actor, "assignment.transfer", to.responsible_unit_id))) {
+    await requirePermission(db, actor, "assignment.transfer", a.responsible_unit_id, { type: "assignment", id: assignmentId });
   }
   if (a.status !== "ACTIVE") throw conflict("Only an active assignment can be transferred.");
   if (d.toAreaId === a.area_id) throw invalid("The receiving area must differ from the current area. Use renewal to continue at the same area.");

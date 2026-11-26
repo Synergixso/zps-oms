@@ -19,11 +19,12 @@
 9. [Commands](#9-commands)
 10. [Synthetic accounts and review walkthrough](#10-synthetic-accounts-and-review-walkthrough)
 11. [Testing and verification evidence](#11-testing-and-verification-evidence)
-12. [Database and migrations](#12-database-and-migrations)
-13. [Configuration](#13-configuration)
-14. [Documentation index](#14-documentation-index)
-15. [Contributing](#15-contributing)
-16. [Licence](#16-licence)
+12. [Automation, backups and operations](#12-automation-backups-and-operations)
+13. [Database and migrations](#13-database-and-migrations)
+14. [Configuration](#14-configuration)
+15. [Documentation index](#15-documentation-index)
+16. [Contributing](#16-contributing)
+17. [Licence](#17-licence)
 
 ---
 
@@ -72,7 +73,9 @@ An *assignment* is an administrative duty-area record. It is never a location. T
 | **Dashboards** | A dashboard per role and level: national, provincial, district, formation and unit. | Delivered |
 | **Reports** | Scoped operational reports with CSV export. | Delivered |
 | **Audit** | A hash-chained, append-only audit log (database triggers prevent updates and deletes), an explorer, an evidence export and chain verification. | Delivered |
-| **Platform & security** | System health, security events, sessions, sign-in lockout. | Delivered |
+| **Platform & security** | Automation engine and run log, verified database backups, migration history, error log, maintenance mode, settings; security events, sessions, authentication history, lockouts. | Delivered |
+| **Notifications & tasks** | In-app notifications by category with preferences, automated reminders, My tasks with automatic closure. | Delivered |
+| **Workflow configuration** | Versioned, multi-level manpower approval chains; configurable administrative-request workflows; delegations. | Delivered |
 
 The detailed specifications are in `docs/MODULE_SPECIFICATIONS.md` and `docs/WORKFLOW_SPECIFICATIONS.md`. The order in which modules are delivered is in [CHANGELOG.md](CHANGELOG.md).
 
@@ -199,23 +202,30 @@ Every account is synthetic: `demo.*` usernames and "Demo" names. The development
 
 Before every change: `npx tsc --noEmit`, then `npm test`, then `npm run audit:routes` with the dev server running.
 
-## 12. Database and migrations
+## 12. Automation, backups and operations
+- **Automation engine** (`src/server/jobs/engine.ts`): starts with the server and runs every `automation.interval_minutes` (default 5). Jobs: effective-dated organisation changes, assignment commencement and review flags, contribution reminders and overdue tracking, tenure-review reminders, overdue-approval escalation, temporary-access expiry, fleet and asset reminders, backup monitoring and housekeeping. Every run is logged in `job_runs`; Platform administration → *Run now* triggers one manually. Set `ZPS_AUTOMATION=off` to disable it.
+- **Backups**: Platform administration → *Create backup now* runs XAMPP's `mysqldump` into `backups/` (git-ignored) and verifies the file by its completion marker and SHA-256. Set `MYSQLDUMP_PATH` if XAMPP is not in `C:\xampp`, or `ZPS_BACKUP_DIR` to change the folder. The backup monitor warns when the last verified backup is older than `backup.max_age_hours`.
+- **Database accounts**: `db/admin/create_app_user.sql` creates a least-privilege application account and a read-only account. Run it once in phpMyAdmin with your own passwords, then update `.env.local`.
+
+## 13. Database and migrations
 - Migrations are plain SQL files named `NNN_description.sql` in `db/migrations/`. They are applied in order and recorded with a SHA-256 checksum in `schema_migrations`. Editing an applied migration is detected and refused; add a new migration instead.
 - Timestamps are stored as ISO-8601 UTC strings; dates as `YYYY-MM-DD`.
 - Destructive operations are restricted to databases named `zps_oms_*` and need an explicit `--confirm-synthetic` flag.
 - Schema reference: `docs/DATABASE_SCHEMA.md` and `docs/DATA_DICTIONARY.md`.
 
-## 13. Configuration
+## 14. Configuration
 | Variable | Purpose |
 |---|---|
 | `DATABASE_URL` | MySQL connection URL for the app, e.g. `mysql://user:pass@127.0.0.1:3306/zps_oms_dev` |
 | `DATABASE_URL_TEST` | Test database. It must be named `zps_oms_test*` |
 | `ZPS_INSECURE_COOKIE` | Set to `1` only to run a local production build over plain HTTP |
+| `ZPS_AUTOMATION` | `off` disables the in-process automation engine (default: on) |
+| `MYSQLDUMP_PATH` / `ZPS_BACKUP_DIR` | Location of `mysqldump` (default `C:\xampp\mysql\bin\mysqldump.exe`) and of the backup folder (default `backups/`) |
 | `ZPS_SHOW_DEMO_ACCOUNTS` | `1` / `0` to show or hide the synthetic account list on the sign-in page (shown by default in development only) |
 
 Put these in `.env.local`, which is never committed. `.env.example` documents them.
 
-## 14. Documentation index
+## 15. Documentation index
 | Area | Documents |
 |---|---|
 | Direction | `docs/PRD.md`, `docs/PROJECT_CHARTER.md`, `docs/PHASE3_AUDIT_AND_ARCHITECTURE.md` |
@@ -225,7 +235,7 @@ Put these in `.env.local`, which is never committed. `.env.example` documents th
 | Operations | `docs/DEPLOYMENT_GUIDE.md`, `docs/TESTING_STRATEGY.md`, `docs/QA_AND_REVIEW.md`, `docs/evidence/` |
 | History | [CHANGELOG.md](CHANGELOG.md); Phase 1 source packages preserved under `docs/00_…` to `docs/06_…` |
 
-## 15. Contributing
+## 16. Contributing
 1. Read the relevant domain module and its tests.
 2. Change the domain first, with a test.
 3. Then make the action and UI changes.
@@ -234,5 +244,5 @@ Put these in `.env.local`, which is never committed. `.env.example` documents th
 
 Never commit real personnel data, credentials or `.env.local`. Keep the crest byte-identical, and render it only through `<Crest>`.
 
-## 16. Licence
+## 17. Licence
 Released under the [MIT License](LICENSE) © 2026 Synergix Solutions. The Zambia Police Service name, crest and insignia are official marks. They are **not** covered by the MIT licence and may not be reused without authorisation.

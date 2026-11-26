@@ -3,6 +3,7 @@ import { DEV_PASSWORD } from "./env";
 
 async function login(page: Page, username: string) {
   await page.goto("/login");
+  await page.waitForLoadState("networkidle");
   await page.getByPlaceholder("Username").fill(username);
   await page.getByPlaceholder("Password").fill(DEV_PASSWORD);
   await page.getByRole("button", { name: "Sign In to ZPS-OMS" }).click();
@@ -23,7 +24,7 @@ test("system login: design elements, refused password, successful sign-in", asyn
   await page.getByPlaceholder("Username").fill("demo.kitwe.commander");
   await page.getByPlaceholder("Password").fill("Wrong-Password-1");
   await page.getByRole("button", { name: "Sign In to ZPS-OMS" }).click();
-  await expect(page.getByRole("alert")).toHaveText(/username or password is not correct/);
+  await expect(page.getByText(/username or password is not correct/)).toBeVisible();
   await page.getByRole("button", { name: "Show password" }).click();
   await expect(page.getByPlaceholder("Password")).toHaveAttribute("type", "text");
   await login(page, "demo.kitwe.commander");
@@ -102,9 +103,14 @@ test("roster: accept a contribution, build the roster from registry records, pri
   await page.waitForURL(/\/app\/manpower\/mpr_/);
   const requestUrl = page.url();
   await page.getByRole("link", { name: /A Company/ }).click();
+  await page.waitForURL(/\/app\/manpower\/contributions\/mpc_/);
+  await page.waitForLoadState("networkidle"); // hydrated before submitting
   await page.getByRole("button", { name: "Accept" }).click();
-  await expect(page.getByText("accepted").first()).toBeVisible();
+  // Once accepted, the review card disappears and the status reads "accepted".
+  await expect(page.getByRole("heading", { name: "Review contribution" })).toHaveCount(0);
+  await expect(page.getByText("accepted", { exact: true }).first()).toBeVisible();
   await page.goto(requestUrl);
+  await page.waitForLoadState("networkidle");
   await page.getByRole("button", { name: "Build roster from accepted contributions" }).click();
   await page.waitForURL(/\/app\/rosters\/rv_/);
   await expect(page.getByText("6 officers")).toBeVisible();
@@ -116,6 +122,10 @@ test("roster: accept a contribution, build the roster from registry records, pri
   expect(csv.status()).toBe(200);
   expect(csv.headers()["content-type"]).toContain("text/csv");
   expect(await csv.text()).toContain("SYN-");
+  const pdf = await page.request.get(`${rosterUrl}/pdf`);
+  expect(pdf.status()).toBe(200);
+  expect(pdf.headers()["content-type"]).toContain("application/pdf");
+  expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
 });
 
 test("access control: a general staff member cannot open manpower registers", async ({ page }) => {

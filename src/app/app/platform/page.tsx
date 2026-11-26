@@ -1,52 +1,120 @@
-import fs from "node:fs";
-import path from "node:path";
 import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
-import { all, getDb, one } from "@/server/db/connection";
+import { getDb, one } from "@/server/db/connection";
 import { verifyAuditChain } from "@/server/domain/audit";
+import { hasPermission } from "@/server/domain/policy";
+import { EDITABLE_SETTINGS, backupDir, platformOverview } from "@/server/domain/platform";
 import { SHOW_DEMO_ACCOUNTS } from "@/server/auth/session";
+import { backupAction, maintenanceAction, runJobsAction, settingAction, verifyBackupAction } from "@/server/actions/platform";
 import { AccessDenied, Badge, Card, DL, Notice, PageHeader, Stat, Table, td, fmtDateTime } from "@/components/ui";
+import { ActionForm, Hidden, Submit, TextField } from "@/components/forms";
 
-export const metadata = { title: "System health" };
+export const metadata = { title: "Platform administration" };
+
+const kb = (n: number | null) => (n == null ? "—" : n > 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`);
 
 export default async function Platform() {
   const actor = await requireActor();
-  if (!await pageAllowed(actor, "platform.view")) return <AccessDenied what="platform operations" />;
+  if (!(await pageAllowed(actor, "platform.view"))) return <AccessDenied what="platform administration" />;
   const db = getDb();
   const t0 = performance.now();
-  const server = await one<{ v: string }>(db, "SELECT VERSION() AS v");
-  const integrity = server ? "ok" : "unreachable";
+  await one(db, "SELECT 1 AS ok");
   const ms = Math.round((performance.now() - t0) * 10) / 10;
-  const migrations = await all<{ version: number; applied_at: string; name: string }>(db, "SELECT version, name, applied_at FROM schema_migrations ORDER BY version");
-  const settings = await all<{ key: string; value: string; description: string }>(db, "SELECT `key`, value, description FROM app_settings ORDER BY `key`");
-  const tables = ["tenants", "org_units", "users", "role_assignments", "delegations", "admin_requests", "vehicles", "maintenance_requests", "assets", "notifications", "audit_events", "sessions"] as const;
-  const counts = await Promise.all(tables.map(async (tb) => [tb, (await one<{ c: number }>(db, `SELECT COUNT(*) AS c FROM ${tb}`))?.c ?? 0] as const));
-  const chain = await verifyAuditChain(db);
-  const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), "package.json"), "utf8")) as { version: string };
+  const [p, chain] = await Promise.all([platformOverview(db, actor), verifyAuditChain(db)]);
+  const configure = hasPermission(actor, "platform.configure");
+  const lastBackup = p.backups.find((b) => b.status === "SUCCESS" && b.verified);
+  const failedJobs = p.jobs.filter((j) => j.last?.status === "FAILED").length;
   return (
     <>
-      <PageHeader eyebrow="M11 · Platform operations" title="System health" description="Technical status only. No business records are exposed on this page." />
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Stat label="Application" value="Up" tone="ok" hint={`Release ${pkg.version} · Node ${process.version}`} />
-        <Stat label="Database" value={integrity === "ok" ? "Healthy" : "Check"} tone={integrity === "ok" ? "ok" : "err"} hint={`${server?.v ?? "no response"} · ${ms} ms`} />
-        <Stat label="Audit chain" value={chain.ok ? "Intact" : "Broken"} tone={chain.ok ? "ok" : "err"} hint={`${chain.checked} events`} />
-        <Stat label="Backups" value="Not configured" tone="warn" hint="See DEPLOYMENT_GUIDE §Backup" />
+      <PageHeader eyebrow="Module 15 · Platform administration" title="Platform administration and monitoring" description="Technical status, automation, backups, migrations, errors and configuration. No personnel or business records are exposed here." />
+      {p.maintenance && <div className="mb-4"><Notice tone="warn" title="Maintenance mode is ON">Only platform administrators can use the back office.</Notice></div>}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <Stat label="Application" value="Online" tone="ok" hint={`v${p.version} · Node ${p.node} · ${p.env}`} />
+        <Stat label="MySQL (XAMPP)" value="Online" tone="ok" hint={`${p.dbVersion} · ${ms} ms`} />
+        <Stat label="Audit chain" value={chain.ok ? "Intact" : "Broken"} tone={chain.ok ? "ok" : "err"} hint={`${chain.checked} events verified`} />
+        <Stat label="Automation" value={failedJobs ? `${failedJobs} failed` : "Running"} tone={failedJobs ? "err" : "ok"} hint={`${p.jobs.length} jobs scheduled`} />
+        <Stat label="Last verified backup" value={lastBackup ? "Verified" : "None"} tone={lastBackup ? "ok" : "warn"} hint={lastBackup ? fmtDateTime(lastBackup.finished_at) : "Create one below"} />
+        <Stat label="Errors (recent)" value={p.errors.length} tone={p.errors.length ? "warn" : "ok"} hint="Unexpected server errors logged" />
       </div>
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <Card title="Environment">
-          <DL items={[["Environment", "LOCAL SYNTHETIC PROTOTYPE"], ["Database engine", `MySQL / MariaDB ${server?.v ?? ""} (XAMPP)`], ["Authentication", SHOW_DEMO_ACCOUNTS ? "Password (scrypt) with lockout; synthetic account list shown (local review)" : "Password (scrypt) with lockout"], ["External integrations", "None (all disabled)"], ["Background jobs", "None — effective-dated org changes apply on request"], ["Error monitoring", "Server console only (no external telemetry)"]]} />
+
+      <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        <Card title="Automation engine" subtitle="In-process scheduler; every run is recorded" action={configure ? <ActionForm action={runJobsAction} className=""><Submit variant="secondary">Run all jobs now</Submit></ActionForm> : undefined} bodyClass="p-0">
+          <Table head={["Job", "Last run", "Result", ""]}>
+            {p.jobs.map((j) => (
+              <tr key={j.name}>
+                <td className={td}><span className="font-semibold">{j.title}</span><span className="block text-xs text-muted">{j.description}</span></td>
+                <td className={`${td} text-xs`}>{j.last ? `${fmtDateTime(j.last.started_at)} (${j.last.trigger_type.toLowerCase()})` : "Never"}</td>
+                <td className={td}>{j.last ? <><Badge status={j.last.status === "SUCCESS" ? "APPROVED" : j.last.status === "FAILED" ? "REJECTED" : "PENDING"} label={j.last.status.toLowerCase()} /><span className="block text-xs text-muted">{j.last.processed} item(s){j.last.attempts > 1 ? ` · ${j.last.attempts} attempts` : ""}{j.last.message ? ` · ${j.last.message}` : ""}</span></> : "—"}</td>
+                <td className={td}>{configure && <ActionForm action={runJobsAction} className=""><Hidden name="job" value={j.name} /><Submit variant="secondary">Run</Submit></ActionForm>}</td>
+              </tr>
+            ))}
+          </Table>
         </Card>
-        <Card title="Schema migrations" bodyClass="p-0">
-          <Table head={["Version", "Description", "Applied"]}>{migrations.map((m) => <tr key={m.version}><td className={td}>{m.version}</td><td className={td}>{m.name}</td><td className={td}>{fmtDateTime(m.applied_at)}</td></tr>)}</Table>
+
+        <Card title="Database backups" subtitle={`mysqldump to ${backupDir()} · verified by completion marker and SHA-256`} action={configure ? <ActionForm action={backupAction} className=""><Submit>Create backup now</Submit></ActionForm> : undefined} bodyClass="p-0">
+          <Table head={["File", "Size", "Finished", "Status", ""]} empty="No backups recorded yet.">
+            {p.backups.map((b) => (
+              <tr key={b.id}>
+                <td className={`${td} font-mono text-xs`}>{b.file_name}{b.sha256 && <span className="block text-muted">sha256 {b.sha256.slice(0, 16)}…</span>}</td>
+                <td className={td}>{kb(b.size_bytes)}</td>
+                <td className={`${td} text-xs`}>{fmtDateTime(b.finished_at)}</td>
+                <td className={td}><Badge status={b.status === "SUCCESS" && b.verified ? "APPROVED" : b.status === "RUNNING" ? "PENDING" : "REJECTED"} label={b.status === "SUCCESS" && b.verified ? "verified" : b.status.toLowerCase()} />{b.message && <span className="block text-xs text-muted">{b.message}</span>}</td>
+                <td className={td}>{configure && b.status === "SUCCESS" && <ActionForm action={verifyBackupAction} className=""><Hidden name="id" value={String(b.id)} /><Submit variant="secondary">Re-verify</Submit></ActionForm>}</td>
+              </tr>
+            ))}
+          </Table>
         </Card>
-        <Card title="Application settings (read-only in prototype)" bodyClass="p-0">
-          <Table head={["Key", "Value", "Description"]}>{settings.map((s) => <tr key={s.key}><td className={`${td} font-mono text-xs`}>{s.key}</td><td className={td}><Badge status={s.value === "DISABLED" ? "PENDING" : "ACTIVE"} label={s.value} /></td><td className={`${td} text-xs text-muted`}>{s.description}</td></tr>)}</Table>
+
+        <Card title="Database" subtitle="Technical metadata only">
+          <DL items={[
+            ["Engine", `MySQL / MariaDB ${p.dbVersion} (XAMPP)`], ["Database", p.dbName], ["Tables", String(p.tables)], ["Size", kb(p.sizeBytes)],
+            ["Connection", `Pooled (mysql2), ${ms} ms round trip`], ["Authentication", SHOW_DEMO_ACCOUNTS ? "Password (scrypt), lockout; synthetic account list shown (development)" : "Password (scrypt), lockout"],
+            ["External integrations", "None (email / SMS disabled)"], ["Application version", `v${p.version}`],
+          ]} />
         </Card>
-        <Card title="Table row counts (technical)" bodyClass="p-0">
-          <Table head={["Table", "Rows"]}>{counts.map(([n, c]) => <tr key={n}><td className={`${td} font-mono text-xs`}>{n}</td><td className={`${td} tabular-nums`}>{c}</td></tr>)}</Table>
+
+        <Card title="Migration history" bodyClass="p-0">
+          <Table head={["Version", "Migration", "Checksum", "Applied"]}>{p.migrations.map((m) => <tr key={m.version}><td className={td}>{m.version}</td><td className={`${td} font-mono text-xs`}>{m.name}</td><td className={`${td} font-mono text-xs text-muted`}>{m.checksum.slice(0, 12)}…</td><td className={`${td} text-xs`}>{fmtDateTime(m.applied_at)}</td></tr>)}</Table>
+        </Card>
+
+        <Card title="Maintenance mode">
+          {configure ? (
+            <ActionForm action={maintenanceAction}>
+              <Hidden name="mode" value={p.maintenance ? "OFF" : "ON"} />
+              <TextField label="Reason" name="reason" required />
+              <Submit variant={p.maintenance ? "primary" : "danger"} confirm={p.maintenance ? undefined : "Enable maintenance mode? All non-platform users lose access until it is turned off."}>{p.maintenance ? "Turn maintenance mode off" : "Turn maintenance mode on"}</Submit>
+            </ActionForm>
+          ) : <p className="text-sm text-muted">Currently {p.maintenance ? "ON" : "OFF"}.</p>}
+        </Card>
+
+        <Card title="Error log" subtitle="Unexpected errors; no request data or personal information is stored" bodyClass="p-0">
+          <Table head={["Time", "Source", "Error"]} empty="No errors logged.">{p.errors.map((e) => <tr key={e.id}><td className={`${td} text-xs`}>{fmtDateTime(e.occurred_at)}</td><td className={`${td} font-mono text-xs`}>{e.source}</td><td className={td}><span className="font-semibold">{e.error_name}</span><span className="block text-xs text-muted">{e.message}</span></td></tr>)}</Table>
+        </Card>
+
+        <Card title="Recent automation runs" bodyClass="p-0">
+          <Table head={["Time", "Job", "Trigger", "Result"]}>{p.recentRuns.map((r) => <tr key={r.id}><td className={`${td} text-xs`}>{fmtDateTime(r.started_at)}</td><td className={`${td} font-mono text-xs`}>{r.job}</td><td className={`${td} text-xs`}>{r.trigger_type.toLowerCase()}</td><td className={td}><Badge status={r.status === "SUCCESS" ? "APPROVED" : r.status === "FAILED" ? "REJECTED" : "PENDING"} label={`${r.status.toLowerCase()} · ${r.processed}`} /></td></tr>)}</Table>
+        </Card>
+
+        <Card title="System settings" subtitle="Tenure, renewal and exception policy are institutional decisions and are read-only here" bodyClass="p-0">
+          <Table head={["Key", "Value", ""]}>
+            {p.settings.map((s) => (
+              <tr key={s.key}>
+                <td className={td}><span className="font-mono text-xs">{s.key}</span><span className="block text-xs text-muted">{s.description}</span></td>
+                <td className={td}>{s.value}</td>
+                <td className={td}>
+                  {configure && EDITABLE_SETTINGS.includes(s.key) && (
+                    <ActionForm action={settingAction} className="flex items-center gap-1">
+                      <Hidden name="key" value={s.key} />
+                      <input name="value" defaultValue={s.value} aria-label={`New value for ${s.key}`} className="w-20 rounded border border-line-2 px-2 py-1 text-sm" />
+                      <Submit variant="secondary">Save</Submit>
+                    </ActionForm>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </Table>
         </Card>
       </div>
-      <div className="mt-4"><Notice tone="info">Counts are technical metadata only; platform administrators have no access to the underlying business records.</Notice></div>
     </>
   );
 }

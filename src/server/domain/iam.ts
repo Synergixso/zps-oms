@@ -83,6 +83,7 @@ export async function provisionUser(db: DB, actor: Actor, input: z.input<typeof 
   const id = newId("usr");
   await tx(db, async (db) => {
     await run(db, "INSERT INTO users (id, username, display_name, position_title, status, created_at) VALUES (?,?,?,?, 'ACTIVE', ?)", id, d.username, d.displayName, d.positionTitle, nowIso());
+    await assignMissingUserRefs(db);
     await audit(db, { actorId: actor.userId, action: "iam.user.provision", category: "IAM", entityType: "user", entityId: id, details: { username: d.username } });
   });
   return id;
@@ -275,6 +276,15 @@ export async function decideReviewItem(db: DB, actor: Actor, itemId: string, dec
  * Issues a one-time temporary password (shown once to the administrator, never stored in clear).
  * The holder must change it at next sign-in. Existing sessions end and any lockout is cleared.
  */
+/** Gives every user without one a sequential USR-###### reference. */
+export async function assignMissingUserRefs(db: DB) {
+  const max = await one<{ m: string | null }>(db, "SELECT MAX(user_ref) AS m FROM users");
+  let n = max?.m ? Number(max.m.slice(4)) : 0;
+  for (const u of await all<{ id: string }>(db, "SELECT id FROM users WHERE user_ref IS NULL ORDER BY created_at, id")) {
+    await run(db, "UPDATE users SET user_ref = ? WHERE id = ?", `USR-${String(++n).padStart(6, "0")}`, u.id);
+  }
+}
+
 export async function issueTemporaryPassword(db: DB, actor: Actor, userId: string): Promise<string> {
   await requirePermission(db, actor, "user.provision", HQ_ID);
   if (userId === actor.userId) throw forbidden("Use the change-password form on your profile for your own account.");
@@ -297,4 +307,14 @@ export async function unlockAccount(db: DB, actor: Actor, userId: string) {
   if (!u) throw notFound();
   await run(db, "UPDATE users SET failed_logins = 0, locked_until = NULL WHERE id = ?", userId);
   await audit(db, { actorId: actor.userId, action: "iam.user.unlock", category: "SECURITY", entityType: "user", entityId: userId });
+}
+
+/** Ends every active session of a user (security administration; e.g. suspected compromise). */
+export async function endUserSessions(db: DB, actor: Actor, userId: string) {
+  await requirePermission(db, actor, "user.suspend", HQ_ID);
+  if (userId === actor.userId) throw forbidden("Use Sign out to end your own session.");
+  const n = await run(db, "DELETE FROM sessions WHERE user_id = ?", userId);
+  await audit(db, { actorId: actor.userId, action: "iam.sessions.end", category: "SECURITY", entityType: "user", entityId: userId, details: { sessions: n.changes } });
+  await notify(db, userId, "Your sessions were ended", "A security administrator signed you out of all devices. Sign in again to continue.", "/login", { category: "ACCOUNT" });
+  return n.changes;
 }

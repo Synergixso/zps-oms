@@ -337,3 +337,18 @@ export async function personnelSummary(db: DB, actor: Actor) {
     byDisposition: Object.entries(rows.reduce<Record<string, number>>((m, r) => ((m[r.disposition_status] = (m[r.disposition_status] ?? 0) + Number(r.c)), m), {})),
   };
 }
+
+/** Possible duplicate identities (same normalised name and rank) and records unverified for over 30 days, within scope. */
+export async function registryReview(db: DB, actor: Actor) {
+  await requirePermission(db, actor, "personnel.edit");
+  const s = unitFilter(actor, "personnel.edit", "p.home_unit_id");
+  const groups = await all<{ name_key: string; rank_code: string; c: number }>(db,
+    `SELECT p.name_key, p.rank_code, COUNT(*) AS c FROM personnel_records p WHERE ${s.sql} GROUP BY p.name_key, p.rank_code HAVING COUNT(*) > 1 ORDER BY c DESC, p.name_key LIMIT 100`, ...s.params);
+  const duplicates: Array<{ key: string; rows: PersonnelRow[] }> = [];
+  for (const g of groups) {
+    duplicates.push({ key: `${g.name_key}|${g.rank_code}`, rows: await all<PersonnelRow>(db, `${BASE_SELECT} WHERE p.name_key = ? AND p.rank_code = ? AND ${s.sql.replace(/p\.home_unit_id/g, "p.home_unit_id")} ORDER BY p.created_at`, g.name_key, g.rank_code, ...s.params) });
+  }
+  const stale = await all<PersonnelRow>(db, `${BASE_SELECT} WHERE p.verification_status = 'UNVERIFIED' AND p.created_at < ? AND ${s.sql} ORDER BY p.created_at LIMIT 200`,
+    new Date(Date.now() - 30 * 86400000).toISOString(), ...s.params);
+  return { duplicates, stale };
+}

@@ -6,7 +6,7 @@ import { eligibleForContribution, getContribution, requestHistory, rosterIndex }
 import { hasPermission } from "@/server/domain/policy";
 import { DISPOSITIONS } from "@/server/domain/personnel";
 import { addEntriesAction, contributionWorkflowAction, removeEntryAction, reuseListAction } from "@/server/actions/personnel";
-import { Badge, Card, DL, Notice, PageHeader, Table, Timeline, td, fmtDateTime } from "@/components/ui";
+import { Badge, Card, DL, Notice, PageHeader, Table, Timeline, td, fmtDate, fmtDateTime } from "@/components/ui";
 import { ActionForm, Hidden, Select, Submit, TextArea } from "@/components/forms";
 
 export const metadata = { title: "Contribution" };
@@ -31,7 +31,7 @@ export default async function ContributionDetail({ params, searchParams }: { par
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <Card title="Requirement">
-            <DL items={[["Request", <Link key="r" href={`/app/manpower/${c.request_id}`} className="text-zp-blue hover:underline">{c.request_ref} — {c.purpose}</Link>], ["Officers required", String(c.required_count)], ["Rank / category note", c.rank_note ?? "—"], ["Submitted", c.submitted_at ? `${c.submitted_by_name}, ${fmtDateTime(c.submitted_at)}` : "—"], ["Reviewed", c.reviewed_at ? `${c.reviewed_by_name}, ${fmtDateTime(c.reviewed_at)}` : "—"]]} />
+            <DL items={[["Request", <Link key="r" href={`/app/manpower/${c.request_id}`} className="text-zp-blue hover:underline">{c.request_ref} — {c.purpose}</Link>], ["Officers required", String(c.required_count)], ["Deadline", c.contribution_deadline ? <span key="d" className={c.contribution_deadline < new Date().toISOString().slice(0, 10) && ["PENDING", "RETURNED"].includes(c.status) ? "font-semibold text-err" : ""}>{fmtDate(c.contribution_deadline)}</span> : "—"], ["Rank / category note", c.rank_note ?? "—"], ["Submitted", c.submitted_at ? `${c.submitted_by_name}, ${fmtDateTime(c.submitted_at)}` : "—"], ["Reviewed", c.reviewed_at ? `${c.reviewed_by_name}, ${fmtDateTime(c.reviewed_at)}` : "—"]]} />
           </Card>
           <Card title="Selected officers" subtitle="Eligibility is re-checked now, at submission and again when the roster is built" bodyClass="p-0">
             <Table head={["Officer", "Rank", "Home unit", "Eligibility", ""]} empty="No officers selected yet.">

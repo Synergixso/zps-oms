@@ -7,11 +7,11 @@ import { requireActor } from "../auth/session";
 import { changeDisposition, changeHomeUnit, registerPersonnel, updatePersonnel, verifyPersonnel, type Disposition } from "../domain/personnel";
 import {
   acceptDecision, cancelAssignment, cancelTransfer, createArea, decideAssignment, decideException, initiateTransfer, markRenewalPending, proposeAssignment,
-  raiseException, releaseAssignment, releaseDecision, renewAssignment, setAreaStatus,
+  raiseException, releaseAssignment, releaseDecision, renewAssignment, setAreaStatus, updateArea,
 } from "../domain/assignments";
 import {
   addContributionEntries, addRosterEntry, amendRoster, buildRoster, contributionAction, createManpowerRequest, manpowerAction, removeContributionEntry,
-  removeRequirement, removeRosterEntry, reuseRosterList, revalidateRoster, rosterAction, setRequirement, updateManpowerRequest, type MprAction, type RosterAction,
+  publishManpowerWorkflow, removeRequirement, removeRosterEntry, reuseRosterList, revalidateRoster, rosterAction, setRequirement, updateManpowerRequest, type MprAction, type RosterAction,
 } from "../domain/manpower";
 import { str, toState, type ActionState } from "./result";
 
@@ -133,7 +133,7 @@ export async function setRequirementAction(_: ActionState, fd: FormData): Promis
   const actor = await requireActor();
   const id = str(fd, "id");
   try {
-    await setRequirement(getDb(), actor, id, { unitId: str(fd, "unitId"), count: Number(str(fd, "count")), rankNote: str(fd, "rankNote") });
+    await setRequirement(getDb(), actor, id, { unitId: str(fd, "unitId"), count: Number(str(fd, "count")), rankNote: str(fd, "rankNote"), deadline: str(fd, "deadline") || undefined });
   } catch (e) {
     return toState(e);
   }
@@ -273,6 +273,17 @@ export async function areaStatusAction(_: ActionState, fd: FormData): Promise<Ac
   return done("Area status updated.", "/app/areas");
 }
 
+export async function updateAreaAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  const actor = await requireActor();
+  const id = str(fd, "id");
+  try {
+    await updateArea(getDb(), actor, id, { name: str(fd, "name"), description: str(fd, "description"), reason: str(fd, "reason") });
+  } catch (e) {
+    return toState(e);
+  }
+  return done("Operational area updated.", `/app/areas/${id}`, "/app/areas");
+}
+
 // ── Assignments ─────────────────────────────────────────────────────────────
 export async function proposeAssignmentAction(_: ActionState, fd: FormData): Promise<ActionState> {
   const actor = await requireActor();
@@ -362,4 +373,15 @@ export async function transferWorkflowAction(_: ActionState, fd: FormData): Prom
     return toState(e);
   }
   return done("Action recorded.", `/app/transfers/${id}`);
+}
+
+export async function publishWorkflowAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  const actor = await requireActor();
+  try {
+    const steps = [1, 2, 3].map((i) => ({ authority: str(fd, `authority_${i}`), label: str(fd, `label_${i}`) })).filter((x) => x.authority && x.label);
+    await publishManpowerWorkflow(getDb(), actor, str(fd, "category"), steps, str(fd, "note"));
+  } catch (e) {
+    return toState(e);
+  }
+  return done("New workflow version published; requests already submitted keep their version.", "/app/workflows");
 }

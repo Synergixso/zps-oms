@@ -103,6 +103,19 @@ describe("role catalogue and hierarchical scope", () => {
     expect(scopeFor(staff, "manpower.view").units).toEqual([]);
   }));
 
+  it("changing a user's organisational assignment revokes the obsolete access immediately (Test H)", () => withDb(async (db) => {
+    const before = await actor(db, "u_kit_per");
+    expect(can(before, "personnel.view", "org_cb_kitwe_central")).toBe(true);
+    // Reassigned from Kitwe District to Mufulira District: revoke the old assignment, grant the new one.
+    await run(db, "UPDATE role_assignments SET revoked_at = ?, revoke_reason = 'Reassigned' WHERE user_id = 'u_kit_per' AND revoked_at IS NULL", new Date().toISOString());
+    await run(db, "INSERT INTO role_assignments (id, user_id, role_code, org_unit_id, valid_from, justification, created_at) VALUES ('ra_test_h','u_kit_per','DISTRICT_PERSONNEL_OFFICER','org_cb_mufulira','2025-01-01T00:00:00.000Z','Test H','2025-01-01T00:00:00.000Z')");
+    const after = await actor(db, "u_kit_per");
+    expect(can(after, "personnel.view", "org_cb_kitwe_central")).toBe(false);
+    expect(can(after, "personnel.view", "org_cb_mufulira_central")).toBe(true);
+    const rows = await listPersonnel(db, after, { pageSize: 200 });
+    expect(rows.rows.every((r) => r.home_unit_id.startsWith("org_cb_mufulira"))).toBe(true);
+  }));
+
   it("approval authority follows delegations down the hierarchy, not rank or role alone", () => withDb(async (db) => {
     const cb = await actor(db, "u_cb_cmd");
     expect(await approvalUnitFor(db, cb, "ASSIGNMENT", "org_cb_kitwe_central")).toBe("org_cb");

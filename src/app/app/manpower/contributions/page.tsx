@@ -19,14 +19,14 @@ export default async function ContributionsPage({ searchParams }: { searchParams
         {[["OPEN", "Open"], ["ALL", "All"]].map(([k, l]) => <Link key={k} href={`?status=${k}`} className={`rounded-md px-3 py-1.5 text-sm font-semibold ${status === k ? "bg-zp-green text-white" : "border border-line-2 bg-white text-ink"}`}>{l}</Link>)}
       </nav>
       <Card bodyClass="p-0">
-        <Table head={["Request", "Contributing unit", "Required", "Selected", "Commences", "Status"]} empty="No contribution requests.">
+        <Table head={["Request", "Contributing unit", "Required", "Selected", "Deadline", "Status"]} empty="No contribution requests.">
           {rows.map((c) => (
             <tr key={c.id}>
               <td className={td}><Link href={`/app/manpower/contributions/${c.id}`} className="font-semibold text-zp-blue hover:underline">{c.request_ref}</Link><span className="block text-xs text-muted">{c.purpose}</span></td>
               <td className={td}>{c.unit_name}{c.rank_note && <span className="block text-xs text-muted">{c.rank_note}</span>}</td>
               <td className={`${td} tabular-nums`}>{c.required_count}</td>
               <td className={`${td} tabular-nums`}>{c.entries}</td>
-              <td className={td}>{fmtDate(c.commencement_date)}</td>
+              <td className={`${td} ${c.contribution_deadline && c.contribution_deadline < new Date().toISOString().slice(0, 10) && ["PENDING", "RETURNED"].includes(c.status) ? "font-semibold text-err" : ""}`}>{fmtDate(c.contribution_deadline)}</td>
               <td className={td}><Badge status={c.status === "ACCEPTED" ? "APPROVED" : c.status} label={c.status.toLowerCase()} /></td>
             </tr>
           ))}

@@ -27,7 +27,8 @@ export function ActionForm({ action, children, className = "space-y-4", resetOnS
     startTransition(() => formAction(fd));
   };
   return (
-    <form ref={ref} onSubmit={onSubmit} className={className} noValidate>
+    // method="post": a submit before hydration must never put field values (e.g. passwords) into the URL.
+    <form ref={ref} onSubmit={onSubmit} className={className} method="post" noValidate>
       {state?.error && (
         <div role="alert" className="rounded-md border border-err/30 bg-err-bg px-3 py-2 text-sm text-err">
           {state.error}

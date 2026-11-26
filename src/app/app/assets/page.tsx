@@ -17,7 +17,7 @@ export default async function AssetsPage({ searchParams }: { searchParams: Promi
   return (
     <>
       <PageHeader eyebrow="M05 · General assets" title="General asset register" description="Approved non-sensitive categories only, within your organisational scope. Inbound transfers to your unit are included."
-        actions={hasPermission(actor, "asset.register") ? <ButtonLink href="/app/assets/new" variant="primary">Register asset</ButtonLink> : undefined} />
+        actions={<><ButtonLink href="/app/assets/reconciliation">Reconciliation</ButtonLink>{hasPermission(actor, "asset.register") && <ButtonLink href="/app/assets/new" variant="primary">Register asset</ButtonLink>}</>} />
       <div className="mb-4"><Notice tone="info">Firearms, ammunition, armoury records, tactical protective equipment, sensitive communications equipment and controlled operational equipment are excluded and cannot be recorded.</Notice></div>
       <Card bodyClass="p-0">
         <form className="flex flex-wrap items-end gap-3 border-b border-line p-4" role="search">

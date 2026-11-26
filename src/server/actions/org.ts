@@ -36,3 +36,15 @@ export async function decideChangeAction(_: ActionState, fd: FormData): Promise<
   revalidatePath("/app/org", "layout");
   return { ok: true, message: "Decision recorded." };
 }
+
+export async function provisionTenantAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  const actor = await requireActor();
+  try {
+    const { provisionFormationTenant } = await import("../domain/tenants");
+    const r = await provisionFormationTenant(getDb(), actor, { code: str(fd, "code"), name: str(fd, "name"), formationId: str(fd, "formationId"), reason: str(fd, "reason") });
+    revalidatePath("/app/org/tenants");
+    return { ok: true, message: `Tenant provisioned: ${r.moved.org_units} unit(s) moved with their records.` };
+  } catch (e) {
+    return toState(e);
+  }
+}

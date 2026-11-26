@@ -185,7 +185,7 @@ export async function seedDatabase(db: DB) {
   }
   for (const c of ASSET_CATEGORIES) await ins("INSERT INTO asset_categories (code, name, allowed) VALUES (?,?,1)", c.code, c.name);
   for (const r of REPORTS) {
-    await ins("INSERT INTO report_definitions (code, name, description, permission, fields, owner_note) VALUES (?,?,?,?,?,?)",
+    await ins("INSERT IGNORE INTO report_definitions (code, name, description, permission, fields, owner_note) VALUES (?,?,?,?,?,?)",
       r.code, r.name, r.description, "report.view", JSON.stringify(r.fields), "Report owner to be nominated by the Service (DEC-012).");
   }
   await ins("INSERT INTO report_definitions (code, name, description, permission, fields, owner_note) VALUES (?,?,?,?,?,?)",

@@ -45,3 +45,33 @@ export async function assetWorkflowAction(_: ActionState, fd: FormData): Promise
   revalidatePath("/app", "layout");
   return { ok: true, message: "Asset event recorded." };
 }
+
+export async function openReconciliationAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  const actor = await requireActor();
+  let id: string;
+  try {
+    const { openReconciliation } = await import("../domain/reconciliation");
+    id = await openReconciliation(getDb(), actor, str(fd, "unitId"), str(fd, "note"));
+  } catch (e) {
+    return toState(e);
+  }
+  redirect(`/app/assets/reconciliation/${id}`);
+}
+
+export async function reconciliationItemAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  const actor = await requireActor();
+  const id = str(fd, "id");
+  try {
+    const { closeReconciliation, recordItem } = await import("../domain/reconciliation");
+    if (str(fd, "op") === "close") {
+      const summary = await closeReconciliation(getDb(), actor, id);
+      revalidatePath(`/app/assets/reconciliation/${id}`);
+      return { ok: true, message: `Reconciliation closed: ${summary}.` };
+    }
+    await recordItem(getDb(), actor, id, str(fd, "itemId"), str(fd, "result") as "FOUND", str(fd, "note"));
+  } catch (e) {
+    return toState(e);
+  }
+  revalidatePath(`/app/assets/reconciliation/${id}`);
+  return { ok: true, message: "Recorded." };
+}

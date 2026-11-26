@@ -19,6 +19,7 @@ export const NAV: NavGroup[] = [
     label: "Overview",
     items: [
       { href: "/app", label: "Dashboard", icon: "home", any: [] },
+      { href: "/app/tasks", label: "My tasks", icon: "check", any: [] },
       { href: "/app/approvals", label: "Approvals & queues", icon: "inbox", any: ["request.assign", "request.view", "manpower.view", "manpower.contribute", "assignment.view"] },
     ],
   },
@@ -50,6 +51,7 @@ export const NAV: NavGroup[] = [
     items: [
       { href: "/app/org", label: "Organisation directory", icon: "building", any: ["org.view"] },
       { href: "/app/org/changes", label: "Structure changes", icon: "flow", any: ["org.propose", "org.view"] },
+      { href: "/app/org/tenants", label: "Tenant management", icon: "network", any: ["tenant.view"] },
     ],
   },
   {
@@ -59,6 +61,7 @@ export const NAV: NavGroup[] = [
       { href: "/app/admin/roles", label: "Roles & permissions", icon: "key", any: ["user.view", "audit.view", "platform.view"] },
       { href: "/app/admin/reviews", label: "Access reviews", icon: "check", any: ["accessreview.manage"] },
       { href: "/app/audit", label: "Audit explorer", icon: "search", any: ["audit.view"] },
+      { href: "/app/audit/history", label: "Record history", icon: "docSearch", any: ["audit.view"] },
       { href: "/app/security", label: "Security events", icon: "shield", any: ["security.view"] },
       { href: "/app/workflows", label: "Workflow definitions", icon: "flow", any: ["workflow.view"] },
       { href: "/app/platform", label: "System health", icon: "server", any: ["platform.view"] },

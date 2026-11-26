@@ -28,6 +28,8 @@ export const PERMISSIONS = {
   // M01 Organisation registry
   "org.view": "View organisation directory",
   "org.propose": "Propose an organisational change",
+  "tenant.view": "View tenants (administrative environments) and their organisational coverage",
+  "tenant.manage": "Provision tenants and assign formation structures to them",
   // Approval authority is NOT a role permission: see policy.canApprove (delegation + business assignment).
   // M02 Identity and access
   "user.view": "View user accounts and assignments",
@@ -74,6 +76,7 @@ export const PERMISSIONS = {
   "platform.view": "View system health and configuration",
   "platform.configure": "Change non-security application settings",
   "workflow.view": "View workflow definitions",
+  "workflow.configure": "Publish new versions of manpower approval chains (audited; in-flight requests keep their version)",
   // Personnel registry
   "personnel.view": "View personnel registers within scope",
   "personnel.register": "Register a personnel record",
@@ -93,7 +96,9 @@ export const PERMISSIONS = {
   "area.view": "View operational (administrative duty) areas",
   "area.manage": "Create and maintain operational areas",
   "assignment.view": "View the assignment register",
-  "assignment.propose": "Propose assignments, initiate transfers, raise exceptions and request renewals",
+  "assignment.propose": "Propose assignments and raise tenure exceptions",
+  "assignment.transfer": "Initiate and withdraw transfers between operational areas",
+  "assignment.renew": "Put assignments forward for review and renewal",
   "assignment.receive": "Accept transfers into a receiving area",
   "disposition.change": "Record disposition status changes",
   // Public Contact page inbox
@@ -173,7 +178,7 @@ const P = {
   personnelRead: (c: Coverage) => ({ "personnel.view": c }) as const,
   personnelAdmin: (c: Coverage) => ({ "personnel.view": c, "personnel.register": c, "personnel.edit": c }) as const,
   contributor: (c: Coverage) => ({ "manpower.view": c, "manpower.contribute": c, "roster.view": c }) as const,
-  assignmentAdmin: (c: Coverage) => ({ "personnel.view": c, "area.view": c, "assignment.view": c, "assignment.propose": c, "assignment.receive": c, "disposition.change": c }) as const,
+  assignmentAdmin: (c: Coverage) => ({ "personnel.view": c, "area.view": c, "assignment.view": c, "assignment.propose": c, "assignment.transfer": c, "assignment.renew": c, "assignment.receive": c, "disposition.change": c }) as const,
   oversight: (c: Coverage) => ({ "personnel.view": c, "manpower.view": c, "roster.view": c, "area.view": c, "assignment.view": c }) as const,
 };
 
@@ -190,6 +195,7 @@ export const ROLES: RoleDef[] = [
     permissions: {
       "user.view": N, "user.provision": N, "user.deactivate": N, "grant.assign": N, "grant.revoke": N, "delegation.grant": N,
       "platform.view": N, "platform.configure": N, "workflow.view": U, "org.view": N, "contact.view": N, "contact.manage": N,
+      "tenant.view": N, "tenant.manage": N,
     },
   },
   {
@@ -212,7 +218,7 @@ export const ROLES: RoleDef[] = [
     dashboardTitle: "Organisation and Formation Administration",
     description: "Maintains the approved organisational directory, tenant structure and relationships through effective-dated proposals. Cannot approve own proposals.",
     assignableTo: ["SERVICE_HQ"],
-    permissions: { "org.view": N, "org.propose": N, "area.view": N },
+    permissions: { "org.view": N, "org.propose": N, "area.view": N, "tenant.view": N },
   },
   {
     code: "DIG_OPS_EXECUTIVE", no: 4, level: "NATIONAL",
@@ -240,7 +246,7 @@ export const ROLES: RoleDef[] = [
       "request.view": N, "request.create": U, "request.edit": U, "request.submit": U, "request.assign": N, "request.cancel": U, "request.progress": U, "request.close": N,
       "fleet.view": N, "maintenance.view": N, "asset.view": N, "report.view": N, "report.export": N, "workflow.view": U, "contact.view": N, "contact.manage": N,
       ...P.oversight(N), "manpower.create": U, "manpower.review": N, "roster.build": N, "roster.review": N, "roster.export": N,
-      "area.manage": N, "assignment.propose": N, "disposition.change": N, "personnel.export": N,
+      "area.manage": N, "assignment.propose": N, "assignment.transfer": N, "assignment.renew": N, "disposition.change": N, "personnel.export": N, "workflow.configure": N,
     },
   },
   {
@@ -302,7 +308,7 @@ export const ROLES: RoleDef[] = [
     permissions: {
       "dashboard.division.view": U, "org.view": N, "request.view": U, "request.create": U, "request.edit": U, "request.submit": U, "request.cancel": U, "request.progress": U,
       "fleet.view": U, "maintenance.view": U, "maintenance.create": U, "asset.view": U, "report.view": U,
-      ...P.oversight(S), ...P.contributor(S), "manpower.create": U, "manpower.review": S, "roster.build": S, "roster.export": S, "assignment.propose": S,
+      ...P.oversight(S), ...P.contributor(S), "manpower.create": U, "manpower.review": S, "roster.build": S, "roster.export": S, "assignment.propose": S, "assignment.transfer": S,
     },
   },
   {
@@ -354,7 +360,7 @@ export const ROLES: RoleDef[] = [
     dashboardTitle: "District Operations Workspace",
     description: "Coordinates administrative matters and personnel contributions within the District.",
     assignableTo: ["DISTRICT"],
-    permissions: { "dashboard.district.view": U, "org.view": N, ...P.oversight(S), ...P.contributor(S), "assignment.propose": S, "report.view": S },
+    permissions: { "dashboard.district.view": U, "org.view": N, ...P.oversight(S), ...P.contributor(S), "assignment.propose": S, "assignment.transfer": S, "report.view": S },
   },
   {
     code: "DISTRICT_PERSONNEL_OFFICER", no: 16, level: "DISTRICT",
@@ -443,7 +449,7 @@ export const ROLES: RoleDef[] = [
     permissions: {
       "dashboard.formation.view": U, "org.view": N, "request.view": U, "request.create": U, "request.edit": U, "request.submit": U, "request.cancel": U, "request.progress": U,
       "fleet.view": U, "maintenance.view": U, "maintenance.create": U, "asset.view": U, "asset.custody": U, "asset.inspect": U, "report.view": U,
-      ...P.oversight(S), ...P.personnelAdmin(S), ...P.contributor(S), "manpower.create": U, "manpower.review": S, "roster.build": S, "roster.export": S, "assignment.propose": S,
+      ...P.oversight(S), ...P.personnelAdmin(S), ...P.contributor(S), "manpower.create": U, "manpower.review": S, "roster.build": S, "roster.export": S, "assignment.propose": S, "assignment.transfer": S,
     },
   },
   ...([

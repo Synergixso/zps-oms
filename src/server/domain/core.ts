@@ -55,15 +55,42 @@ export async function nextReference(db: DB, prefix: string, table: string): Prom
   return `${prefix}-${year}-${String((row?.c ?? 0) + 1).padStart(6, "0")}`;
 }
 
-export async function notify(db: DB, userId: string, title: string, body: string, link?: string) {
-  await run(
+export const NOTIFICATION_CATEGORIES = {
+  GENERAL: "General",
+  APPROVAL: "Approvals and decisions",
+  MANPOWER: "Manpower and contributions",
+  ASSIGNMENT: "Assignments and transfers",
+  RENEWAL: "Tenure reviews and renewals",
+  FLEET: "Fleet maintenance",
+  ASSET: "Asset inspections and returns",
+  ACCOUNT: "My account and access",
+  SYSTEM: "Platform and backups",
+} as const;
+export type NotificationCategory = keyof typeof NOTIFICATION_CATEGORIES;
+/** Categories a user may switch off (decisions about their own work and account notices always arrive). */
+export const OPTIONAL_CATEGORIES: NotificationCategory[] = ["MANPOWER", "ASSIGNMENT", "RENEWAL", "FLEET", "ASSET", "SYSTEM"];
+
+/**
+ * In-application notification (external channels are disabled, DEC-013).
+ * `dedupeKey` makes automated reminders idempotent; optional categories respect user preferences.
+ */
+export async function notify(db: DB, userId: string, title: string, body: string, link?: string, opts: { category?: NotificationCategory; dedupeKey?: string } = {}) {
+  const category = opts.category ?? "GENERAL";
+  if (OPTIONAL_CATEGORIES.includes(category)) {
+    const pref = await one<{ enabled: number }>(db, "SELECT enabled FROM notification_preferences WHERE user_id = ? AND category = ?", userId, category);
+    if (pref && pref.enabled === 0) return false;
+  }
+  const r = await run(
     db,
-    "INSERT INTO notifications (id, user_id, title, body, link, created_at) VALUES (?,?,?,?,?,?)",
+    "INSERT IGNORE INTO notifications (id, user_id, title, body, link, created_at, category, dedupe_key) VALUES (?,?,?,?,?,?,?,?)",
     newId("ntf"),
     userId,
     title,
     body,
     link ?? null,
     nowIso(),
+    category,
+    opts.dedupeKey ? `${opts.dedupeKey}|${userId}`.slice(0, 160) : null,
   );
+  return r.changes > 0;
 }

@@ -43,7 +43,7 @@ export default async function RosterDetail({ params, searchParams }: { params: P
         eyebrow={`${r.request.reference} · roster version ${v.version_no}`}
         title={r.request.purpose}
         description={<span className="flex flex-wrap items-center gap-2"><Badge status={v.status === "FINALISED" ? "COMPLETED" : v.status} label={ROSTER_STATUS_LABEL[v.status]} /><span className="text-sm">{r.entries.length} officers{issues ? ` · ${issues} with issues` : ""}</span></span>}
-        actions={r.can.export ? <><Link href={`/app/rosters/${id}/print`} className={btnSecondary}>Print / PDF</Link><a href={`/app/rosters/${id}/export`} className={btnSecondary}>Export to Excel (CSV)</a></> : undefined}
+        actions={r.can.export ? <><a href={`/app/rosters/${id}/pdf`} className={btnSecondary}>Download PDF</a><Link href={`/app/rosters/${id}/print`} className={btnSecondary}>Print view</Link><a href={`/app/rosters/${id}/export`} className={btnSecondary}>Export to Excel (CSV)</a></> : undefined}
       />
       {issues > 0 && <div className="mb-4"><Notice tone="err" title={`${issues} integrity issue(s)`}>Duplicates, conflicting assignments, ineligible or outdated records must be resolved before the roster can be submitted or approved.</Notice></div>}
       {v.status === "SUPERSEDED" && <div className="mb-4"><Notice tone="info">This version was superseded by a later approved amendment. It is kept unchanged for the record.</Notice></div>}

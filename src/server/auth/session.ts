@@ -2,7 +2,8 @@ import "server-only";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getDb } from "../db/connection";
-import { loadActor, type Actor } from "../domain/policy";
+import { hasPermission, loadActor, type Actor } from "../domain/policy";
+import { maintenanceMode } from "../domain/platform";
 import { resolveSession } from "../domain/sessions";
 import { applyDueChanges } from "../domain/org";
 import { applyDueAssignmentEvents } from "../domain/assignments";
@@ -26,6 +27,8 @@ export async function requireActor(): Promise<Actor> {
   const a = await getActor();
   if (!a) redirect("/login?reason=signin");
   if (a.mustChangePassword && (await headers()).get("x-zps-path") !== "/app/profile") redirect("/app/profile?reason=change-password");
+  // Maintenance mode: only platform administrators keep access to the back office.
+  if (!hasPermission(a, "platform.view") && (await maintenanceMode(getDb()))) redirect("/maintenance");
   return a;
 }
 

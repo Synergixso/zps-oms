@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getDb } from "../db/connection";
 import { requireActor } from "../auth/session";
-import { assignRole, decideReviewItem, grantDelegation, issueTemporaryPassword, openReview, provisionUser, revokeAssignment, revokeDelegation, setUserStatus, unlockAccount } from "../domain/iam";
+import { assignRole, decideReviewItem, grantDelegation, endUserSessions, issueTemporaryPassword, openReview, provisionUser, revokeAssignment, revokeDelegation, setUserStatus, unlockAccount } from "../domain/iam";
 import { str, toState, type ActionState } from "./result";
 
 export async function provisionUserAction(_: ActionState, fd: FormData): Promise<ActionState> {
@@ -129,4 +129,15 @@ export async function unlockAccountAction(_: ActionState, fd: FormData): Promise
   }
   revalidatePath(`/app/admin/users/${str(fd, "userId")}`);
   return { ok: true, message: "Sign-in lockout cleared." };
+}
+
+export async function endSessionsAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  const actor = await requireActor();
+  try {
+    const n = await endUserSessions(getDb(), actor, str(fd, "userId"));
+    revalidatePath("/app/security");
+    return { ok: true, message: `${n} session(s) ended.` };
+  } catch (e) {
+    return toState(e);
+  }
 }

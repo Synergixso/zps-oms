@@ -21,9 +21,11 @@ export default async function AssignmentDetail({ params }: { params: Promise<{ i
   const a = d.assignment;
   const t = d.tenure;
   const proposer = can(actor, "assignment.propose", a.responsible_unit_id) || can(actor, "assignment.propose", a.home_unit_id);
+  const transferer = can(actor, "assignment.transfer", a.responsible_unit_id) || can(actor, "assignment.transfer", a.home_unit_id);
+  const renewer = can(actor, "assignment.renew", a.responsible_unit_id);
   const current = ["ACTIVE", "APPROVED", "TRANSFER_PENDING"].includes(a.status);
   const approvedEarly = d.exceptions.filter((e) => e.purpose === "EARLY_RELEASE" && e.status === "APPROVED");
-  const [cats, areas] = proposer && current ? await Promise.all([exceptionCategories(db), selectableAreas(db)]) : [[], []];
+  const [cats, areas] = (proposer || transferer) && current ? await Promise.all([exceptionCategories(db), selectableAreas(db)]) : [[], []];
   const pct = Math.min(100, Math.round((t.elapsedDays / t.minimumDays) * 100));
   return (
     <>
@@ -126,7 +128,7 @@ export default async function AssignmentDetail({ params }: { params: Promise<{ i
               </ActionForm>
             </Card>
           )}
-          {a.status === "ACTIVE" && proposer && t.reviewEligible && a.disposition_status !== "RENEWAL_PENDING" && (
+          {a.status === "ACTIVE" && renewer && t.reviewEligible && a.disposition_status !== "RENEWAL_PENDING" && (
             <Card title="Request renewal">
               <ActionForm action={assignmentWorkflowAction}>
                 <Hidden name="id" value={a.id} />
@@ -146,7 +148,7 @@ export default async function AssignmentDetail({ params }: { params: Promise<{ i
               </ActionForm>
             </Card>
           )}
-          {a.status === "ACTIVE" && proposer && (
+          {a.status === "ACTIVE" && transferer && (
             <Card title="Initiate transfer" subtitle="Releasing approval, then receiving acceptance">
               {!t.minimumMet && !approvedEarly.length && <div className="mb-3"><Notice tone="warn">Minimum tenure not met ({t.remainingDays} days remaining). A transfer needs an approved early-release exception.</Notice></div>}
               <ActionForm action={initiateTransferAction}>

@@ -47,6 +47,7 @@ export default async function PersonnelPage({ searchParams }: { searchParams: Pr
                 Export CSV
               </a>
             )}
+            {hasPermission(actor, "personnel.edit") && <ButtonLink href="/app/personnel/review">Duplicate review</ButtonLink>}
             {hasPermission(actor, "personnel.register") && <ButtonLink href="/app/personnel/new" variant="primary">Register officer</ButtonLink>}
           </>
         }

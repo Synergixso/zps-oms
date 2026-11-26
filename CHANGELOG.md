@@ -2,6 +2,32 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.4.0] — 2026-11-26 — Master Execution Prompt: audit, architecture, automation and administration (Phases 0–1, 9–15)
+### Added
+- Phase 0 audit (`docs/development/CODEBASE_AUDIT.md`), Phase 1 architecture set (`docs/architecture/*`), development status, roadmap, generated 41-role catalogue, module catalogue, testing strategy, migration history, known issues.
+- **Automation engine**: ten scheduled jobs (organisation effective dates, assignment commencement and review flags, contribution reminders and overdue tracking, tenure-review reminders, overdue-approval escalation, temporary-access expiry, fleet service and document reminders, asset inspection and custody reminders, backup monitoring, housekeeping) with retries, run log, named lock and manual runs.
+- **Platform administration**: verified `mysqldump` backups with SHA-256 re-verification, migration history, automation runs, error log, maintenance mode, editable non-policy settings, version information.
+- **Tasks and notifications**: notification categories and preferences, de-duplicated reminders, My tasks (open / overdue / completed) closed automatically when the matter is resolved.
+- **Configurable manpower approval chains**: versioned, 1–3 levels, pinned per request, published by the HQ Operations Coordinator (`workflow.configure`).
+- **Tenant management** page and formation-tenant provisioning (`tenant.view`, `tenant.manage`).
+- Contribution deadlines; user (`USR-`) and roster (`RST-`) references.
+- Seven reports: personnel by unit, disposition summary, manpower contributions, assignments by area, tenure bands, transfers, approval activity.
+- Record history for auditors (workflow, disposition, personnel changes, exports); authentication history, lockouts and session ending for security administrators.
+- Operational-area profile, editing and province / status filters; duplicate and incomplete-record review.
+- Least-privilege database account script `db/admin/create_app_user.sql`.
+- Finer action permissions `assignment.transfer` and `assignment.renew` (separate from `assignment.propose`); `tenant.view`, `tenant.manage`, `workflow.configure`.
+- Server-generated A4 roster PDF (pdfkit, MIT) with crest, grouping, page numbers and audit; print view keeps browser printing.
+- Unusual-access flags job (repeated denials or failed sign-ins notify security administrators once per day, audited).
+- Asset reconciliation (stock-take) with found / damaged / missing findings recorded against each asset.
+- Saved custom reports: choose approved columns and sort order, preview, save, export; never wider than the user's report access.
+- Migration 006 (asset reconciliation, saved reports).
+- Migrations 004 and 005; tests for Test H (reassignment revokes access), Test J (reports equal database counts), the automation engine, platform and backups, workflow chains, tenants, areas, reports and history. **91 unit/integration tests, 7 end-to-end journeys, route audit 74 routes × 48 users with 0 server errors.**
+### Changed
+- Migration checksums tolerate line-ending conversion; `.gitattributes` keeps migration bytes unchanged.
+- Route audit retries transient resets, records persistent failures as ERR, and runs against a production build (configurable concurrency).
+### Security
+- Client forms declare `method="post"`, so a submission before hydration can never place field values (including passwords) in the URL.
+
 ## [0.3.0] — 2026-11-26 — Personnel, manpower, rosters, assignments and password sign-in (Phase 3, stages 4–8)
 ### Added
 - Official **System Login** page to the owner's design; username + password sign-in (scrypt), 5-failure lockout for 15 minutes, per-device throttling, Remember me, temporary passwords issued by the Platform Super Administrator with forced change, change-password on the profile.

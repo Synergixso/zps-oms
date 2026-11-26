@@ -28,7 +28,7 @@ describe("manpower requests (criterion C)", () => {
     const sops = await actor(db, "u_cb_sops");
     const id = await createManpowerRequest(db, sops, request());
     await manpowerAction(db, sops, id, "SUBMIT");
-    await expect(manpowerAction(db, sops, id, "APPROVE")).rejects.toThrow(/delegated/);
+    await expect(manpowerAction(db, sops, id, "APPROVE")).rejects.toThrow(/originated/);
     await expect(manpowerAction(db, await actor(db, "u_kit_cmd"), id, "APPROVE")).rejects.toThrow(/not found|delegated/);
     await manpowerAction(db, await actor(db, "u_cb_cmd"), id, "APPROVE", "Approved");
     await setRequirement(db, sops, id, { unitId: "org_cb_kitwe_central", count: 2 });

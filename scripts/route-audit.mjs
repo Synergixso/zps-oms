@@ -60,6 +60,8 @@ const routes = [
   "/app/rosters", `/app/rosters/${R.roster}`, `/app/rosters/${R.roster}/print`, `/app/rosters/${R.roster}/export`,
   "/app/assignments", "/app/assignments/new", `/app/assignments/${R.asgKcm}`, `/app/assignments/${R.asgLsk}`,
   "/app/transfers", `/app/transfers/${R.transfer}`, "/app/areas",
+  "/app/areas/area_kcm", "/app/personnel/review", "/app/tasks", "/app/audit/history", "/app/org/tenants", "/app/reports/ASSIGNMENTS_BY_AREA", "/app/reports/PERSONNEL_BY_UNIT",
+  "/app/assets/reconciliation", `/app/rosters/${R.roster}/pdf`, "/app/platform", "/app/workflows", "/app/notifications",
 ];
 
 const users = await all("SELECT u.id, u.display_name, (SELECT role_code FROM role_assignments a WHERE a.user_id=u.id AND a.revoked_at IS NULL ORDER BY a.id LIMIT 1) AS role FROM users u WHERE u.status='ACTIVE' ORDER BY u.id");
@@ -74,22 +76,33 @@ async function session(userId) {
 
 const results = [];
 let errors = 0;
-// Four users at a time (each user's routes run sequentially).
+// Two users at a time (each user's routes run sequentially).
 const audited = async (u) => {
   const { token, h } = await session(u.id);
   const row = { user: `${u.display_name} (${u.role})`, cells: [] };
   for (const r of routes) {
-    const res = await fetch(base + r, { headers: { cookie: `zps_session=${token}` }, redirect: "manual" });
-    const body = res.status === 200 ? await res.text() : "";
-    const denied = /not authorised to view/.test(body) || res.status === 403;
-    const err = res.status >= 500 || /Application error|Internal Server Error/.test(body);
+    let res, body = "", failed = false;
+    for (let attempt = 1; ; attempt++) {
+      try {
+        res = await fetch(base + r, { headers: { cookie: `zps_session=${token}` }, redirect: "manual" });
+        body = res.status === 200 ? await res.text() : "";
+        break;
+      } catch (e) {
+        // Transient socket resets while the dev server compiles a route are retried; a persistent failure is an error.
+        if (attempt >= 4) { failed = true; console.error(`[audit] ${r} as ${u.id}: ${e.message}`); break; }
+        await new Promise((ok) => setTimeout(ok, 2000 * attempt));
+      }
+    }
+    const denied = !failed && (/not authorised to view/.test(body) || res.status === 403);
+    const err = failed || res.status >= 500 || /Application error|Internal Server Error/.test(body);
     if (err) errors++;
     row.cells.push(err ? "ERR" : res.status === 403 ? "✕" : res.status === 404 ? "404" : res.status >= 300 && res.status < 400 ? "→" : denied ? "✕" : "✓");
   }
   await db.query("DELETE FROM sessions WHERE id = ?", [h]);
   return row;
 };
-for (let i = 0; i < users.length; i += 4) results.push(...(await Promise.all(users.slice(i, i + 4).map(audited))));
+const CONC = Number(process.env.AUDIT_CONCURRENCY ?? 2);
+for (let i = 0; i < users.length; i += CONC) results.push(...(await Promise.all(users.slice(i, i + CONC).map(audited))));
 
 const header = `| User (primary role) | ${routes.map((r, i) => `R${i + 1}`).join(" | ")} |`;
 const sep = `|---|${routes.map(() => ":-:").join("|")}|`;

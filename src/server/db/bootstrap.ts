@@ -11,6 +11,8 @@ import { migrate } from "./migrate";
 import { seedDatabase } from "./seed";
 import { seedPhase3 } from "./seed-phase3";
 import { ROLES } from "../domain/catalogue";
+import { REPORTS } from "../domain/reports";
+import { assignMissingUserRefs } from "../domain/iam";
 
 export const SEED_STEPS: Array<[name: string, fn: (db: DB) => Promise<void>]> = [
   ["001_base", seedDatabase],
@@ -26,6 +28,11 @@ export async function syncCatalogue(db: DB) {
         r.code, r.name, r.description, r.category, r.requiresExpiry ? 1 : 0);
       await run(db, "DELETE FROM role_permissions WHERE role_code = ?", r.code);
       for (const [perm, cov] of Object.entries(r.permissions)) await run(db, "INSERT INTO role_permissions (role_code, permission, coverage) VALUES (?,?,?)", r.code, perm, cov);
+    }
+    // Report definitions are code-defined too (exports reference them).
+    for (const r of REPORTS) {
+      await run(db, `INSERT INTO report_definitions (code, name, description, permission, fields, owner_note) VALUES (?,?,?, 'report.view', ?, 'Report owner to be nominated by the Service (DEC-012).')
+                     ON DUPLICATE KEY UPDATE name = VALUES(name), description = VALUES(description), fields = VALUES(fields)`, r.code, r.name, r.description, JSON.stringify(r.fields));
     }
   });
 }
@@ -48,6 +55,7 @@ export async function runSeedSteps(db: DB): Promise<string[]> {
     await run(db, "INSERT INTO seed_steps (name, applied_at) VALUES (?, ?)", name, new Date().toISOString());
     applied.push(name);
   }
+  if (applied.length) await assignMissingUserRefs(db);
   return applied;
 }
 
