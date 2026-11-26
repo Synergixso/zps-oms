@@ -220,7 +220,7 @@ export async function CommandOverview({ actor, kind }: { actor: Actor; kind: Das
             ) : <p className="text-sm text-muted">No quick actions for your role.</p>}
           </Panel>
           {status && (
-            <Panel title="System status" icon="server" action={<span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${status.allOk ? "bg-[#1f9d4a] text-white" : "bg-[#ef8a3c] text-white"}`}>{status.allOk ? "All systems operational" : "Attention needed"}</span>}>
+            <Panel title="System status" icon="server" action={<span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${status.allOk ? "bg-[#157a37] text-white" : "bg-[#a84a05] text-white"}`}>{status.allOk ? "All systems operational" : "Attention needed"}</span>}>
               <ul className="space-y-2">
                 {status.rows.map((r) => (
                   <li key={r.label} className="flex items-center justify-between gap-2 text-[13px]">

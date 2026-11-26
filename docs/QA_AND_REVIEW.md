@@ -30,7 +30,7 @@ Tested in headless Chromium with the local prototype source and supplied crest e
 
 - This is a static frontend prototype; no backend, database, API, persistence, real authentication, real access control or production audit facility exists.
 - Browser smoke tests do not constitute full cross-browser, accessibility, penetration, security or user acceptance testing.
-- A complete WCAG 2.2 AA audit remains a required later activity.
+- Automated WCAG 2.0/2.1/2.2 A and AA rules (axe-core) pass on the public pages and every role's dashboard and Help page (`docs/evidence/accessibility.md`). Automated rules cover only part of WCAG: a manual audit (keyboard-only use, screen reader, content and forms) remains a required activity before roll-out.
 - The prototype was not connected to any Zambia Police Service network or system.
 - Sample metrics, dates, records and references are synthetic.
 - Institutional establishment and reporting relationships remain subject to internal confirmation.

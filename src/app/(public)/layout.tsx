@@ -10,7 +10,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <div className="zp-band" aria-hidden />
       <header className="sticky top-0 z-30 border-b border-line bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-x-2 gap-y-3 px-4 py-3 sm:gap-x-3">
-          <Link href="/" className="flex items-center gap-2.5 sm:gap-4" aria-label="ZPS-OMS home">
+          <Link href="/" className="flex items-center gap-2.5 sm:gap-4">
             <Crest className="h-[40px] w-[69px] sm:h-[52px] sm:w-[89px] xl:h-[56px] xl:w-[96px]" />
             <span className="hidden h-12 w-px bg-line-2 sm:block" aria-hidden />
             <span className="leading-tight">

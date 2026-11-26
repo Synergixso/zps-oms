@@ -43,7 +43,7 @@ Status key: **Implemented** (code + automated test) · **Implemented (manual)** 
 | M11-01 | Prompt F | Health, DB, config, release | `/app/platform` | route audit | Partial (no backup/job monitoring) |
 | M07, M08 | Prompt F | Scheduling, correspondence | — | — | Not implemented (later phase) |
 | NFR-005 | PRD §12 | Security testing | threat model, negative tests | — | Partial (no pen test) |
-| NFR-006 | PRD §12 | WCAG 2.2 AA | semantic, labelled, focus; phone-width review | Manual; phone review 27/27 | Partial (automated axe scan pending approval of a free dev dependency) |
+| NFR-006 | PRD §12 | WCAG 2.2 AA | semantic, labelled, focus; label-in-name; contrast; keyboard-reachable scroll regions; phone-width review | axe-core scan, 62 page views, 0 violations; phone review 27/27 | Automated rules met; manual review (keyboard, screen reader) still required |
 | NFR-008 | PRD §12 | Typed contracts, modular, tested | TS strict, Zod, 34 tests | tsc, vitest | Implemented |
 | NFR-010 | PRD §12 | Auditability | audit + histories | TS-13 | Implemented |
 | NFR-012 | PRD §12 | Africa/Lusaka, ZMW | formatting helpers | Manual | Implemented (manual) |

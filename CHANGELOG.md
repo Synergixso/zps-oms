@@ -2,6 +2,15 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.8.1] — 2026-11-26 — Accessibility (WCAG 2.2 AA automated rules)
+### Added
+- `e2e/accessibility.spec.ts`: axe-core scan of 8 public pages and the dashboard and Help page of every role (62 page views), WCAG 2.0/2.1/2.2 A and AA; report in `docs/evidence/accessibility.md`; fails on any violation. Dev dependency `@axe-core/playwright` 4.14.1 (owner-approved, DEC-065).
+### Fixed (found by the scan; 126 violations of 4 rules on the first run, all in shared components)
+- Label in name: the public header logo link, the account-menu button and the notifications bell now expose their visible text as (the start of) their accessible name.
+- ARIA: the footer colour swatches are a labelled image, not a labelled plain element.
+- Contrast: system-status pills use darker green and amber (≥ 4.5:1 for white text).
+- Keyboard access: wide tables that scroll sideways are focusable, named regions.
+
 ## [0.8.0] — 2026-11-26 — Handover readiness: Help centre, UAT pack, decisions pack
 ### Added
 - **Role-aware Help centre** (`/app/help`): explains the signed-in officer's own workspace — its pages with a plain-language purpose, the approval authority actually recorded for them, the role's limits, and who gives account support — derived from the enforced configuration.

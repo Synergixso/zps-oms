@@ -1,6 +1,6 @@
 {
   "name": "zps-oms",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "private": true,
   "description": "ZPS-OMS local synthetic-data prototype. Not an authorised production police system.",
   "scripts": {
@@ -31,6 +31,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.1",
     "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4.3.5",
     "@types/node": "^22.20.7",

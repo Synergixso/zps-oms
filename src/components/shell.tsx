@@ -185,13 +185,15 @@ export function UserMenu({ user, signOut, contexts = [], switchContext }: { user
   }, []);
   return (
     <div ref={ref} className="relative">
-      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="menu" aria-label="Account menu" className="flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-slate-100">
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="menu" className="flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-slate-100">
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#2a78d6] to-[#173f8a] text-[12px] font-bold text-white">{user.initials}</span>
         <span className="hidden max-w-[200px] text-left leading-tight sm:block">
           <span className="block truncate text-[13.5px] font-bold text-ink">{user.name.replace(/^Demo\s+/, "")}</span>
           <span className="block truncate text-[11px] text-muted">{user.role}</span>
         </span>
         <Icon name="chevron" className="h-4 w-4 rotate-90 text-muted" />
+        {/* Accessible name = the visible initials, name and role, then the purpose (WCAG 2.5.3 Label in Name). */}
+        <span className="sr-only">: Account menu</span>
       </button>
       {open && (
         <div role="menu" className="absolute right-0 z-50 mt-1 w-72 overflow-hidden rounded-xl border border-line bg-white py-1 shadow-lg">

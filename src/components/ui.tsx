@@ -99,7 +99,8 @@ export function Badge({ status, label }: { status: string; label?: string }) {
 export function Table({ head, children, empty, caption }: { head: ReactNode[]; children: ReactNode; empty?: ReactNode; caption?: string }) {
   const hasRows = Array.isArray(children) ? children.length > 0 : !!children;
   return (
-    <div className="overflow-x-auto">
+    // Wide registers scroll inside their card: the region is focusable and named so keyboard users can scroll it.
+    <div className="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-zp-blue/40" {...(head.length > 3 ? { tabIndex: 0, role: "region", "aria-label": caption ?? "Table (scrolls sideways)" } : {})}>
       {/* Narrow tables wrap on phones; wide registers scroll inside their card. */}
       <table className={`w-full border-collapse text-left text-[13px] ${head.length <= 3 ? "" : head.length === 4 ? "min-w-[520px]" : "min-w-[640px]"}`}>
         {caption && <caption className="sr-only">{caption}</caption>}

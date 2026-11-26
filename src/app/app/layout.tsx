@@ -54,7 +54,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <div className="ml-auto flex items-center gap-1 sm:gap-2">
               <Link href="/app/search" className="rounded-lg p-2 text-ink-2 hover:bg-slate-100 md:hidden" aria-label="Search"><Icon name="search" /></Link>
               <span className="hidden rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-[10.5px] font-bold uppercase tracking-wider text-amber-800 xl:inline">Synthetic demo</span>
-              <Link href="/app/notifications" className="relative rounded-lg p-2 text-ink-2 hover:bg-slate-100" aria-label={`Notifications (${unread} unread)`}>
+              <Link href="/app/notifications" className="relative rounded-lg p-2 text-ink-2 hover:bg-slate-100" aria-label={unread > 0 ? `${unread > 99 ? "99+" : unread} unread notifications` : "Notifications"}>
                 <Icon name="bell" className="h-[22px] w-[22px]" />
                 {unread > 0 && <span className="absolute -right-0.5 -top-0.5 min-w-[19px] rounded-full bg-err px-1 text-center text-[10px] font-bold leading-[19px] text-white">{unread > 99 ? "99+" : unread}</span>}
               </Link>
@@ -82,7 +82,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             </p>
             <span className="inline-flex items-center gap-2">
               ZPS-OMS v{VERSION}
-              <span className="inline-flex gap-0.5" aria-label="Institutional colours: green, white, blue">
+              <span className="inline-flex gap-0.5" role="img" aria-label="Institutional colours: green, white, blue">
                 <span className="h-3 w-3 bg-zp-green" />
                 <span className="h-3 w-3 border border-line-2 bg-white" />
                 <span className="h-3 w-3 bg-zp-blue" />

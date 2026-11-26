@@ -8,7 +8,7 @@
 | Phone-width review | `scripts/mobile-review.mjs` | `npm run review:mobile` | Every role's dashboard at 375 × 812: horizontal overflow and screenshots |
 | Audit-chain verification | `scripts/verify-audit-chain.mjs` | `npm run verify:audit` | Content and link integrity of every audit event |
 | CI | GitHub Actions | `.github/workflows/ci.yml` | Type check, tests on MariaDB 10.4, production-dependency audit, build |
-| Accessibility | axe-core (pending approval of the free dev dependency) | — | WCAG 2.2 AA automated rules on sign-in and every role dashboard |
+| Accessibility | axe-core 4.14.1 via `@axe-core/playwright` (MPL-2.0, dev only) | `e2e/accessibility.spec.ts` (part of `npm run test:e2e`) | WCAG 2.0/2.1/2.2 A and AA automated rules on 8 public pages and the dashboard and Help page of every role (62 page views); fails on any violation; report `docs/evidence/accessibility.md` |
 | Acceptance | UAT scripts | `docs/uat/` | One script per role, run by Service testers |
 | Static | TypeScript strict | `npx tsc --noEmit` | Types across server and client |
 | Build | Next.js | `npm run build` | Production compilation |
