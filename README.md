@@ -3,7 +3,7 @@
 > **National Operations Personnel, Manpower and Administration Management Platform**
 > Developed by Synergix Solutions · Designed and developed by SPOM Technical Services Section Team
 
-**Status: local synthetic-data prototype prepared for institutional review.** This is not an authorised production police system, and it is not connected to any Zambia Police Service network or data. Every person, service number, roster and reference in this repository and its seed data is synthetic.
+**Status: v0.7.0 — local synthetic-data prototype prepared for institutional review and user acceptance testing.** This is not an authorised production police system, and it is not connected to any Zambia Police Service network or data. Every person, service number, roster and reference in this repository and its seed data is synthetic.
 
 ---
 
@@ -46,7 +46,7 @@ One Next.js project holds two things:
 - Duty-area assignments, transfers and disposition records.
 - The 365-day minimum tenure rule, with exceptions and renewals.
 - Administrative requests and approvals.
-- Fleet maintenance and general asset accountability.
+- Fleet maintenance, general asset accountability and general stores (consumables only).
 - Reporting, notifications and a tamper-evident audit trail.
 
 **Permanently excluded:**
@@ -69,13 +69,14 @@ An *assignment* is an administrative duty-area record. It is never a location. T
 | **Assignments, transfers and disposition** | Duty-area assignments. The 365-day minimum tenure is enforced: earlier moves need an approved exception, and misconduct is always an available ground. Renewals and disposition records. | Delivered |
 | **Administrative requests** | Draft, submit, review, assign, approve, return, reject and close, with multi-level routing. | Delivered |
 | **Fleet maintenance** | Vehicle registry, maintenance requests, separation of duties between the requesting and verifying officers. | Delivered |
-| **Asset accountability** | Asset register, custody transfer between units, receipt acknowledgement. | Delivered |
-| **Dashboards** | A dashboard per role and level: national, provincial, district, formation and unit. | Delivered |
-| **Reports** | Scoped operational reports with CSV export. | Delivered |
+| **Asset accountability** | Asset register, custody transfer between units, receipt acknowledgement, reconciliation (stock-take). | Delivered |
+| **General stores** | Store items, append-only stock ledger (receipt, issue, return, adjustment), requisitions to own or higher store with delegated approval and issue by the store keeper; reorder and overdue reminders. Consumables only. | Delivered |
+| **Role back offices** | 27 role-specific workspaces in three tiers (HQ, Division/Formation, District/Station): back-office name, navigation, live headline figures, quick actions and working panels per role; one active role context per session. | Delivered |
+| **Reports** | 14 scoped reports, saved custom views, CSV and native Excel (.xlsx) export, scheduled in-application delivery (daily, weekly, monthly). | Delivered |
 | **Audit** | A hash-chained, append-only audit log (database triggers prevent updates and deletes), an explorer, an evidence export and chain verification. | Delivered |
 | **Platform & security** | Automation engine and run log, verified database backups, migration history, error log, maintenance mode, settings; security events, sessions, authentication history, lockouts. | Delivered |
 | **Notifications & tasks** | In-app notifications by category with preferences, automated reminders, My tasks with automatic closure. | Delivered |
-| **Workflow configuration** | Versioned, multi-level manpower approval chains; configurable administrative-request workflows; delegations. | Delivered |
+| **Workflow configuration** | Versioned, multi-level approval chains for manpower requests, assignment approval and transfer release; configurable administrative-request workflows; delegations. | Delivered |
 
 The detailed specifications are in `docs/MODULE_SPECIFICATIONS.md` and `docs/WORKFLOW_SPECIFICATIONS.md`. The order in which modules are delivered is in [CHANGELOG.md](CHANGELOG.md).
 
@@ -101,7 +102,9 @@ National HQ (tenant t_zps)
 - **Out-of-scope reads** return 404 (`loadOr404`), so the existence of records outside a user's scope is never revealed.
 - **Sessions:** random tokens, stored server-side only as a hash, in HttpOnly, SameSite cookies, with idle and absolute expiry.
 - **Passwords:** scrypt hashes with per-user salts. Repeated failures lock the account temporarily, and every attempt is recorded.
-- **Audit:** each event stores the hash of the previous event. MySQL triggers reject `UPDATE` and `DELETE` on the audit table. Chain verification is available to auditors.
+- **Audit:** each event stores the hash of the previous event; appends are serialised so the chain cannot fork under concurrent requests. MySQL triggers reject `UPDATE` and `DELETE` on the audit table. Chain verification is available in the app and as `npm run verify:audit`.
+- **Roles:** 27 roles in three tiers (`docs/role-architecture/ROLE_CATALOGUE.md`). Technical administrators (Superadmin, HQ Tech, Division/Unit, District and Station system administrators) never hold personnel access or approval authority.
+- **Database:** every connection runs in strict SQL mode, so values are never silently truncated.
 - **Data hygiene:** synthetic data only; credentials only in `.env.local`, which is git-ignored; no paid or external services.
 
 For more, see `docs/SECURITY_ARCHITECTURE.md` and `docs/THREAT_MODEL.md`.
@@ -114,7 +117,7 @@ For more, see `docs/SECURITY_ARCHITECTURE.md` and `docs/THREAT_MODEL.md`.
 | Domain | TypeScript modules in `src/server/domain`: business rules, authorisation, audit |
 | Data | MySQL 8 / MariaDB 10.4+ through `mysql2/promise`, raw parameterised SQL, savepoint-nested transactions |
 | Schema | Versioned SQL migrations in `db/migrations`, checksum-verified |
-| Tests | Vitest against a real MySQL test database; scripted route audit |
+| Tests | Vitest against a real MySQL test database; Playwright journeys; scripted route audit and phone-width review; GitHub Actions CI |
 
 All dependencies are free and open source (MIT/Apache). Budget: ZMW 0.
 
@@ -124,7 +127,8 @@ assets/                 Official source assets (crest)
 db/migrations/          Versioned SQL migrations (001_core_schema.sql, …)
 docs/                   PRD, architecture, decisions, specifications, evidence
 public/brand/           Web copy of the crest (byte-identical to assets/)
-scripts/                Route audit, permission-matrix generator
+scripts/                Route audit, phone review, audit-chain verifier, documentation generator
+.github/workflows/      Continuous integration
 src/app/(public)/       Public website
 src/app/app/            Authenticated web application
 src/components/         Shared UI (including <Crest>)
@@ -172,22 +176,26 @@ On first start the server applies any pending migrations and then loads the synt
 | `npm run db:migrate` | Apply pending SQL migrations to `DATABASE_URL` |
 | `npm run db:reset` | Drop and recreate the local `zps_oms_*` database. **Destroys its data.** Refuses any other database name |
 | `npm run audit:routes` | Requests every route as every synthetic user against the running server; writes `docs/evidence/route-audit.md` |
-| `npm run docs:permissions` | Regenerate the permission matrix from the enforced catalogue |
+| `npm run review:mobile` | Opens every role's dashboard at phone width, checks overflow and saves screenshots (`docs/evidence/mobile/`) |
+| `npm run verify:audit` | Read-only verification of the whole audit hash chain |
+| `npm run docs:permissions` | Regenerate the role catalogue, permission matrix, dashboard configuration and tier documents from the enforced configuration |
 
 ## 10. Synthetic accounts and review walkthrough
-Every account is synthetic: `demo.*` usernames and "Demo" names. The development password for all of them is shown on the local sign-in page (development builds only) and defined in `src/server/db/constants.ts`. It is a published test value for local review only. There are 48 synthetic accounts covering all 41 roles.
+Every account is synthetic: `demo.*` usernames and "Demo" names. The development password for all of them is shown on the local sign-in page (development builds only) and defined in `src/server/db/constants.ts`. It is a published test value for local review only. There are 54 synthetic accounts covering all 27 roles; the per-role list is in `docs/development/ROLE_BACKOFFICE_DEVELOPMENT_STATUS.md` and the user acceptance scripts in `docs/uat/`.
 
 | Sign in as | Try |
 |---|---|
-| Demo Lusaka Division Staff Ops | New administrative request → submit. Note that you cannot approve it |
-| Demo Lusaka Division Commander | Approvals → assign → approve or return; maintenance approval |
-| Demo DIG Ops Executive | National dashboard; HQ-level approvals; organisation changes |
-| Demo Copperbelt Division Commander | Open a Lusaka record URL → "not found or not within your authorised scope" |
-| Demo Fleet Officer / Fleet Verification Officer | Maintenance lifecycle; verification must be done by a different officer |
-| Demo Asset Custodian | Transfer an asset across divisions; receive it at the other end |
-| Demo Platform Administrator | Provision a user, assign a role and scope, record a delegation |
-| Demo Security Administrator | Security events, suspend a user, run an access review |
-| Demo Internal Auditor | Read-only registers, audit explorer, evidence export, chain verification |
+| Superadmin (`demo.platform.admin`) | Provision a user, assign a role and scope, record a delegation; tenants; no personnel records |
+| Inspector General (`demo.hq.readonly`) | National summary figures without record access; audit explorer and chain verification |
+| DIG Operations (`demo.dig.exec`) | National dashboard; HQ-level approvals; organisation changes |
+| HQ Tech (`demo.security.admin`) | Security events, account support, run jobs, backups and a restore drill |
+| Staff I, Lusaka (`demo.lsk.staffops`) | New administrative request → submit; note that you cannot approve it |
+| Formation Commanding Officer, Lusaka (`demo.lsk.commander`) | Approvals → assign → approve or return; maintenance approval |
+| Copperbelt Formation CO (`demo.cb.commander`) | Open a Lusaka record URL → "not found or not within your authorised scope" |
+| MTO Officer-in-Charge (`demo.fleet.officer`) | Two contexts (Lusaka, Mobile Unit): switch from the account menu; maintenance lifecycle |
+| District Stores Officer, Kitwe (`demo.kitwe.stores`) | Stock ledger, reorder tasks, issue an approved requisition |
+| Station Stores and Admin, Kitwe Central (`demo.kitwec.stores`) | Raise a stores requisition; OIC Station (`demo.kitwec.commander`) approves it |
+| District System Administrator (`demo.kitwe.tech`) | Account support limited to Kitwe; no personnel access |
 | Demo HQ Manpower Planning Officer (`demo.hq.staff`) | Operations Staff Workspace; accept a unit contribution; build, print and export a roster |
 | Demo Copperbelt Assignment Coordinator (`demo.cb.assignments`) | Propose an assignment; initiate a transfer (tenure rule applies) |
 | Demo Copperbelt Division Commander (`demo.cb.commander`) | Approve assignments, exceptions, renewals and transfer releases |
@@ -196,15 +204,18 @@ Every account is synthetic: `demo.*` usernames and "Demo" names. The development
 | Demo A Company Administrative Officer (`demo.mu.acoy.admin`) | Select eligible officers for a contribution and submit |
 
 ## 11. Testing and verification evidence
-- **Domain and integration tests** run with `npm test` against real MySQL. They cover access control, tenant isolation, workflows, separation of duties, the seed, the hierarchy and closure table, migration idempotency, checksum drift and the reset safeguards.
-- **Route audit** (`npm run audit:routes`) produces an access matrix of every route against every user: `docs/evidence/route-audit.md`.
-- **Evidence and strategy:** `docs/TESTING_STRATEGY.md` and `docs/PHASE_COMPLETION_REPORT.md`.
+- **Domain and integration tests** (`npm test`, 127 tests in strict SQL mode) cover access control, tenant isolation, the 27-role matrix, context switching, scoped technical administration, stores, workflows and decision chains, separation of duties, scheduled delivery, Excel export, backups and restore drills, audit-chain concurrency, migrations and the seed.
+- **Playwright journeys** (`npm run test:e2e`, 8 journeys in Microsoft Edge).
+- **Route audit** (`npm run audit:routes`): every route against every user — `docs/evidence/route-audit.md`. **Phone-width review** (`npm run review:mobile`) — `docs/evidence/mobile/`.
+- **CI**: `.github/workflows/ci.yml` (type check, tests on MariaDB 10.4, dependency audit, build).
+- **Evidence:** `docs/role-architecture/ROLE_TEST_RESULTS.md`, `docs/development/TEST_RESULTS.md`.
 
-Before every change: `npx tsc --noEmit`, then `npm test`, then `npm run audit:routes` with the dev server running.
+Before every change: `npx tsc --noEmit`, then `npm test`, then the route audit against a production build.
 
 ## 12. Automation, backups and operations
-- **Automation engine** (`src/server/jobs/engine.ts`): starts with the server and runs every `automation.interval_minutes` (default 5). Jobs: effective-dated organisation changes, assignment commencement and review flags, contribution reminders and overdue tracking, tenure-review reminders, overdue-approval escalation, temporary-access expiry, fleet and asset reminders, backup monitoring and housekeeping. Every run is logged in `job_runs`; Platform administration → *Run now* triggers one manually. Set `ZPS_AUTOMATION=off` to disable it.
-- **Backups**: Platform administration → *Create backup now* runs XAMPP's `mysqldump` into `backups/` (git-ignored) and verifies the file by its completion marker and SHA-256. Set `MYSQLDUMP_PATH` if XAMPP is not in `C:\xampp`, or `ZPS_BACKUP_DIR` to change the folder. The backup monitor warns when the last verified backup is older than `backup.max_age_hours`.
+- **Automation engine** (`src/server/jobs/engine.ts`): starts with the server and runs every `automation.interval_minutes` (default 5). Jobs: effective-dated organisation changes, assignment commencement and review flags, contribution reminders and overdue tracking, tenure-review reminders, overdue-approval escalation, temporary-access expiry, fleet and asset reminders, stores reorder and requisition reminders, scheduled report delivery, unusual-access flags, backup monitoring, restore drills and housekeeping. Every run is logged in `job_runs`; Platform administration → *Run now* triggers one manually. Set `ZPS_AUTOMATION=off` to disable it.
+- **Backups**: Platform administration → *Create backup now* runs XAMPP's `mysqldump` into `backups/` (git-ignored) and verifies the file by its completion marker and SHA-256. Set `MYSQLDUMP_PATH` if XAMPP is not in `C:\xampp`, or `ZPS_BACKUP_DIR` to change the folder. The backup monitor warns when the last verified backup is older than `backup.max_age_hours`. **Restore drills** (manual, and automatically every `backup.restore_drill_days`) restore the latest backup into a scratch database, check it and drop it.
+- **Monitoring**: `GET /api/health` (readiness, 503 when degraded) and `GET /api/health?probe=live` (liveness).
 - **Database accounts**: `db/admin/create_app_user.sql` creates a least-privilege application account and a read-only account. Run it once in phpMyAdmin with your own passwords, then update `.env.local`.
 
 ## 13. Database and migrations
@@ -220,7 +231,7 @@ Before every change: `npx tsc --noEmit`, then `npm test`, then `npm run audit:ro
 | `DATABASE_URL_TEST` | Test database. It must be named `zps_oms_test*` |
 | `ZPS_INSECURE_COOKIE` | Set to `1` only to run a local production build over plain HTTP |
 | `ZPS_AUTOMATION` | `off` disables the in-process automation engine (default: on) |
-| `MYSQLDUMP_PATH` / `ZPS_BACKUP_DIR` | Location of `mysqldump` (default `C:\xampp\mysql\bin\mysqldump.exe`) and of the backup folder (default `backups/`) |
+| `MYSQLDUMP_PATH` / `MYSQL_CLIENT_PATH` / `ZPS_BACKUP_DIR` | Location of `mysqldump` and `mysql` (defaults in `C:\xampp\mysql\bin`) and of the backup folder (default `backups/`) |
 | `ZPS_SHOW_DEMO_ACCOUNTS` | `1` / `0` to show or hide the synthetic account list on the sign-in page (shown by default in development only) |
 
 Put these in `.env.local`, which is never committed. `.env.example` documents them.
@@ -229,10 +240,12 @@ Put these in `.env.local`, which is never committed. `.env.example` documents th
 | Area | Documents |
 |---|---|
 | Direction | `docs/PRD.md`, `docs/PROJECT_CHARTER.md`, `docs/PHASE3_AUDIT_AND_ARCHITECTURE.md` |
-| Governance | `docs/DECISION_REGISTER.md`, `docs/ASSUMPTIONS_REGISTER.md`, `docs/KNOWN_LIMITATIONS.md`, `docs/REQUIREMENTS_TRACEABILITY.md` |
+| Governance | `docs/governance/INSTITUTIONAL_DECISIONS_PACK.md`, `docs/DECISION_REGISTER.md`, `docs/ASSUMPTIONS_REGISTER.md`, `docs/KNOWN_LIMITATIONS.md`, `docs/REQUIREMENTS_TRACEABILITY.md` |
+| Roles | `docs/role-architecture/` (catalogue, permission matrix, scope model, dashboards, tiers, approval authority, test results) |
+| Acceptance | `docs/uat/` (plan, 27 role scripts, sign-off) |
 | Design | `docs/ORGANISATIONAL_MODEL.md`, `docs/USER_ROLES_AND_PERMISSIONS.md`, `docs/MODULE_SPECIFICATIONS.md`, `docs/WORKFLOW_SPECIFICATIONS.md`, `docs/UI_UX_DESIGN_SYSTEM.md`, `docs/SCREEN_SPECIFICATION.md` |
 | Technical | `docs/DATABASE_SCHEMA.md`, `docs/DATA_DICTIONARY.md`, `docs/API_SPECIFICATION.md`, `docs/SECURITY_ARCHITECTURE.md`, `docs/THREAT_MODEL.md` |
-| Operations | `docs/DEPLOYMENT_GUIDE.md`, `docs/TESTING_STRATEGY.md`, `docs/QA_AND_REVIEW.md`, `docs/evidence/` |
+| Operations | `docs/DEPLOYMENT_GUIDE.md`, `docs/development/KNOWN_ISSUES.md`, `docs/development/DEVELOPMENT_STATUS.md`, `docs/QA_AND_REVIEW.md`, `docs/evidence/` |
 | History | [CHANGELOG.md](CHANGELOG.md); Phase 1 source packages preserved under `docs/00_…` to `docs/06_…` |
 
 ## 16. Contributing

@@ -43,7 +43,7 @@ Status key: **Implemented** (code + automated test) · **Implemented (manual)** 
 | M11-01 | Prompt F | Health, DB, config, release | `/app/platform` | route audit | Partial (no backup/job monitoring) |
 | M07, M08 | Prompt F | Scheduling, correspondence | — | — | Not implemented (later phase) |
 | NFR-005 | PRD §12 | Security testing | threat model, negative tests | — | Partial (no pen test) |
-| NFR-006 | PRD §12 | WCAG 2.2 AA | semantic, labelled, focus | Manual | Partial (no automated scan) |
+| NFR-006 | PRD §12 | WCAG 2.2 AA | semantic, labelled, focus; phone-width review | Manual; phone review 27/27 | Partial (automated axe scan pending approval of a free dev dependency) |
 | NFR-008 | PRD §12 | Typed contracts, modular, tested | TS strict, Zod, 34 tests | tsc, vitest | Implemented |
 | NFR-010 | PRD §12 | Auditability | audit + histories | TS-13 | Implemented |
 | NFR-012 | PRD §12 | Africa/Lusaka, ZMW | formatting helpers | Manual | Implemented (manual) |
@@ -73,4 +73,11 @@ Status key: **Implemented** (code + automated test) · **Implemented (manual)** 
 | L | Traceable audit events | audit() on every submission, amendment, transfer, approval, renewal, disposition change | manpower and assignment tests assert audit rows | Implemented |
 | M | No decorative or non-functional controls | SSO button disabled with explanation; all figures from live queries | review; route audit | Implemented |
 | AUTH | Password authentication with lockout | `auth.ts`, sign-in action, temporary passwords | auth-scope tests; e2e login | Implemented |
-| RBAC-41 | 41-role catalogue | `catalogue.ts` | auth-scope test "defines the 41 directive roles" | Implemented |
+| RBAC-27 | Three-tier 27-role catalogue (supersedes the 41 roles, DEC-049) | `catalogue.ts`, seed step 003 | auth-scope "defines exactly the 27 roles"; three-tier-roles matrix | Implemented |
+| ROLE-WS | Role-specific back offices (27 workspaces) | `workspace-config.ts`, `workspaces.ts`, layout, overview | three-tier-roles tests; route audit; phone review 27/27 | Implemented |
+| ROLE-CTX | Controlled context switching | `sessions.ts`, `policy.loadActor`, account menu | three-tier-roles tests; Playwright context-switching journey | Implemented |
+| ROLE-TECH | Scoped technical administration; technical roles never approve | `iam.ts` (`user.support`), `platform.operate` | three-tier-roles tests | Implemented |
+| STORES | General stores, requisitions, reorder automation, stores reports | `stores.ts`, jobs, reports | three-tier-roles stores tests | Implemented |
+| M09-CHAIN | Configurable chains for assignment approval and transfer release | `decision-chains.ts`, migration 009 | decision-chains tests | Implemented |
+| M12-SCHED | Scheduled report delivery; native Excel export | `report-schedules.ts`, `lib/xlsx.ts` | report-schedules, xlsx tests | Implemented |
+| OPS | Restore drills, health endpoint, strict SQL mode, CI, audit-chain integrity under concurrency | `platform.ts`, `/api/health`, `sql-mode.ts`, `.github/workflows/ci.yml`, `audit.ts` | automation-platform, audit-chain tests; route audit; verify:audit | Implemented (CI not yet observed on GitHub) |

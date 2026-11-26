@@ -1,6 +1,6 @@
 # Route audit evidence
 
-Generated 2026-11-26T15:21:31.042Z against http://localhost:3300 with the synthetic dataset. ✓ = rendered, ✕ = access-denied page (audited), 404 = record outside scope (existence not disclosed), → = redirect, ERR = server error.
+Generated 2026-11-26T15:52:32.127Z against http://localhost:3300 with the synthetic dataset. ✓ = rendered, ✕ = access-denied page (audited), 404 = record outside scope (existence not disclosed), → = redirect, ERR = server error.
 
 **Server errors: 0**
 
@@ -10,10 +10,10 @@ Generated 2026-11-26T15:21:31.042Z against http://localhost:3300 with the synthe
 - R2: `/app/approvals`
 - R3: `/app/requests`
 - R4: `/app/requests/new`
-- R5: `/app/requests/req_1752…`
-- R6: `/app/requests/req_2cb2…`
-- R7: `/app/requests/req_5a3b…`
-- R8: `/app/requests/req_da7e…`
+- R5: `/app/requests/req_33be…`
+- R6: `/app/requests/req_156c…`
+- R7: `/app/requests/req_1037…`
+- R8: `/app/requests/req_afb5…`
 - R9: `/app/fleet`
 - R10: `/app/fleet/new`
 - R11: `/app/fleet/veh_1`
@@ -21,7 +21,7 @@ Generated 2026-11-26T15:21:31.042Z against http://localhost:3300 with the synthe
 - R13: `/app/fleet/veh_15`
 - R14: `/app/fleet/maintenance`
 - R15: `/app/fleet/maintenance/new`
-- R16: `/app/fleet/maintenance/mnt_040e…`
+- R16: `/app/fleet/maintenance/mnt_403a…`
 - R17: `/app/assets`
 - R18: `/app/assets/new`
 - R19: `/app/assets/ast_1`
@@ -53,20 +53,20 @@ Generated 2026-11-26T15:21:31.042Z against http://localhost:3300 with the synthe
 - R45: `/app/personnel/export`
 - R46: `/app/manpower`
 - R47: `/app/manpower/new`
-- R48: `/app/manpower/mpr_b0b7…`
-- R49: `/app/manpower/mpr_1ae3…`
+- R48: `/app/manpower/mpr_ed4d…`
+- R49: `/app/manpower/mpr_aae1…`
 - R50: `/app/manpower/contributions`
-- R51: `/app/manpower/contributions/mpc_ba67…`
+- R51: `/app/manpower/contributions/mpc_5452…`
 - R52: `/app/rosters`
-- R53: `/app/rosters/rv_21276…`
-- R54: `/app/rosters/rv_21276…/print`
-- R55: `/app/rosters/rv_21276…/export`
+- R53: `/app/rosters/rv_348d0…`
+- R54: `/app/rosters/rv_348d0…/print`
+- R55: `/app/rosters/rv_348d0…/export`
 - R56: `/app/assignments`
 - R57: `/app/assignments/new`
-- R58: `/app/assignments/pas_5d05…`
-- R59: `/app/assignments/pas_0576…`
+- R58: `/app/assignments/pas_5e47…`
+- R59: `/app/assignments/pas_b40a…`
 - R60: `/app/transfers`
-- R61: `/app/transfers/trf_223b…`
+- R61: `/app/transfers/trf_2a57…`
 - R62: `/app/areas`
 - R63: `/app/areas/area_kcm`
 - R64: `/app/personnel/review`
@@ -76,17 +76,17 @@ Generated 2026-11-26T15:21:31.042Z against http://localhost:3300 with the synthe
 - R68: `/app/reports/ASSIGNMENTS_BY_AREA`
 - R69: `/app/reports/PERSONNEL_BY_UNIT`
 - R70: `/app/assets/reconciliation`
-- R71: `/app/rosters/rv_21276…/pdf`
+- R71: `/app/rosters/rv_348d0…/pdf`
 - R72: `/app/platform`
 - R73: `/app/workflows`
 - R74: `/app/notifications`
 - R75: `/app/search?q=kcm`
 - R76: `/app/stores`
-- R77: `/app/stores/sti_302783b5c4094d6799b7`
-- R78: `/app/stores/sti_73803c43cffb467a9cfb`
+- R77: `/app/stores/sti_f4fc127b3d93478ca9a0`
+- R78: `/app/stores/sti_1f26a8b938cd43cebbc0`
 - R79: `/app/stores/requisitions`
 - R80: `/app/stores/requisitions/new`
-- R81: `/app/stores/requisitions/srq_e6f538f952dc49c89ff5`
+- R81: `/app/stores/requisitions/srq_45dcce5cbf1443eaad0f`
 - R82: `/app/reports/STORES_STOCK`
 - R83: `/app/reports/STORES_REQUISITIONS`
 

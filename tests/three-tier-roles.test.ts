@@ -233,3 +233,31 @@ describe("stores reports, automation and HQ technical operations", () => {
     await expect(runJobsNow(db, await actor(db, "u_kit_tech"), "system.housekeeping")).rejects.toThrow(/not authorised/);
   }));
 });
+
+describe("role-aware Help centre", () => {
+  it("documents every workspace page and explains each role's authority, limits and support", () => withDb(async (db) => {
+    const { helpCentre, PAGE_HELP } = await import("@/server/domain/help");
+    for (const w of Object.values(WORKSPACES)) for (const g of w.nav) for (const h of g.items) expect(PAGE_HELP[h], `${w.role} ${h}`).toBeTruthy();
+    const tech = await helpCentre(db, await actor(db, "u_kitc_tech"));
+    expect(tech.role?.backOffice).toBe("Police Station Technical Administration");
+    expect(tech.limits.join(" ")).toMatch(/technical role/);
+    expect(tech.pages.some((p) => p.href === "/app/personnel")).toBe(false);
+    const oic = await helpCentre(db, await actor(db, "u_kitc_cmd"));
+    expect(oic.delegations.map((d) => d.domain)).toContain("stores requisitions");
+    const insp = await helpCentre(db, await actor(db, "u_kitc_per"));
+    expect(insp.limits.join(" ")).toMatch(/no delegated approval authority/);
+    expect(insp.support.map((s) => s.name)).toContain("Demo Kitwe Central Station System Administrator");
+    expect((await helpCentre(db, await actor(db, "u_fleet"))).contexts).toBe(2);
+  }));
+});
+
+describe("UAT label consistency", () => {
+  it("KPI_LABELS matches the labels every role's dashboard actually shows", () => withDb(async (db) => {
+    const { KPI_LABELS } = await import("@/server/domain/workspace-config");
+    for (const r of ROLES) {
+      const holder = (await one<{ user_id: string }>(db, "SELECT user_id FROM role_assignments WHERE role_code = ? AND revoked_at IS NULL LIMIT 1", r.code))!;
+      const a = (await loadActor(db, holder.user_id, "PRIMARY"))!;
+      for (const k of await headlineKpis(db, a, r.dashboard)) expect(KPI_LABELS[k.key]?.split(" / "), `${r.code} ${k.key}`).toContain(k.label);
+    }
+  }));
+});

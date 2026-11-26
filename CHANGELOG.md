@@ -2,6 +2,15 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.8.0] — 2026-11-26 — Handover readiness: Help centre, UAT pack, decisions pack
+### Added
+- **Role-aware Help centre** (`/app/help`): explains the signed-in officer's own workspace — its pages with a plain-language purpose, the approval authority actually recorded for them, the role's limits, and who gives account support — derived from the enforced configuration.
+- **UAT pack** (`docs/uat/`): test plan, one generated script per role (27) and a sign-off register; `npm run docs:uat` regenerates the scripts from the configuration and synthetic accounts.
+- **Institutional decisions pack** (`docs/governance/INSTITUTIONAL_DECISIONS_PACK.md`): every open decision with owner, provisional setting and recommendation, in three priority bands.
+- `KPI_LABELS` (tile labels), kept equal to the dashboards by a test.
+### Changed
+- README, traceability matrix, testing strategy and RBAC documentation brought up to date (27 roles, v0.7 operations); the Phase 2 roles document marked superseded.
+
 ## [0.7.0] — 2026-11-26 — Operations: restore drills, health, CI, strict SQL
 ### Added
 - Backup restore drills (migration 010): manual *Run restore drill* on System health and an automated drill every `backup.restore_drill_days` (default 7); restores into a scratch database, checks core tables, schema version and the audit hash chain, then drops it; failures notify technical operators.

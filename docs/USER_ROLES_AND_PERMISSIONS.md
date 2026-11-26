@@ -1,5 +1,7 @@
 # User Roles and Permissions — ZPS-OMS
 
+> **Superseded (26 November 2026).** This is the Phase 2 role model, kept for history. The active configuration is the three-tier 27-role catalogue (DEC-049): see `docs/role-architecture/ROLE_CATALOGUE.md`, `PERMISSION_MATRIX.md` and `APPROVAL_AUTHORITY_CONFIGURATION.md`, generated from the enforced code.
+
 Status: **proposed starting matrix (DEC-007), not an approved delegation.** The authoritative machine-readable version is `src/server/domain/catalogue.ts`; the full action-level matrix is generated into `docs/generated/PERMISSION_MATRIX.md` (`npm run docs:permissions`).
 
 ## 1. Access model
