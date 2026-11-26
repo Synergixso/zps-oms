@@ -30,13 +30,21 @@ export async function completeTask(db: DB, actor: Actor, id: string) {
   await audit(db, { actorId: actor.userId, action: "task.complete", category: "BUSINESS", entityType: "task", entityId: id });
 }
 
-export async function listNotifications(db: DB, actor: Actor, category?: string, unreadOnly = false) {
+/** Notifications shown per page (NFR-002, low bandwidth: the page stays small however many a user has). */
+export const NOTIFICATION_PAGE_SIZE = 50;
+
+/** The actor's own notifications, newest first, one page at a time. Pages are 1-based; out-of-range pages are clamped. */
+export async function listNotifications(db: DB, actor: Actor, category?: string, unreadOnly = false, page = 1) {
   const params: unknown[] = [actor.userId];
   let where = "user_id = ?";
   if (category && category in NOTIFICATION_CATEGORIES) { where += " AND category = ?"; params.push(category); }
   if (unreadOnly) where += " AND read_at IS NULL";
-  return all<{ id: string; title: string; body: string; link: string | null; category: string; created_at: string; read_at: string | null }>(db,
-    `SELECT id, title, body, link, category, created_at, read_at FROM notifications WHERE ${where} ORDER BY created_at DESC LIMIT 300`, ...params);
+  const total = Number((await one<{ c: number }>(db, `SELECT COUNT(*) AS c FROM notifications WHERE ${where}`, ...params))?.c ?? 0);
+  const pages = Math.max(1, Math.ceil(total / NOTIFICATION_PAGE_SIZE));
+  const current = Math.min(pages, Math.max(1, Math.floor(Number.isFinite(page) ? page : 1)));
+  const rows = await all<{ id: string; title: string; body: string; link: string | null; category: string; created_at: string; read_at: string | null }>(db,
+    `SELECT id, title, body, link, category, created_at, read_at FROM notifications WHERE ${where} ORDER BY created_at DESC, id DESC LIMIT ${NOTIFICATION_PAGE_SIZE} OFFSET ${(current - 1) * NOTIFICATION_PAGE_SIZE}`, ...params);
+  return { rows, total, page: current, pages };
 }
 
 export async function markRead(db: DB, actor: Actor, id: string) {

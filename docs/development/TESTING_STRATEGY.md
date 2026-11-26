@@ -9,6 +9,8 @@
 | Audit-chain verification | `scripts/verify-audit-chain.mjs` | `npm run verify:audit` | Content and link integrity of every audit event |
 | CI | GitHub Actions | `.github/workflows/ci.yml` | Type check, tests on MariaDB 10.4, production-dependency audit, build |
 | Accessibility | axe-core 4.14.1 via `@axe-core/playwright` (MPL-2.0, dev only) | `e2e/accessibility.spec.ts` (part of `npm run test:e2e`) | WCAG 2.0/2.1/2.2 A and AA automated rules on 8 public pages and the dashboard and Help page of every role (62 page views); fails on any violation; report `docs/evidence/accessibility.md` |
+| Reflow and zoom | Playwright | `e2e/reflow.spec.ts` (part of `npm run test:e2e`) | WCAG 2.2 SC 1.4.10 / 1.4.4: 8 public pages and every distinct back-office page reachable from each role's navigation (107 pages), at 320 px (400 % zoom) and 640 px (200 % zoom); the page must not scroll sideways (wide tables scroll in their own region); report `docs/evidence/reflow.md` |
+| Load and page weight | `scripts/load-test.mjs` (dependency-free) | `npm run test:load -- http://localhost:PORT` against a production build | NFR-002/003 baseline: 300 requests per level at 1, 10 and 25 concurrent users across 27 signed-in roles; p50/p95/p99, throughput, server errors; gzip HTML weight per page; provisional budgets (DEC-066); report `docs/evidence/load-test.md` |
 | Acceptance | UAT scripts | `docs/uat/` | One script per role, run by Service testers |
 | Static | TypeScript strict | `npx tsc --noEmit` | Types across server and client |
 | Build | Next.js | `npm run build` | Production compilation |

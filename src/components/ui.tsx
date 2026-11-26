@@ -38,8 +38,8 @@ export function Card({ title, subtitle, action, children, className = "", bodyCl
   return (
     <section className={`min-w-0 rounded-[9px] border border-line bg-surface shadow-[0_1px_2px_rgba(20,40,63,0.05)] ${className}`}>
       {(title || action) && (
-        <header className="flex items-start justify-between gap-3 border-b border-line px-4 py-3">
-          <div>
+        <header className="flex flex-wrap items-start justify-between gap-3 border-b border-line px-4 py-3">
+          <div className="min-w-0">
             {title && <h2 className="text-sm font-bold text-ink">{title}</h2>}
             {subtitle && <p className="mt-0.5 text-xs text-muted">{subtitle}</p>}
           </div>

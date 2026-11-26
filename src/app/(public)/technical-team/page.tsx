@@ -42,16 +42,16 @@ function ServiceCard({ icon, title, body, tone, href, large = false }: { icon: I
   return (
     <a
       href={href}
-      className={`group flex h-full items-start gap-4 rounded-2xl border border-l-4 border-[#e3e9f2] bg-white p-5 shadow-[0_4px_16px_rgba(13,33,73,0.07)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(13,33,73,0.13)] ${ACCENT[tone]}`}
+      className={`group flex h-full items-start gap-3 rounded-2xl border border-l-4 border-[#e3e9f2] bg-white p-4 sm:gap-4 sm:p-5 shadow-[0_4px_16px_rgba(13,33,73,0.07)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(13,33,73,0.13)] ${ACCENT[tone]}`}
     >
       <span
-        className={`flex shrink-0 items-center justify-center rounded-2xl text-white shadow-[0_8px_18px_-6px_rgba(13,33,73,0.5)] ${TILE[tone]} ${large ? "h-[84px] w-[84px]" : "h-[68px] w-[68px]"}`}
+        className={`flex shrink-0 items-center justify-center rounded-2xl text-white shadow-[0_8px_18px_-6px_rgba(13,33,73,0.5)] ${TILE[tone]} ${large ? "h-14 w-14 sm:h-[84px] sm:w-[84px]" : "h-14 w-14 sm:h-[68px] sm:w-[68px]"}`}
       >
         <Icon name={icon} className={large ? "h-11 w-11" : "h-9 w-9"} />
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex items-start justify-between gap-3">
-          <span className={`font-extrabold leading-tight tracking-tight text-[#0d1b3e] ${large ? "text-[22px]" : "text-[19px]"}`}>{title}</span>
+          <span className={`min-w-0 break-words font-extrabold leading-tight tracking-tight text-[#0d1b3e] ${large ? "text-[22px]" : "text-[19px]"}`}>{title}</span>
           <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#c9d3e1] text-[#0d1b3e] transition group-hover:border-zp-green group-hover:bg-zp-green group-hover:text-white">
             <Icon name="chevron" className="h-4 w-4" />
           </span>

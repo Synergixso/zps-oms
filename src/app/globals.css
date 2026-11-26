@@ -64,6 +64,23 @@ body {
   outline-offset: 2px;
 }
 
+/*
+ * Reflow (WCAG 2.2 SC 1.4.10): form controls never grow wider than their container, even when an
+ * option label is long, and filter-bar fields may shrink, so pages do not scroll sideways at 320 px.
+ * In the base layer, so width utilities on a control still apply.
+ */
+@layer base {
+  select,
+  input,
+  textarea {
+    max-width: 100%;
+  }
+  form[role="search"] > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
 /* Hero photograph cross-fade. Base opacity 0 so reduced-motion users see the first image only. */
 .hero-fade {
   opacity: 0;

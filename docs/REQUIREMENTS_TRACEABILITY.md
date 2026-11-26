@@ -42,8 +42,10 @@ Status key: **Implemented** (code + automated test) · **Implemented (manual)** 
 | M10-04 | PRD §7.9 | Audit search & export | `/app/audit`, export route | Manual | Implemented (manual) |
 | M11-01 | Prompt F | Health, DB, config, release | `/app/platform` | route audit | Partial (no backup/job monitoring) |
 | M07, M08 | Prompt F | Scheduling, correspondence | — | — | Not implemented (later phase) |
+| NFR-002 | PRD §12 | p95 targets after load model; low bandwidth | paged notification centre; small server-rendered pages (≤ 25 KB gzip HTML) | `npm run test:load`: 0 server errors at 1/10/25 users; back-office p95 ≈ 0.9 s at 10 users (local) | Baseline met against provisional budgets (DEC-066); production targets need the Service load model |
+| NFR-003 | PRD §12 | Scalability | scoped, indexed queries; paged lists | load baseline at 25 users (throughput ≈ 18–20 req/s, single Node process, 4 CPUs) | Baseline only; capacity test on target infrastructure required |
 | NFR-005 | PRD §12 | Security testing | threat model, negative tests | — | Partial (no pen test) |
-| NFR-006 | PRD §12 | WCAG 2.2 AA | semantic, labelled, focus; label-in-name; contrast; keyboard-reachable scroll regions; phone-width review | axe-core scan, 62 page views, 0 violations; phone review 27/27 | Automated rules met; manual review (keyboard, screen reader) still required |
+| NFR-006 | PRD §12 | WCAG 2.2 AA | semantic, labelled, focus; label-in-name; contrast; keyboard-reachable scroll regions; phone-width review | axe-core scan, 62 page views, 0 violations; reflow at 320 px and 200 % zoom, 115 pages, 0 overflows; phone review 27/27 | Automated rules and reflow met; manual review (keyboard, screen reader) still required |
 | NFR-008 | PRD §12 | Typed contracts, modular, tested | TS strict, Zod, 34 tests | tsc, vitest | Implemented |
 | NFR-010 | PRD §12 | Auditability | audit + histories | TS-13 | Implemented |
 | NFR-012 | PRD §12 | Africa/Lusaka, ZMW | formatting helpers | Manual | Implemented (manual) |

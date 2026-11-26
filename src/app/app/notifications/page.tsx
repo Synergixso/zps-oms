@@ -2,18 +2,29 @@ import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
 import { getDb } from "@/server/db/connection";
 import { NOTIFICATION_CATEGORIES } from "@/server/domain/core";
-import { listNotifications, preferences } from "@/server/domain/tasks";
+import { NOTIFICATION_PAGE_SIZE, listNotifications, preferences } from "@/server/domain/tasks";
 import { markAllReadAction, markReadAction, preferencesAction } from "@/server/actions/notifications";
 import { Card, Notice, PageHeader, fmtDateTime, btnSecondary } from "@/components/ui";
 import { ActionForm, Submit } from "@/components/forms";
 
 export const metadata = { title: "Notifications" };
 
-export default async function Notifications({ searchParams }: { searchParams: Promise<{ category?: string; unread?: string }> }) {
+export default async function Notifications({ searchParams }: { searchParams: Promise<{ category?: string; unread?: string; page?: string }> }) {
   const actor = await requireActor();
   const sp = await searchParams;
   const db = getDb();
-  const [rows, prefs] = await Promise.all([listNotifications(db, actor, sp.category, sp.unread === "1"), preferences(db, actor)]);
+  const [list, prefs] = await Promise.all([listNotifications(db, actor, sp.category, sp.unread === "1", Number(sp.page ?? 1)), preferences(db, actor)]);
+  const rows = list.rows;
+  // Paging links keep the current filter.
+  const pageHref = (n: number) => {
+    const q = new URLSearchParams();
+    if (sp.category) q.set("category", sp.category);
+    if (sp.unread === "1") q.set("unread", "1");
+    if (n > 1) q.set("page", String(n));
+    const s = q.toString();
+    return `/app/notifications${s ? `?${s}` : ""}`;
+  };
+  const first = (list.page - 1) * NOTIFICATION_PAGE_SIZE + 1;
   const chip = (href: string, label: string, active: boolean) => <Link key={href} href={href} className={`rounded-full px-3 py-1 text-xs font-semibold ${active ? "bg-zp-green text-white" : "border border-line-2 bg-white text-ink"}`}>{label}</Link>;
   return (
     <>
@@ -50,6 +61,18 @@ export default async function Notifications({ searchParams }: { searchParams: Pr
                   </li>
                 ))}
               </ul>
+            )}
+            {list.total > 0 && (
+              <nav aria-label="Notification pages" className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-4 py-3 text-xs">
+                <p className="text-muted">Showing {first}–{first + rows.length - 1} of {list.total}</p>
+                {list.pages > 1 && (
+                  <div className="flex items-center gap-3">
+                    {list.page > 1 ? <Link href={pageHref(list.page - 1)} className="font-semibold text-zp-blue hover:underline">← Newer</Link> : <span className="text-muted">← Newer</span>}
+                    <span className="text-muted">Page {list.page} of {list.pages}</span>
+                    {list.page < list.pages ? <Link href={pageHref(list.page + 1)} className="font-semibold text-zp-blue hover:underline">Older →</Link> : <span className="text-muted">Older →</span>}
+                  </div>
+                )}
+              </nav>
             )}
           </Card>
         </div>

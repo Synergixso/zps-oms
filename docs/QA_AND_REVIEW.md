@@ -31,6 +31,8 @@ Tested in headless Chromium with the local prototype source and supplied crest e
 - This is a static frontend prototype; no backend, database, API, persistence, real authentication, real access control or production audit facility exists.
 - Browser smoke tests do not constitute full cross-browser, accessibility, penetration, security or user acceptance testing.
 - Automated WCAG 2.0/2.1/2.2 A and AA rules (axe-core) pass on the public pages and every role's dashboard and Help page (`docs/evidence/accessibility.md`). Automated rules cover only part of WCAG: a manual audit (keyboard-only use, screen reader, content and forms) remains a required activity before roll-out.
+- Reflow (SC 1.4.10) and 200 % zoom (SC 1.4.4): no page scrolls sideways at 320 px or 640 px (`docs/evidence/reflow.md`). The first run found 5 pages that did (long option labels in filter selects, a non-wrapping card header, the search bar and the technical-team cards); fixed in shared CSS and components.
+- Performance baseline (NFR-002): `docs/evidence/load-test.md`. Figures are from one developer machine and are a baseline, not a capacity statement.
 - The prototype was not connected to any Zambia Police Service network or system.
 - Sample metrics, dates, records and references are synthetic.
 - Institutional establishment and reporting relationships remain subject to internal confirmation.

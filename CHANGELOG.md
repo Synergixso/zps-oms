@@ -2,6 +2,18 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.8.2] — 2026-11-26 — Reflow, performance baseline, limitations refresh
+### Added
+- `e2e/reflow.spec.ts`: WCAG 2.2 SC 1.4.10 / 1.4.4 check of 8 public pages and 107 distinct back-office pages (from every role's navigation) at 320 px and 640 px; report `docs/evidence/reflow.md`.
+- `scripts/load-test.mjs` (`npm run test:load`): dependency-free load and page-weight baseline across 27 signed-in roles at 1, 10 and 25 concurrent users, with provisional budgets (DEC-066); report `docs/evidence/load-test.md`.
+### Changed
+- Notifications centre is paged (50 per page, newest first, filters kept, out-of-range pages clamped) instead of rendering up to 300 at once (`listNotifications`, test `tests/notifications.test.ts`).
+- `docs/KNOWN_LIMITATIONS.md` rewritten for v0.8.2: it still described v0.1 (no real sign-in, no scheduler, CSV only, no E2E). It now separates Service decisions, production prerequisites and testing gaps, and lists what was resolved.
+### Fixed (found by the reflow check: 5 pages scrolled sideways at 320 px)
+- Form controls never grow wider than their container (long option labels); filter-bar fields may shrink.
+- Card headers wrap their actions below the title on narrow screens (areas, requests, stores).
+- Search bar input may shrink; technical-team service cards use a smaller tile and wrap long titles on phones.
+
 ## [0.8.1] — 2026-11-26 — Accessibility (WCAG 2.2 AA automated rules)
 ### Added
 - `e2e/accessibility.spec.ts`: axe-core scan of 8 public pages and the dashboard and Help page of every role (62 page views), WCAG 2.0/2.1/2.2 A and AA; report in `docs/evidence/accessibility.md`; fails on any violation. Dev dependency `@axe-core/playwright` 4.14.1 (owner-approved, DEC-065).

@@ -175,6 +175,7 @@ On first start the server applies any pending migrations and then loads the synt
 | `npm run build` / `npm start` | Production build and serve. For the local cookie flag, see `docs/DEPLOYMENT_GUIDE.md` |
 | `npm run db:migrate` | Apply pending SQL migrations to `DATABASE_URL` |
 | `npm run db:reset` | Drop and recreate the local `zps_oms_*` database. **Destroys its data.** Refuses any other database name |
+| `npm run test:load` | Load and page-weight baseline against a running local server (production build recommended); writes `docs/evidence/load-test.md` |
 | `npm run audit:routes` | Requests every route as every synthetic user against the running server; writes `docs/evidence/route-audit.md` |
 | `npm run review:mobile` | Opens every role's dashboard at phone width, checks overflow and saves screenshots (`docs/evidence/mobile/`) |
 | `npm run verify:audit` | Read-only verification of the whole audit hash chain |
@@ -204,8 +205,9 @@ Every account is synthetic: `demo.*` usernames and "Demo" names. The development
 | Demo A Company Administrative Officer (`demo.mu.acoy.admin`) | Select eligible officers for a contribution and submit |
 
 ## 11. Testing and verification evidence
-- **Domain and integration tests** (`npm test`, 127 tests in strict SQL mode) cover access control, tenant isolation, the 27-role matrix, context switching, scoped technical administration, stores, workflows and decision chains, separation of duties, scheduled delivery, Excel export, backups and restore drills, audit-chain concurrency, migrations and the seed.
-- **Playwright journeys** (`npm run test:e2e`, 8 journeys in Microsoft Edge).
+- **Domain and integration tests** (`npm test`, 130 tests in strict SQL mode) cover access control, tenant isolation, the 27-role matrix, context switching, scoped technical administration, stores, workflows and decision chains, separation of duties, scheduled delivery, Excel export, backups and restore drills, audit-chain concurrency, migrations and the seed.
+- **Playwright** (`npm run test:e2e`, Microsoft Edge): 8 journeys, the axe-core accessibility scan (`docs/evidence/accessibility.md`) and the reflow/200 % zoom check (`docs/evidence/reflow.md`).
+- **Load and page-weight baseline** (`npm run test:load -- http://localhost:3100` against `npm run start`) — `docs/evidence/load-test.md`.
 - **Route audit** (`npm run audit:routes`): every route against every user — `docs/evidence/route-audit.md`. **Phone-width review** (`npm run review:mobile`) — `docs/evidence/mobile/`.
 - **CI**: `.github/workflows/ci.yml` (type check, tests on MariaDB 10.4, dependency audit, build).
 - **Evidence:** `docs/role-architecture/ROLE_TEST_RESULTS.md`, `docs/development/TEST_RESULTS.md`.
