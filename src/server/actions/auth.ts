@@ -1,5 +1,6 @@
 "use server";
 import { cookies, headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getDb } from "../db/connection";
 import { authenticate, changePassword, clientKey } from "../domain/auth";
@@ -66,5 +67,7 @@ export async function switchContext(fd: FormData) {
   const jar = await cookies();
   const id = String(fd.get("assignmentId") ?? "").slice(0, 60);
   await setSessionContext(getDb(), jar.get(SESSION_COOKIE)?.value, id);
+  // The navigation, account menu and notice live in the shared layout: re-render it in the new context.
+  revalidatePath("/app", "layout");
   redirect("/app");
 }

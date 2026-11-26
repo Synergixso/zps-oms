@@ -11,7 +11,7 @@ Status key: **Implemented and tested** = catalogue entry, permissions, scope, wo
 | Migration 007 (role tier/number/status/back office, session context, delegation domain STORES, general-stores tables) | Applied to dev, test and e2e databases; dev backed up first (`backups/zps_oms_dev_pre007_*.sql`, git-ignored) |
 | Retirement of the 41 roles (RETIRED, history kept) and re-mapping of synthetic accounts (seed step 003) | Implemented and tested |
 | Central role → workspace configuration (`workspace-config.ts`, `workspaces.ts`) | Implemented and tested |
-| Context switching (account menu; validated each request) | Implemented; server side tested; browser interaction not yet automated |
+| Context switching (account menu; validated each request) | Implemented and tested (unit and Playwright) |
 | Scoped technical administration (`user.support`) | Implemented and tested |
 | General stores (items, ledger, requisitions, issue) | Implemented and tested |
 
@@ -62,5 +62,5 @@ All accounts use the published synthetic development password (local review only
 ## Open items (all roles)
 
 1. ~~Phone-width visual review of every role's dashboard~~ — done 26 Nov 2026 (`docs/evidence/mobile/`, findings in `ROLE_TEST_RESULTS.md` §5).
-2. Automated browser test of the context switcher.
+2. ~~Automated browser test of the context switcher~~ — done 26 Nov 2026 (Playwright; found and fixed a stale-menu defect).
 3. Institutional validation of the permission templates, the synthetic delegations and the assumptions in DEC-055.

@@ -2,6 +2,12 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.5.2] — 2026-11-26 — Context switcher browser test
+### Added
+- Playwright journey for context switching (menu state, scope shown, records of the other context not disclosed, no switcher for single-assignment users).
+### Fixed
+- After switching context the account menu and notice could show the previous context until the next full load (client router cache); the layout is now revalidated on switch. Server-side checks were already correct.
+
 ## [0.5.1] — 2026-11-26 — Phone-width review of the 27 role dashboards
 ### Added
 - `scripts/mobile-review.mjs` (`npm run review:mobile`): opens every role's dashboard at 375 × 812, records horizontal overflow and saves screenshots (`docs/evidence/mobile/`).

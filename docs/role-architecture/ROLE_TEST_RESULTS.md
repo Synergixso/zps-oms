@@ -11,7 +11,7 @@
 | Role suite | `tests/three-tier-roles.test.ts` | 13 passed (included in the 108) |
 | Production build | `npm run build` | Succeeded |
 | Route audit (production build, port 3300) | `node scripts/route-audit.mjs http://localhost:3300` | **81 routes × 54 synthetic accounts, 0 server errors** (`docs/evidence/route-audit.md`) |
-| End-to-end (Playwright, Edge) | `npx playwright test` | **7 passed / 7** |
+| End-to-end (Playwright, Edge) | `npx playwright test` | **8 passed / 8** (includes context switching) |
 | Phone-width review (375 × 812, production build) | `npm run review:mobile -- http://localhost:3300` | **27 / 27 dashboards, 0 horizontal overflow**; screenshots and table in `docs/evidence/mobile/` |
 
 ## 2. What the role suite proves (`tests/three-tier-roles.test.ts`)
@@ -76,6 +76,8 @@ Every role's dashboard was captured at 375 × 812 and checked for horizontal ove
 
 After the fixes: 0 overflow on all 27, route audit 0 server errors, Vitest 108/108, Playwright 7/7.
 
-## 6. Not covered by automated tests
+## 6. Context switching in the browser
 
-- The context switcher's menu interaction in a browser (the server-side switching and validation are unit-tested).
+`e2e/flows.spec.ts` › *context switching*: `demo.fleet.officer` (MTO at Lusaka Division and at the Mobile Unit) switches context from the account menu. The menu marks the active context, the dashboard and notice show its scope, the selected context's vehicle opens (200) and the other context's vehicle is not disclosed (404), in both directions; a single-assignment user sees no switcher.
+
+The test found a defect, now fixed: after a switch, the shared layout (account menu and notice) could be served from the client router cache and show the previous context, while the page itself and every server check already used the new one. `switchContext` now revalidates the `/app` layout before redirecting.

@@ -135,3 +135,43 @@ test("access control: a general staff member cannot open manpower registers", as
   await page.goto("/app/manpower");
   await expect(page.getByText(/not authorised to view/)).toBeVisible();
 });
+
+test("context switching: a user with two assignments acts in one selected context at a time", async ({ page }) => {
+  // demo.fleet.officer holds MTO Officer-in-Charge at Lusaka Division and at the Mobile Unit.
+  await login(page, "demo.fleet.officer");
+  const switchTo = async (unit: RegExp) => {
+    await page.getByRole("button", { name: "Account menu" }).click();
+    await expect(page.getByText("Switch role context")).toBeVisible();
+    await expect(page.getByRole("menuitemradio")).toHaveCount(2);
+    const target = page.getByRole("menuitemradio", { name: unit });
+    if ((await target.getAttribute("aria-checked")) === "true") {
+      await page.keyboard.press("Escape");
+      return;
+    }
+    await target.click();
+    await page.waitForURL(/\/app$/);
+    await page.waitForLoadState("networkidle");
+  };
+
+  await switchTo(/Mobile Unit/);
+  await expect(page.getByText(/Scope: Mobile Unit/).first()).toBeVisible();
+  await page.getByRole("button", { name: "Account menu" }).click();
+  await expect(page.getByRole("menuitemradio", { name: /Mobile Unit/ })).toHaveAttribute("aria-checked", "true");
+  await page.keyboard.press("Escape");
+  // Only the selected context's records are reachable; the other context's record is not disclosed.
+  expect((await page.goto("/app/fleet/veh_15"))?.status()).toBe(200);
+  expect((await page.goto("/app/fleet/veh_1"))?.status()).toBe(404);
+
+  await page.goto("/app");
+  await switchTo(/Lusaka Division/);
+  await expect(page.getByText(/Scope: Lusaka Division/).first()).toBeVisible();
+  expect((await page.goto("/app/fleet/veh_1"))?.status()).toBe(200);
+  expect((await page.goto("/app/fleet/veh_15"))?.status()).toBe(404);
+
+  // A single-assignment user sees no context switcher.
+  await page.goto("/app");
+  await logout(page);
+  await login(page, "demo.kitwe.commander");
+  await page.getByRole("button", { name: "Account menu" }).click();
+  await expect(page.getByText("Switch role context")).toHaveCount(0);
+});
