@@ -38,7 +38,19 @@ export interface Actor {
   assignments: Assignment[];
   /** Signed in with a temporary password: only the profile (change password) is reachable. */
   mustChangePassword?: boolean;
+  /** Every valid assignment the user holds (the contexts they may switch between). */
+  contexts?: Assignment[];
+  /** The assignment this request acts under (set when a session context applies). */
+  activeAssignmentId?: string | null;
 }
+
+/**
+ * `context` selects the organisational context for this request:
+ *  - undefined: every valid assignment counts (domain jobs, seeding and tests);
+ *  - "PRIMARY": the highest-precedence assignment (web sessions with no selection yet);
+ *  - an assignment id: that assignment only, re-validated now; if it is no longer valid the primary applies.
+ */
+export type ContextSelector = undefined | "PRIMARY" | string;
 
 export interface Scope {
   national: boolean;
@@ -46,7 +58,7 @@ export interface Scope {
 }
 
 /** Loads the actor fresh from the database on every request so revocation/expiry take effect immediately. */
-export async function loadActor(db: DB, userId: string): Promise<Actor | null> {
+export async function loadActor(db: DB, userId: string, context?: ContextSelector): Promise<Actor | null> {
   const user = await one<{ id: string; display_name: string; position_title: string; status: string; must_change_password: number }>(
     db,
     "SELECT id, display_name, position_title, status, must_change_password FROM users WHERE id = ?",
@@ -75,12 +87,13 @@ export async function loadActor(db: DB, userId: string): Promise<Actor | null> {
     );
     for (const d of desc) subtrees.set(d.ancestor_id, [...(subtrees.get(d.ancestor_id) ?? []), d.descendant_id]);
   }
-  return {
+  const actor: Actor = {
     userId: user.id,
     displayName: user.display_name,
     positionTitle: user.position_title,
     mustChangePassword: user.must_change_password === 1,
-    assignments: rows.map((r) => ({
+    // Only assignments of ACTIVE catalogue roles count; retired roles grant nothing (deny by default).
+    assignments: rows.filter((r) => ROLE_BY_CODE[r.role_code]).map((r) => ({
       subtree: subtrees.get(r.org_unit_id) ?? [r.org_unit_id],
       id: r.id,
       roleCode: r.role_code,
@@ -90,6 +103,15 @@ export async function loadActor(db: DB, userId: string): Promise<Actor | null> {
       validTo: r.valid_to,
     })),
   };
+  actor.contexts = actor.assignments;
+  if (context === undefined || actor.assignments.length <= 1) {
+    actor.activeAssignmentId = actor.assignments.length === 1 ? actor.assignments[0].id : null;
+    return actor;
+  }
+  const chosen = actor.assignments.find((a) => a.id === context) ?? primaryAssignment(actor);
+  actor.assignments = chosen ? [chosen] : [];
+  actor.activeAssignmentId = chosen?.id ?? null;
+  return actor;
 }
 
 /** Resolves where `perm` applies for this actor. */
@@ -142,7 +164,7 @@ export function scopeSql(actor: Actor, perm: Permission, column: string): { sql:
   return { sql: `${column} IN (${s.units.map(() => "?").join(",")})`, params: s.units };
 }
 
-export type DelegationDomain = "ADMIN_REQUEST" | "MAINTENANCE" | "ORG_CHANGE" | "MANPOWER" | "ASSIGNMENT";
+export type DelegationDomain = "ADMIN_REQUEST" | "MAINTENANCE" | "ORG_CHANGE" | "MANPOWER" | "ASSIGNMENT" | "STORES";
 
 export async function hasDelegation(db: DB, actor: Actor, domain: DelegationDomain, orgUnitId: string, categoryCode?: string | null): Promise<boolean> {
   const t = nowIso();

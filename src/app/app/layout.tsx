@@ -5,8 +5,9 @@ import { requireActor } from "@/server/auth/session";
 import { getDb, one } from "@/server/db/connection";
 import { ROLE_BY_CODE } from "@/server/domain/catalogue";
 import { hasPermission, primaryAssignment, primaryRole } from "@/server/domain/policy";
-import { signOut } from "@/server/actions/auth";
-import { NAV } from "@/lib/nav";
+import { signOut, switchContext } from "@/server/actions/auth";
+import { NAV, NAV_ITEMS, type NavItem } from "@/lib/nav";
+import { workspaceFor } from "@/server/domain/workspaces";
 import { Breadcrumbs, SideNav, UserMenu } from "@/components/shell";
 import { Crest } from "@/components/ui";
 import { Icon } from "@/components/icons";
@@ -24,12 +25,18 @@ const VERSION = (() => {
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const actor = await requireActor();
-  const groups = NAV.map((g) => ({ ...g, items: g.items.filter((i) => i.any.length === 0 || i.any.some((p) => hasPermission(actor, p))) })).filter((g) => g.items.length);
+  // Role-specific navigation from the workspace configuration (falls back to the generic tree); every entry is
+  // still filtered by permission here and re-checked by each page and domain function.
+  const ws = workspaceFor(actor);
+  const allowed = (i: NavItem) => i.any.length === 0 || i.any.some((p) => hasPermission(actor, p));
+  const source = ws ? ws.nav.map((g) => ({ label: g.label, items: g.items.map((h) => NAV_ITEMS[h]).filter(Boolean) })) : NAV;
+  const groups = source.map((g) => ({ ...g, items: g.items.filter(allowed) })).filter((g) => g.items.length);
   const role = primaryRole(actor);
   const pa = primaryAssignment(actor);
   const unread = Number((await one<{ c: number }>(getDb(), "SELECT COUNT(*) AS c FROM notifications WHERE user_id = ? AND read_at IS NULL", actor.userId))?.c ?? 0);
   const initials = actor.displayName.replace(/^Demo\s+/, "").split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
   const user = { name: actor.displayName, role: role ? ROLE_BY_CODE[role].name : "No active role", initials };
+  const contexts = (actor.contexts ?? []).map((a) => ({ id: a.id, role: ROLE_BY_CODE[a.roleCode].name, unit: a.orgUnitName, active: a.id === actor.activeAssignmentId }));
 
   return (
     <div className="min-h-screen">
@@ -54,12 +61,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <Link href="/app/help" className="rounded-lg p-2 text-ink-2 hover:bg-slate-100" aria-label="Help">
                 <Icon name="help" className="h-[22px] w-[22px]" />
               </Link>
-              <UserMenu user={user} signOut={signOut} />
+              <UserMenu user={user} signOut={signOut} contexts={contexts} switchContext={switchContext} />
             </div>
           </div>
         </header>
         <div className="no-print border-b border-amber-200 bg-amber-50 px-4 py-1.5 text-[12px] text-amber-900 lg:px-8">
-          <strong>Prototype environment</strong> — synthetic demonstration data only; not connected to Zambia Police Service systems. Active role: <strong>{role ? ROLE_BY_CODE[role].name : "none"}</strong>
+          <strong>Prototype environment</strong> — synthetic demonstration data only; not connected to Zambia Police Service systems. {ws ? <>{ws.backOffice} · </> : null}Active role: <strong>{role ? ROLE_BY_CODE[role].name : "none"}</strong>
           {pa ? ` · Scope: ${pa.orgUnitName}` : ""}.
         </div>
         <main id="main" className="mx-auto max-w-[1600px] px-4 py-6 lg:px-8">

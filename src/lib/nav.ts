@@ -42,6 +42,8 @@ export const NAV: NavGroup[] = [
       { href: "/app/fleet", label: "Fleet register", icon: "truck", any: ["fleet.view"] },
       { href: "/app/fleet/maintenance", label: "Fleet maintenance", icon: "wrench", any: ["maintenance.view"] },
       { href: "/app/assets", label: "General assets", icon: "box", any: ["asset.view"] },
+      { href: "/app/stores", label: "Stores and stock", icon: "database", any: ["stores.view"] },
+      { href: "/app/stores/requisitions", label: "Stores requisitions", icon: "clipboardCheck", any: ["stores.view", "stores.requisition"] },
       { href: "/app/reports", label: "Reports", icon: "chart", any: ["report.view"] },
       { href: "/app/messages", label: "Contact messages", icon: "mail", any: ["contact.view"] },
     ],
@@ -68,3 +70,6 @@ export const NAV: NavGroup[] = [
     ],
   },
 ];
+
+/** Every navigation entry by route, for role-specific workspace navigation (src/server/domain/workspaces.ts). */
+export const NAV_ITEMS: Record<string, NavItem> = Object.fromEntries(NAV.flatMap((g) => g.items).map((i) => [i.href, i]));

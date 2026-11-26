@@ -7,6 +7,7 @@ import { all, one } from "../db/connection";
 import type { DashboardKind } from "./catalogue";
 import { addDays, nowIso, today } from "./core";
 import { type Actor, hasPermission, unitsFor } from "./policy";
+import { workspaceFor } from "./workspaces";
 import type { IconName } from "@/lib/nav";
 
 type Tone = "blue" | "green" | "violet" | "indigo" | "orange" | "teal" | "red" | "slate";
@@ -18,6 +19,14 @@ const scope = (actor: Actor, perm: Parameters<typeof unitsFor>[1], col: string):
   const u = unitsFor(actor, perm);
   if (u === null) return { sql: "1=1", params: [] };
   return u.length ? { sql: `${col} IN (${inList(u)})`, params: u } : { sql: "1=0", params: [] };
+};
+/** Users with an active assignment inside the actor's user.view scope (scoped technical administration). */
+const usersInScope = (actor: Actor): { national: boolean; sql: string; params: string[] } | null => {
+  if (!hasPermission(actor, "user.view")) return null;
+  const u = unitsFor(actor, "user.view");
+  if (u === null) return { national: true, sql: "1=1", params: [] };
+  if (!u.length) return { national: false, sql: "1=0", params: [] };
+  return { national: false, sql: `EXISTS (SELECT 1 FROM role_assignments x WHERE x.user_id = u.id AND x.revoked_at IS NULL AND (x.valid_to IS NULL OR x.valid_to > ?) AND x.org_unit_id IN (${inList(u)}))`, params: [nowIso(), ...u] };
 };
 const count = async (db: DB, sql: string, ...p: unknown[]) => Number((await one<{ c: number }>(db, sql, ...p))?.c ?? 0);
 
@@ -146,14 +155,47 @@ async function kpi(db: DB, actor: Actor, key: string): Promise<Kpi | null> {
       return hasPermission(actor, "audit.view") || hasPermission(actor, "security.view") ? { key, label: "Denied actions (24 h)", value: await count(db, "SELECT COUNT(*) AS c FROM audit_events WHERE outcome = 'DENIED' AND occurred_at > ?", new Date(Date.now() - 86400000).toISOString()), hint: "Access refused and recorded", href: hasPermission(actor, "security.view") ? "/app/security" : "/app/audit?outcome=DENIED", icon: "shield", tone: "red" } : null;
     case "exports30d":
       return hasPermission(actor, "audit.view") ? { key, label: "Exports (30 days)", value: await count(db, "SELECT COUNT(*) AS c FROM audit_events WHERE category = 'EXPORT' AND occurred_at > ?", new Date(Date.now() - 30 * 86400000).toISOString()), hint: "Reports and registers", href: "/app/audit/history?kind=exports", icon: "send", tone: "teal" } : null;
-    case "usersActive":
-      return hasPermission(actor, "user.view") ? { key, label: "Active user accounts", value: await count(db, "SELECT COUNT(*) AS c FROM users WHERE status = 'ACTIVE'"), hint: "Synthetic accounts", href: "/app/admin/users", icon: "userCircle", tone: "indigo" } : null;
+    case "usersActive": {
+      const u = usersInScope(actor);
+      return u ? { key, label: u.national ? "Active user accounts" : "Accounts in my scope", value: await count(db, `SELECT COUNT(*) AS c FROM users u WHERE u.status = 'ACTIVE' AND ${u.sql}`, ...u.params), hint: u.national ? "Synthetic accounts" : "Users assigned within your unit", href: "/app/admin/users", icon: "userCircle", tone: "indigo" } : null;
+    }
     case "sessions":
       return hasPermission(actor, "security.view") ? { key, label: "Active sessions", value: await count(db, "SELECT COUNT(*) AS c FROM sessions WHERE expires_at > ?", nowIso()), hint: "Signed-in now", href: "/app/security", icon: "monitorNet", tone: "blue" } : null;
-    case "locked":
-      return hasPermission(actor, "security.view") ? { key, label: "Locked accounts", value: await count(db, "SELECT COUNT(*) AS c FROM users WHERE locked_until > ?", nowIso()), hint: "After repeated failures", href: "/app/security", icon: "lock", tone: "red" } : null;
-    case "failedLogins24h":
-      return hasPermission(actor, "security.view") ? { key, label: "Failed sign-ins (24 h)", value: await count(db, "SELECT COUNT(*) AS c FROM login_attempts WHERE succeeded = 0 AND created_at > ?", new Date(Date.now() - 86400000).toISOString()), hint: "All attempts audited", href: "/app/security", icon: "key", tone: "orange" } : null;
+    case "locked": {
+      const u = hasPermission(actor, "security.view") ? { national: true, sql: "1=1", params: [] as string[] } : usersInScope(actor);
+      return u ? { key, label: "Locked accounts", value: await count(db, `SELECT COUNT(*) AS c FROM users u WHERE u.locked_until > ? AND ${u.sql}`, nowIso(), ...u.params), hint: "After repeated failures", href: hasPermission(actor, "security.view") ? "/app/security" : "/app/admin/users", icon: "lock", tone: "red" } : null;
+    }
+    case "failedLogins24h": {
+      const since = new Date(Date.now() - 86400000).toISOString();
+      if (hasPermission(actor, "security.view")) return { key, label: "Failed sign-ins (24 h)", value: await count(db, "SELECT COUNT(*) AS c FROM login_attempts WHERE succeeded = 0 AND created_at > ?", since), hint: "All attempts audited", href: "/app/security", icon: "key", tone: "orange" };
+      const u = usersInScope(actor);
+      return u ? { key, label: "Failed sign-ins (24 h)", value: await count(db, `SELECT COUNT(*) AS c FROM login_attempts l JOIN users u ON u.username = l.username WHERE l.succeeded = 0 AND l.created_at > ? AND ${u.sql}`, since, ...u.params), hint: "Accounts in your scope", href: "/app/admin/users", icon: "key", tone: "orange" } : null;
+    }
+    case "nationalPersonnel":
+      // Aggregate summary only: no link to individual records unless the role may open them.
+      return hasPermission(actor, "personnel.view") ? kpi(db, actor, "personnel")
+        : hasPermission(actor, "dashboard.national.view") ? { key, label: "Personnel (national summary)", value: await count(db, "SELECT COUNT(*) AS c FROM personnel_records"), hint: "Aggregate figure only", icon: "users", tone: "indigo" } : null;
+    case "nationalAssignments":
+      return hasPermission(actor, "assignment.view") ? kpi(db, actor, "activeAssignments")
+        : hasPermission(actor, "dashboard.national.view") ? { key, label: "Active assignments (national)", value: await count(db, "SELECT COUNT(*) AS c FROM personnel_assignments WHERE status IN ('ACTIVE','TRANSFER_PENDING')"), hint: "Aggregate figure only", icon: "layers", tone: "orange" } : null;
+    case "storesItems": {
+      const s = scope(actor, "stores.view", "org_unit_id");
+      return s ? { key, label: "Store items", value: await count(db, `SELECT COUNT(*) AS c FROM store_items WHERE status = 'ACTIVE' AND ${s.sql}`, ...s.params), hint: "General consumables", href: "/app/stores", icon: "database", tone: "blue" } : null;
+    }
+    case "storesLow": {
+      const s = scope(actor, "stores.view", "org_unit_id");
+      return s ? { key, label: "Reorder needed", value: await count(db, `SELECT COUNT(*) AS c FROM store_items WHERE status = 'ACTIVE' AND quantity_on_hand <= reorder_level AND ${s.sql}`, ...s.params), hint: "At or below reorder level", href: "/app/stores?low=1", icon: "arrowDown", tone: "red" } : null;
+    }
+    case "storesToIssue": {
+      const s = scope(actor, "stores.manage", "store_unit_id");
+      return s ? { key, label: "Requisitions to issue", value: await count(db, `SELECT COUNT(*) AS c FROM store_requisitions WHERE status = 'APPROVED' AND ${s.sql}`, ...s.params), hint: "Approved, awaiting issue", href: "/app/stores/requisitions?status=APPROVED", icon: "send", tone: "orange" } : null;
+    }
+    case "storesAwaitingDecision": {
+      const s = scope(actor, "stores.approve", "requesting_unit_id") ?? scope(actor, "stores.view", "store_unit_id");
+      return s ? { key, label: "Stores requisitions pending", value: await count(db, `SELECT COUNT(*) AS c FROM store_requisitions WHERE status = 'SUBMITTED' AND ${s.sql}`, ...s.params), hint: "Awaiting a decision", href: "/app/stores/requisitions?status=SUBMITTED", icon: "stamp", tone: "teal" } : null;
+    }
+    case "myRequisitions":
+      return hasPermission(actor, "stores.requisition") ? { key, label: "My open requisitions", value: await count(db, "SELECT COUNT(*) AS c FROM store_requisitions WHERE requested_by = ? AND status IN ('DRAFT','SUBMITTED','APPROVED')", actor.userId), hint: "Draft, submitted or approved", href: "/app/stores/requisitions?mine=1", icon: "clipboardCheck", tone: "blue" } : null;
     case "jobFailures":
       return hasPermission(actor, "platform.view") ? { key, label: "Automation failures (24 h)", value: await count(db, "SELECT COUNT(*) AS c FROM job_runs WHERE status = 'FAILED' AND started_at > ?", new Date(Date.now() - 86400000).toISOString()), hint: "Scheduled jobs", href: "/app/platform", icon: "server", tone: "teal" } : null;
     case "orgChangesPending":
@@ -163,7 +205,8 @@ async function kpi(db: DB, actor: Actor, key: string): Promise<Kpi | null> {
 }
 
 export async function headlineKpis(db: DB, actor: Actor, kind: DashboardKind): Promise<Kpi[]> {
-  const keys = KPI_SETS[kind] ?? ["myTasks", "unread"];
+  // Role-specific figures from the workspace configuration; the dashboard-kind set is the fallback.
+  const keys = workspaceFor(actor)?.kpis ?? KPI_SETS[kind] ?? ["myTasks", "unread"];
   const out: Kpi[] = [];
   for (const k of keys) {
     const v = await kpi(db, actor, k);

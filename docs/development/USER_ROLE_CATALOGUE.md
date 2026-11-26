@@ -1,351 +1,235 @@
-# User Role Catalogue (41 roles)
+# User Role Catalogue (27 roles, three tiers)
 
-> Generated from `src/server/domain/catalogue.ts` — the catalogue the server enforces and synchronises to the `roles` / `role_permissions` tables at start-up. Do not edit by hand; run `npm run docs:permissions`.
+> Generated from `src/server/domain/catalogue.ts` and `src/server/domain/workspace-config.ts` — the configuration the server enforces. Do not edit by hand; run `npm run docs:permissions`.
 
-Every role has a unique code, official name, category, workspace (dashboard), the organisation unit types it may be assigned at, and scoped action permissions. A user may hold several roles, each at its own unit and with its own validity period.
+Every role has a unique code and number, a tier, an official back-office name, the organisation unit types it may be assigned at, and scoped action permissions. A user may hold several roles, each at its own unit and validity period, and switches between them (one active context per session).
 
 Legend: **U** = assigned unit only · **S** = assigned unit and every subordinate unit · **N** = national (only when the assignment is held at Service HQ; otherwise treated as S) · blank = denied.
 
-Approval authority is never a role permission: it needs an active delegation (domain ADMIN_REQUEST, MAINTENANCE, ORG_CHANGE, MANPOWER or ASSIGNMENT) at the record's unit or an ancestor **and** a BUSINESS-category role at that delegating unit (`policy.approvalUnitFor` / `policy.canApprove`). Rank never confers authority.
+Approval authority is never a role permission: it needs an active delegation (domain ADMIN_REQUEST, MAINTENANCE, ORG_CHANGE, MANPOWER, ASSIGNMENT or STORES) at the record's unit or an ancestor **and** a BUSINESS-category role at that delegating unit (`policy.approvalUnitFor` / `policy.canApprove`). Rank never confers authority. Technical, functional and audit roles never approve.
 
-## National Headquarters
+## Tier 1 — National Headquarters
 
-### Role 01 — Platform Super Administrator
+### Role 01 — Superadmin
 
-- **Code:** `PLATFORM_ADMIN` · **Category:** TECHNICAL
-- **Workspace:** Platform Administration Workspace
-- **Assignable at:** service hq
-- **Purpose:** Technical configuration, tenant provisioning, approved user provisioning and system health. No access to personnel records and no approval authority.
-- **Permissions (14):** `org.view` (N), `tenant.view` (N), `tenant.manage` (N), `user.view` (N), `user.provision` (N), `user.deactivate` (N), `grant.assign` (N), `grant.revoke` (N), `delegation.grant` (N), `platform.view` (N), `platform.configure` (N), `workflow.view` (U), `contact.view` (N), `contact.manage` (N)
+- **Code:** `SUPERADMIN` · **Tier:** 1 · **Category:** TECHNICAL
+- **Back office:** ZPS-OMS Superadmin Dashboard
+- **Organisational context:** National Headquarters (platform-wide) — assignable at: service hq
+- **Purpose:** Overall technical platform administration and national tenant configuration. No access to personnel records, sensitive operational information or business approval authority.
+- **Permissions (22):** `org.view` (N), `org.propose` (N), `tenant.view` (N), `tenant.manage` (N), `user.view` (N), `user.provision` (N), `user.suspend` (N), `user.deactivate` (N), `grant.assign` (N), `grant.revoke` (N), `delegation.grant` (N), `delegation.revoke` (N), `accessreview.manage` (N), `user.support` (N), `security.view` (N), `platform.view` (N), `platform.configure` (N), `platform.operate` (N), `health.view` (N), `workflow.view` (U), `contact.view` (N), `contact.manage` (N)
 
-### Role 02 — National Security Administrator
+### Role 02 — Inspector General of Police (IG)
 
-- **Code:** `SECURITY_ADMIN` · **Category:** SECURITY
-- **Workspace:** Security Administration Workspace
-- **Assignable at:** service hq
-- **Purpose:** Authentication policy, account security, session monitoring, access recertification, suspension and revocation. No routine business approval.
-- **Permissions (8):** `org.view` (N), `user.view` (N), `user.suspend` (N), `grant.revoke` (N), `delegation.revoke` (N), `accessreview.manage` (N), `audit.view` (N), `security.view` (N)
+- **Code:** `INSPECTOR_GENERAL` · **Tier:** 1 · **Category:** BUSINESS
+- **Back office:** Inspector General Executive Dashboard
+- **Organisational context:** National Headquarters — assignable at: service hq
+- **Purpose:** National executive oversight of authorised ZPS-OMS management information. Consolidated summaries, not individual personnel records; decisions only where a delegation is configured.
+- **Permissions (8):** `dashboard.national.view` (N), `org.view` (N), `report.view` (N), `report.export` (N), `audit.view` (N), `audit.export` (N), `workflow.view` (U), `manpower.view` (N)
 
-### Role 03 — National Organisation Registry Administrator
+### Role 03 — Deputy Inspector General of Police - Operations (DIG Operations)
 
-- **Code:** `ORG_REGISTRY_ADMIN` · **Category:** BUSINESS
-- **Workspace:** Organisation and Formation Administration
-- **Assignable at:** service hq
-- **Purpose:** Maintains the approved organisational directory, tenant structure and relationships through effective-dated proposals. Cannot approve own proposals.
-- **Permissions (4):** `org.view` (N), `org.propose` (N), `tenant.view` (N), `area.view` (N)
+- **Code:** `DIG_OPERATIONS` · **Tier:** 1 · **Category:** BUSINESS
+- **Back office:** DIG Operations National Executive Dashboard
+- **Organisational context:** Office of the DIG Operations, National Headquarters — assignable at: service hq
+- **Purpose:** National Operations administration, coordination and oversight; approves within configured delegations. No platform technical configuration.
+- **Permissions (17):** `dashboard.national.view` (N), `org.view` (N), `request.view` (U), `fleet.view` (N), `asset.view` (N), `report.view` (N), `report.export` (N), `audit.view` (N), `workflow.view` (U), `personnel.view` (N), `manpower.view` (N), `roster.view` (N), `roster.review` (N), `roster.export` (N), `area.view` (N), `assignment.view` (N), `stores.view` (N)
 
-### Role 04 — DIG Operations Executive / National Operations Approver
+### Role 04 — Commissioner – Operations HQ
 
-- **Code:** `DIG_OPS_EXECUTIVE` · **Category:** BUSINESS
-- **Workspace:** National Operations Dashboard
-- **Assignable at:** service hq
-- **Purpose:** National oversight and executive approval of manpower, roster and assignment matters where a recorded delegation exists.
-- **Permissions (13):** `dashboard.national.view` (N), `org.view` (N), `request.view` (U), `report.view` (N), `report.export` (N), `workflow.view` (U), `personnel.view` (N), `manpower.view` (N), `roster.view` (N), `roster.review` (N), `roster.export` (N), `area.view` (N), `assignment.view` (N)
+- **Code:** `COMMISSIONER_OPS_HQ` · **Tier:** 1 · **Category:** BUSINESS
+- **Back office:** Commissioner Operations Headquarters Dashboard
+- **Organisational context:** Operations Headquarters — assignable at: service hq
+- **Purpose:** Senior administration and coordination of Operations Headquarters business processes. Approval authority only through configured delegations.
+- **Permissions (37):** `dashboard.national.view` (N), `org.view` (N), `request.view` (N), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.assign` (N), `request.cancel` (U), `request.progress` (U), `request.close` (N), `fleet.view` (N), `maintenance.view` (N), `asset.view` (N), `report.view` (N), `report.export` (N), `workflow.view` (U), `workflow.configure` (N), `personnel.view` (N), `personnel.export` (N), `manpower.view` (N), `manpower.create` (U), `manpower.review` (N), `roster.view` (N), `roster.build` (N), `roster.review` (N), `roster.export` (N), `area.view` (N), `area.manage` (N), `assignment.view` (N), `assignment.propose` (N), `assignment.transfer` (N), `assignment.renew` (N), `assignment.receive` (N), `disposition.change` (N), `stores.view` (N), `contact.view` (N), `contact.manage` (N)
 
-### Role 05 — HQ Operations Administrator / Coordinator
+### Role 05 — Deputy Commissioner – Operations HQ
 
-- **Code:** `HQ_OPS_COORDINATOR` · **Category:** BUSINESS
-- **Workspace:** National Operations Coordination Workspace
-- **Assignable at:** service hq
-- **Purpose:** National Operations administration, manpower request management and workflow coordination within delegated authority.
-- **Permissions (35):** `dashboard.national.view` (N), `org.view` (N), `request.view` (N), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.assign` (N), `request.cancel` (U), `request.progress` (U), `request.close` (N), `fleet.view` (N), `maintenance.view` (N), `asset.view` (N), `report.view` (N), `report.export` (N), `workflow.view` (U), `workflow.configure` (N), `personnel.view` (N), `personnel.export` (N), `manpower.view` (N), `manpower.create` (U), `manpower.review` (N), `roster.view` (N), `roster.build` (N), `roster.review` (N), `roster.export` (N), `area.view` (N), `area.manage` (N), `assignment.view` (N), `assignment.propose` (N), `assignment.transfer` (N), `assignment.renew` (N), `disposition.change` (N), `contact.view` (N), `contact.manage` (N)
+- **Code:** `DEPUTY_COMMISSIONER_OPS_HQ` · **Tier:** 1 · **Category:** BUSINESS
+- **Back office:** Deputy Commissioner Operations HQ Dashboard
+- **Organisational context:** Operations Headquarters — assignable at: service hq
+- **Purpose:** Day-to-day administrative coordination and processing within Operations Headquarters; recommends or approves only where delegated.
+- **Permissions (21):** `dashboard.national.view` (N), `org.view` (N), `report.view` (N), `report.export` (N), `personnel.view` (N), `personnel.register` (N), `personnel.edit` (N), `personnel.verify` (N), `personnel.export` (N), `manpower.view` (N), `manpower.create` (U), `manpower.review` (N), `roster.view` (N), `roster.build` (N), `roster.review` (N), `roster.export` (N), `area.view` (N), `assignment.view` (N), `assignment.propose` (N), `assignment.transfer` (N), `assignment.renew` (N)
 
-### Role 06 — HQ Operations Staff / Manpower Planning Officer
+### Role 06 — System Administrator – HQ Tech
 
-- **Code:** `HQ_OPS_STAFF` · **Category:** BUSINESS
-- **Workspace:** Operations Staff Workspace
-- **Assignable at:** service hq
-- **Purpose:** Prepares manpower requests, consolidates contributions, builds rosters, monitors assignment registers and produces administrative reports.
-- **Permissions (15):** `dashboard.national.view` (N), `org.view` (N), `report.view` (N), `report.export` (N), `personnel.view` (N), `personnel.export` (N), `manpower.view` (N), `manpower.create` (U), `manpower.review` (N), `roster.view` (N), `roster.build` (N), `roster.export` (N), `area.view` (N), `assignment.view` (N), `assignment.propose` (N)
+- **Code:** `HQ_TECH_ADMIN` · **Tier:** 1 · **Category:** TECHNICAL
+- **Back office:** Headquarters Technical Administration Dashboard
+- **Organisational context:** National Headquarters (technical) — assignable at: service hq
+- **Purpose:** Institutionally scoped technical administration at Headquarters: health, database, jobs, backups, authentication monitoring and account support. No personnel access, approvals or tenant provisioning.
+- **Permissions (11):** `org.view` (N), `user.view` (N), `user.suspend` (N), `grant.revoke` (N), `delegation.revoke` (N), `accessreview.manage` (N), `user.support` (N), `security.view` (N), `platform.view` (N), `platform.operate` (N), `health.view` (N)
 
-### Role 07 — National Personnel Registry Administrator
+## Tier 2 — Provincial Divisions and Unit Formations
 
-- **Code:** `NATIONAL_PERSONNEL_ADMIN` · **Category:** BUSINESS
-- **Workspace:** Personnel Registry Administration
-- **Assignable at:** service hq
-- **Purpose:** Maintains verified personnel master records and authorised organisational memberships nationally.
-- **Permissions (7):** `org.view` (N), `report.view` (N), `personnel.view` (N), `personnel.register` (N), `personnel.edit` (N), `personnel.verify` (N), `personnel.export` (N)
+### Role 07 — Divisional/Unit System Administrator (Tech)
 
-### Role 08 — National Assignment and Disposition Administrator
+- **Code:** `UNIT_TECH_ADMIN` · **Tier:** 2 · **Category:** TECHNICAL
+- **Back office:** Division and Unit Technical Administration
+- **Organisational context:** Assigned Provincial Division or Unit/Formation only — assignable at: provincial division, formation
+- **Purpose:** Technical accounts and access support within the assigned Division or Formation; refers higher-level issues to HQ Tech. No personnel, assignment or approval authority.
+- **Permissions (4):** `org.view` (N), `user.view` (S), `user.support` (S), `health.view` (S)
 
-- **Code:** `NATIONAL_ASSIGNMENT_ADMIN` · **Category:** BUSINESS
-- **Workspace:** Assignment and Disposition Administration
-- **Assignable at:** service hq
-- **Purpose:** Assignment administration, transfer records, disposition management, tenure reviews and renewal processing.
-- **Permissions (13):** `org.view` (N), `report.view` (N), `personnel.view` (N), `manpower.view` (N), `roster.view` (N), `area.view` (N), `area.manage` (N), `assignment.view` (N), `assignment.propose` (N), `assignment.transfer` (N), `assignment.renew` (N), `assignment.receive` (N), `disposition.change` (N)
+### Role 08 — Formation Commanding Officer
 
-## Provincial level
+- **Code:** `FORMATION_COMMANDING_OFFICER` · **Tier:** 2 · **Category:** BUSINESS
+- **Back office:** Formation Command Headquarters
+- **Organisational context:** Provincial Division or Unit/Formation (commanding officer) — assignable at: provincial division, formation
+- **Purpose:** Oversight of the assigned Division or Formation and everything under it. Approves only within configured delegations; no access to unrelated formations or Provinces.
+- **Permissions (20):** `dashboard.division.view` (U), `dashboard.formation.view` (U), `org.view` (N), `request.view` (U), `request.assign` (U), `request.close` (U), `request.reopen` (U), `fleet.view` (U), `maintenance.view` (U), `asset.view` (S), `report.view` (S), `report.export` (S), `personnel.view` (S), `manpower.view` (S), `roster.view` (S), `roster.review` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S)
 
-### Role 09 — Provincial Division Commander
+### Role 09 — Deputy Division Commander
 
-- **Code:** `PROVINCIAL_COMMANDER` · **Category:** BUSINESS
-- **Workspace:** Provincial Division Dashboard
-- **Assignable at:** provincial division
-- **Purpose:** Oversight of the Provincial Division and its districts, stations and posts. Approves within formally delegated authority (delegation record required).
-- **Permissions (17):** `dashboard.division.view` (U), `org.view` (N), `request.view` (U), `request.assign` (U), `request.close` (U), `request.reopen` (U), `fleet.view` (U), `maintenance.view` (U), `asset.view` (U), `report.view` (U), `report.export` (U), `personnel.view` (S), `manpower.view` (S), `roster.view` (S), `roster.review` (S), `area.view` (S), `assignment.view` (S)
+- **Code:** `DEPUTY_DIVISION_COMMANDER` · **Tier:** 2 · **Category:** BUSINESS
+- **Back office:** Deputy Division Commander Dashboard
+- **Organisational context:** Provincial Division or Unit/Formation (deputy) — assignable at: provincial division, formation
+- **Purpose:** Supports the commanding officer: monitors performance, reviews outstanding matters and Staff I/II workflows; approves only where separately delegated.
+- **Permissions (14):** `dashboard.division.view` (U), `org.view` (N), `request.view` (U), `report.view` (S), `report.export` (S), `personnel.view` (S), `personnel.export` (S), `manpower.view` (S), `roster.view` (S), `roster.review` (S), `roster.export` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S)
 
-### Role 10 — Provincial Staff Ops / Provincial Operations Coordinator
+### Role 10 — Division Senior Staff Officer – Operations (Staff I)
 
-- **Code:** `DIVISION_STAFF_OPS` · **Category:** BUSINESS
-- **Workspace:** Provincial Operations Staff Workspace
-- **Assignable at:** provincial division
-- **Purpose:** Divisional administrative matters, manpower contributions, personnel submissions and divisional rosters. No approval authority unless a delegation is recorded.
-- **Permissions (25):** `dashboard.division.view` (U), `org.view` (N), `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U), `request.progress` (U), `fleet.view` (U), `maintenance.view` (U), `maintenance.create` (U), `asset.view` (U), `report.view` (U), `personnel.view` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `roster.export` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S)
+- **Code:** `DIVISION_STAFF_I` · **Tier:** 2 · **Category:** BUSINESS
+- **Back office:** Division Senior Staff Officer – Operations
+- **Organisational context:** Provincial Division or Unit/Formation — assignable at: provincial division, formation
+- **Purpose:** Coordinates Divisional Operations administration: manpower requirements, contributions, rosters, assignments, transfers, tenure and renewals; supervises Staff II. No approval outside delegations.
+- **Permissions (35):** `dashboard.division.view` (U), `org.view` (N), `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U), `request.progress` (U), `fleet.view` (U), `maintenance.view` (U), `maintenance.create` (U), `asset.view` (U), `report.view` (S), `report.export` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `personnel.export` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `roster.export` (S), `area.view` (S), `area.manage` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.renew` (S), `assignment.receive` (S), `disposition.change` (S), `stores.requisition` (S)
 
-### Role 11 — Provincial Personnel Records Officer
+### Role 11 — Deputy Division Staff Officer – Operations (Staff II)
 
-- **Code:** `PROVINCIAL_PERSONNEL_OFFICER` · **Category:** BUSINESS
-- **Workspace:** Provincial Personnel Records
-- **Assignable at:** provincial division
-- **Purpose:** Maintains approved personnel records and memberships within the assigned Province.
-- **Permissions (6):** `org.view` (N), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `personnel.export` (S)
+- **Code:** `DIVISION_STAFF_II` · **Tier:** 2 · **Category:** BUSINESS
+- **Back office:** Deputy Division Staff Officer – Operations
+- **Organisational context:** Provincial Division or Unit/Formation — assignable at: provincial division, formation
+- **Purpose:** Assists Staff I: prepares personnel information, compiles draft lists, verifies submissions, prepares transfer and renewal documentation. No Staff I approval authority.
+- **Permissions (17):** `dashboard.division.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.create` (U), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.renew` (S)
 
-### Role 12 — Provincial Assignment Coordinator
+### Role 12 — Company Commander
 
-- **Code:** `PROVINCIAL_ASSIGNMENT_COORDINATOR` · **Category:** BUSINESS
-- **Workspace:** Provincial Assignment Coordination
-- **Assignable at:** provincial division
-- **Purpose:** Coordinates assignments, transfer requests, status updates and assignment reviews in the Province.
-- **Permissions (10):** `org.view` (N), `personnel.view` (S), `area.view` (S), `area.manage` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.renew` (S), `assignment.receive` (S), `disposition.change` (S)
+- **Code:** `COMPANY_COMMANDER` · **Tier:** 2 · **Category:** BUSINESS
+- **Back office:** Company Command Administration
+- **Organisational context:** Company within a Unit/Formation — assignable at: company
+- **Purpose:** Company administration: personnel register, contributions and submissions for the company and its platoons and sections. No access to other companies.
+- **Permissions (9):** `dashboard.unit.view` (U), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `assignment.view` (S)
 
-### Role 13 — Provincial Reporting Officer
+### Role 13 — Section Head
 
-- **Code:** `PROVINCIAL_REPORTING_OFFICER` · **Category:** BUSINESS
-- **Workspace:** Provincial Reporting Workspace
-- **Assignable at:** provincial division
-- **Purpose:** Prepares Provincial management reports, printable lists and administrative summaries.
-- **Permissions (11):** `dashboard.division.view` (U), `org.view` (N), `report.view` (U), `report.export` (U), `personnel.view` (S), `personnel.export` (S), `manpower.view` (S), `roster.view` (S), `roster.export` (S), `area.view` (S), `assignment.view` (S)
-
-## District level
-
-### Role 14 — District Commander
-
-- **Code:** `DISTRICT_COMMANDER` · **Category:** BUSINESS
-- **Workspace:** District Command Dashboard
-- **Assignable at:** district
-- **Purpose:** Oversight of the District Command, its stations and posts. No access to other districts.
-- **Permissions (9):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S)
-
-### Role 15 — District Operations Officer / Staff Ops
-
-- **Code:** `DISTRICT_OPS_OFFICER` · **Category:** BUSINESS
-- **Workspace:** District Operations Workspace
-- **Assignable at:** district
-- **Purpose:** Coordinates administrative matters and personnel contributions within the District.
-- **Permissions (11):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S)
-
-### Role 16 — District Personnel Records Officer
-
-- **Code:** `DISTRICT_PERSONNEL_OFFICER` · **Category:** BUSINESS
-- **Workspace:** District Personnel Records
-- **Assignable at:** district
-- **Purpose:** Maintains personnel records for the assigned District.
-- **Permissions (5):** `org.view` (N), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.export` (S)
-
-### Role 17 — District Assignment Coordinator
-
-- **Code:** `DISTRICT_ASSIGNMENT_COORDINATOR` · **Category:** BUSINESS
-- **Workspace:** District Assignment Coordination
-- **Assignable at:** district
-- **Purpose:** Processes assignment administration and transfer matters for the District.
-- **Permissions (9):** `org.view` (N), `personnel.view` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.renew` (S), `assignment.receive` (S), `disposition.change` (S)
-
-## Police Station level
-
-### Role 18 — Station Commander
-
-- **Code:** `STATION_COMMANDER` · **Category:** BUSINESS
-- **Workspace:** Police Station Dashboard
-- **Assignable at:** station
-- **Purpose:** Oversight of the Police Station and its subordinate posts.
-- **Permissions (8):** `dashboard.station.view` (U), `org.view` (N), `personnel.view` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S)
-
-### Role 19 — Station Operations Administrator
-
-- **Code:** `STATION_OPS_ADMIN` · **Category:** BUSINESS
-- **Workspace:** Station Operations Workspace
-- **Assignable at:** station
-- **Purpose:** Administrative submissions, personnel contributions and station reporting.
-- **Permissions (9):** `dashboard.station.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S)
-
-### Role 20 — Station Personnel Records Officer
-
-- **Code:** `STATION_PERSONNEL_OFFICER` · **Category:** BUSINESS
-- **Workspace:** Station Personnel Register
-- **Assignable at:** station
-- **Purpose:** Maintains the approved station personnel register.
-- **Permissions (5):** `dashboard.station.view` (U), `org.view` (N), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S)
-
-## Police Post level
-
-### Role 21 — Police Post Supervisor / Administrative Officer
-
-- **Code:** `POST_SUPERVISOR` · **Category:** BUSINESS
-- **Workspace:** Police Post Workspace
-- **Assignable at:** post
-- **Purpose:** Limited administrative information and personnel records within the assigned Police Post.
-- **Permissions (7):** `dashboard.unit.view` (U), `personnel.view` (U), `personnel.register` (U), `personnel.edit` (U), `manpower.view` (U), `manpower.contribute` (U), `roster.view` (U)
-
-## Divisional formations
-
-### Role 22 — Divisional Formation Commander
-
-- **Code:** `FORMATION_COMMANDER` · **Category:** BUSINESS
-- **Workspace:** Formation Commander Dashboard
-- **Assignable at:** formation
-- **Purpose:** Oversight of the formation and its departments, companies, detachments, platoons and sections. Approves within delegated authority.
-- **Permissions (17):** `dashboard.formation.view` (U), `org.view` (N), `request.view` (U), `request.assign` (U), `request.close` (U), `request.reopen` (U), `fleet.view` (U), `maintenance.view` (U), `asset.view` (U), `report.view` (U), `report.export` (U), `personnel.view` (S), `manpower.view` (S), `roster.view` (S), `roster.review` (S), `area.view` (S), `assignment.view` (S)
-
-### Role 23 — Divisional Formation Staff Officer
-
-- **Code:** `FORMATION_ADMIN_OFFICER` · **Category:** BUSINESS
-- **Workspace:** Formation Staff Workspace
-- **Assignable at:** formation
-- **Purpose:** Formation-level administrative matters, personnel coordination, contributions and rosters. No assumed approval powers.
-- **Permissions (29):** `dashboard.formation.view` (U), `org.view` (N), `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U), `request.progress` (U), `fleet.view` (U), `maintenance.view` (U), `maintenance.create` (U), `asset.view` (U), `asset.custody` (U), `asset.inspect` (U), `report.view` (U), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `roster.export` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S)
-
-### Role 24 — Unit Department Head
-
-- **Code:** `DEPARTMENT_HEAD` · **Category:** BUSINESS
-- **Workspace:** Unit Department Head Workspace
-- **Assignable at:** department
-- **Purpose:** Departmental records and manpower contributions.
-- **Permissions (6):** `dashboard.unit.view` (U), `personnel.view` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `assignment.view` (S)
-
-### Role 25 — Company Commander
-
-- **Code:** `COMPANY_COMMANDER` · **Category:** BUSINESS
-- **Workspace:** Company Commander Workspace
-- **Assignable at:** company
-- **Purpose:** Company-level personnel administration and submissions. No access to other companies.
-- **Permissions (6):** `dashboard.unit.view` (U), `personnel.view` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `assignment.view` (S)
-
-### Role 26 — Company Administrative Officer
-
-- **Code:** `COMPANY_ADMIN_OFFICER` · **Category:** BUSINESS
-- **Workspace:** Company Administrative Officer Workspace
-- **Assignable at:** company
-- **Purpose:** Company records, submissions and personnel registers.
+- **Code:** `SECTION_HEAD` · **Tier:** 2 · **Category:** BUSINESS
+- **Back office:** Section Administration Dashboard
+- **Organisational context:** Section (or department, detachment or platoon where configured) — assignable at: section, platoon, detachment, department
+- **Purpose:** Section administrative records: selects personnel from the registry, prepares and verifies manpower contributions, tracks requests.
 - **Permissions (7):** `dashboard.unit.view` (U), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S)
 
-### Role 27 — Detachment Commander
+### Role 14 — Formation Operations Staff Administrator
 
-- **Code:** `DETACHMENT_COMMANDER` · **Category:** BUSINESS
-- **Workspace:** Detachment Commander Workspace
-- **Assignable at:** detachment
-- **Purpose:** Detachment-level administration.
-- **Permissions (6):** `dashboard.unit.view` (U), `personnel.view` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `assignment.view` (S)
+- **Code:** `FORMATION_OPS_STAFF_ADMIN` · **Tier:** 2 · **Category:** BUSINESS
+- **Back office:** Formation Operations Staff Administration
+- **Organisational context:** Unit/Formation — assignable at: formation
+- **Purpose:** Formation-level Operations administration: contributions, rosters, assignment documentation and subordinate submissions. No commanding-officer approval authority.
+- **Permissions (28):** `dashboard.formation.view` (U), `org.view` (N), `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U), `request.progress` (U), `fleet.view` (U), `maintenance.view` (U), `maintenance.create` (U), `asset.view` (U), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `roster.export` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `stores.requisition` (S)
 
-### Role 28 — Detachment Administrative Officer
+### Role 15 — Divisional Quarter Masters Stores Officer
 
-- **Code:** `DETACHMENT_ADMIN_OFFICER` · **Category:** BUSINESS
-- **Workspace:** Detachment Administrative Officer Workspace
-- **Assignable at:** detachment
-- **Purpose:** Detachment personnel registers and submissions.
-- **Permissions (7):** `dashboard.unit.view` (U), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S)
+- **Code:** `QM_STORES_OFFICER` · **Tier:** 2 · **Category:** FUNCTIONAL
+- **Back office:** Divisional Quarter Masters and Stores Administration
+- **Organisational context:** Provincial Division or Unit/Formation stores — assignable at: provincial division, formation
+- **Purpose:** General stores and non-sensitive assets: receipts, issue and return, requisitions, custody and reconciliation. Firearms, ammunition and sensitive equipment are excluded.
+- **Permissions (9):** `asset.view` (S), `asset.register` (S), `asset.custody` (S), `asset.inspect` (S), `asset.dispose` (S), `report.view` (U), `report.export` (U), `stores.view` (S), `stores.manage` (S)
 
-### Role 29 — Platoon Commander
+### Role 16 — Divisional Principal Armourer
 
-- **Code:** `PLATOON_COMMANDER` · **Category:** BUSINESS
-- **Workspace:** Platoon Commander Workspace
-- **Assignable at:** platoon
-- **Purpose:** Platoon-level administrative oversight.
-- **Permissions (6):** `dashboard.unit.view` (U), `personnel.view` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `assignment.view` (S)
+- **Code:** `PRINCIPAL_ARMOURER` · **Tier:** 2 · **Category:** FUNCTIONAL
+- **Back office:** Divisional Armourer Administration
+- **Organisational context:** Provincial Division or Unit/Formation — assignable at: provincial division, formation
+- **Purpose:** Role-specific workspace for explicitly approved NON-SENSITIVE administrative functions only (administrative requests, tasks, notifications). No firearms, ammunition or armoury records exist in ZPS-OMS.
+- **Permissions (5):** `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U)
 
-### Role 30 — Platoon Administrative Officer
+### Role 17 — Divisional MTO Officer-in-Charge
 
-- **Code:** `PLATOON_ADMIN_OFFICER` · **Category:** BUSINESS
-- **Workspace:** Platoon Administrative Officer Workspace
-- **Assignable at:** platoon
-- **Purpose:** Platoon personnel records and contributions.
-- **Permissions (7):** `dashboard.unit.view` (U), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S)
-
-### Role 31 — Section Commander
-
-- **Code:** `SECTION_COMMANDER` · **Category:** BUSINESS
-- **Workspace:** Section Commander Workspace
-- **Assignable at:** section
-- **Purpose:** Section-level personnel administration.
-- **Permissions (6):** `dashboard.unit.view` (U), `personnel.view` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `assignment.view` (S)
-
-### Role 32 — Section Administrative Officer
-
-- **Code:** `SECTION_ADMIN_OFFICER` · **Category:** BUSINESS
-- **Workspace:** Section Administrative Officer Workspace
-- **Assignable at:** section
-- **Purpose:** Section personnel information and submissions.
-- **Permissions (7):** `dashboard.unit.view` (U), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S)
-
-## Specialist and functional roles
-
-### Role 33 — Manpower Request Originator
-
-- **Code:** `MANPOWER_ORIGINATOR` · **Category:** FUNCTIONAL
-- **Workspace:** Manpower Requests Workspace
-- **Assignable at:** service hq, hq office, provincial division, district, station, post, formation, department, company, detachment, platoon, section
-- **Purpose:** Creates and submits manpower requests for the assigned unit.
-- **Permissions (4):** `org.view` (N), `manpower.view` (U), `manpower.create` (U), `area.view` (S)
-
-### Role 34 — Manpower Roster Coordinator
-
-- **Code:** `ROSTER_COORDINATOR` · **Category:** FUNCTIONAL
-- **Workspace:** Roster Coordination Workspace
-- **Assignable at:** service hq, hq office, provincial division, district, station, post, formation, department, company, detachment, platoon, section
-- **Purpose:** Compiles personnel contributions and prepares consolidated rosters.
-- **Permissions (8):** `org.view` (N), `personnel.view` (S), `manpower.view` (S), `manpower.review` (S), `roster.view` (S), `roster.build` (S), `roster.export` (S), `area.view` (S)
-
-### Role 35 — Assignment Approving Officer
-
-- **Code:** `ASSIGNMENT_APPROVER` · **Category:** BUSINESS
-- **Workspace:** Assignment Approvals
-- **Assignable at:** service hq, hq office, provincial division, district, station, post, formation, department, company, detachment, platoon, section
-- **Purpose:** Reviews and approves assignment matters within delegated authority (ASSIGNMENT delegation required).
-- **Permissions (7):** `org.view` (N), `personnel.view` (S), `manpower.view` (S), `roster.view` (S), `roster.review` (S), `area.view` (S), `assignment.view` (S)
-
-### Role 36 — Receiving Area Administrative Officer
-
-- **Code:** `RECEIVING_AREA_OFFICER` · **Category:** FUNCTIONAL
-- **Workspace:** Receiving Area Administration
-- **Assignable at:** service hq, hq office, provincial division, district, station, post, formation, department, company, detachment, platoon, section
-- **Purpose:** Processes assignment acceptance and receiving-area administrative records.
-- **Permissions (6):** `org.view` (N), `personnel.view` (S), `area.view` (S), `assignment.view` (S), `assignment.receive` (S), `disposition.change` (S)
-
-### Role 37 — Fleet Administration Officer
-
-- **Code:** `FLEET_OFFICER` · **Category:** FUNCTIONAL
-- **Workspace:** Fleet and Transport Management Workspace
-- **Assignable at:** service hq, provincial division, formation
-- **Purpose:** General fleet administration for granted organisations only. No GPS, location, routes, mission purpose or deployment history.
+- **Code:** `MTO_OIC` · **Tier:** 2 · **Category:** FUNCTIONAL
+- **Back office:** Divisional Motor Transport Administration
+- **Organisational context:** Provincial Division or Unit/Formation transport — assignable at: provincial division, formation
+- **Purpose:** General fleet administration: vehicle register, documentation, maintenance, workshop referrals and service history. No GPS, movement or deployment information.
 - **Permissions (9):** `fleet.view` (U), `fleet.manage` (U), `maintenance.view` (U), `maintenance.create` (U), `maintenance.process` (U), `maintenance.verify` (U), `service.record` (U), `report.view` (U), `report.export` (U)
 
-### Role 38 — General Asset Custodian
+## Tier 3 — District Commands and Police Stations
 
-- **Code:** `ASSET_CUSTODIAN` · **Category:** FUNCTIONAL
-- **Workspace:** Assets and Equipment Workspace
-- **Assignable at:** service hq, provincial division, formation
-- **Purpose:** Non-sensitive general assets in approved categories only. Firearms, ammunition and controlled equipment are excluded.
-- **Permissions (7):** `asset.view` (U), `asset.register` (U), `asset.custody` (U), `asset.inspect` (U), `asset.dispose` (U), `report.view` (U), `report.export` (U)
+### Role 18 — District System Administrator (Tech)
 
-### Role 39 — Internal Auditor
+- **Code:** `DISTRICT_TECH_ADMIN` · **Tier:** 3 · **Category:** TECHNICAL
+- **Back office:** District Technical Administration
+- **Organisational context:** Assigned District Command only — assignable at: district
+- **Purpose:** Permitted technical functions and account support within the assigned District. No personnel-record or assignment access.
+- **Permissions (4):** `org.view` (N), `user.view` (S), `user.support` (S), `health.view` (S)
 
-- **Code:** `INTERNAL_AUDITOR` · **Category:** AUDIT · **Time-limited assignment**
-- **Workspace:** Audit and Compliance Workspace
-- **Assignable at:** service hq, provincial division, formation
-- **Purpose:** Read-only, time-limited audit scope over transactions, approvals and audit trails. Cannot modify any business record.
-- **Permissions (14):** `org.view` (N), `request.view` (N), `fleet.view` (N), `maintenance.view` (N), `asset.view` (N), `report.view` (N), `audit.view` (N), `audit.export` (N), `workflow.view` (U), `personnel.view` (N), `manpower.view` (N), `roster.view` (N), `area.view` (N), `assignment.view` (N)
+### Role 19 — Officer Commanding — District
 
-### Role 40 — Read-Only Management User
+- **Code:** `OC_DISTRICT` · **Tier:** 3 · **Category:** BUSINESS
+- **Back office:** District Command Dashboard
+- **Organisational context:** District Command — assignable at: district
+- **Purpose:** District oversight: stations and posts, personnel, contributions, assignments and stores. Approves only within configured delegations; no access to other Districts.
+- **Permissions (13):** `dashboard.district.view` (U), `org.view` (N), `asset.view` (S), `report.view` (S), `personnel.view` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S)
 
-- **Code:** `READ_ONLY_MANAGEMENT` · **Category:** FUNCTIONAL
-- **Workspace:** Management Information
-- **Assignable at:** service hq, hq office, provincial division, district, station, post, formation, department, company, detachment, platoon, section
-- **Purpose:** Views authorised reports, rosters and organisational information without modification privileges.
-- **Permissions (5):** `org.view` (N), `report.view` (S), `manpower.view` (S), `roster.view` (S), `assignment.view` (S)
+### Role 20 — Deputy OC — District
 
-### Role 41 — General Authorised Staff Member
+- **Code:** `DEPUTY_OC_DISTRICT` · **Tier:** 3 · **Category:** BUSINESS
+- **Back office:** Deputy District Commander Dashboard
+- **Organisational context:** District Command — assignable at: district
+- **Purpose:** Assists the District Commander; reviews subordinate submissions and processes delegated matters. Does not inherit the OC's approvals.
+- **Permissions (10):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S)
 
-- **Code:** `OPERATIONS_STAFF` · **Category:** BUSINESS
-- **Workspace:** My Operations Workspace
-- **Assignable at:** service hq, hq office, provincial division, district, station, post, formation, department, company, detachment, platoon, section
-- **Purpose:** Specifically assigned functionality only: create and track own unit's administrative requests. No access to national manpower registers.
-- **Permissions (5):** `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U)
+### Role 21 — Operations Officer — District
+
+- **Code:** `OPS_OFFICER_DISTRICT` · **Tier:** 3 · **Category:** BUSINESS
+- **Back office:** District Operations Officer Workspace
+- **Organisational context:** District Command — assignable at: district
+- **Purpose:** District Operations administration: manpower requests, station contributions, district lists, assignment records and reviews. No tactical deployment, patrol scheduling or tracking.
+- **Permissions (20):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.receive` (S), `disposition.change` (S), `stores.requisition` (S)
+
+### Role 22 — Deputy Operations Officer — District
+
+- **Code:** `DEPUTY_OPS_OFFICER_DISTRICT` · **Tier:** 3 · **Category:** BUSINESS
+- **Back office:** Deputy District Operations Workspace
+- **Organisational context:** District Command — assignable at: district
+- **Purpose:** Assists the Operations Officer: prepares submissions, verifies contributions, maintains workflow records. No Operations Officer approval authority.
+- **Permissions (15):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.export` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S)
+
+### Role 23 — Stores Officer — District
+
+- **Code:** `STORES_OFFICER_DISTRICT` · **Tier:** 3 · **Category:** FUNCTIONAL
+- **Back office:** District Stores Administration
+- **Organisational context:** District Command stores — assignable at: district
+- **Purpose:** General stores records, requisitions, receipts and issues, and non-sensitive asset custody for the District. Sensitive equipment is excluded.
+- **Permissions (7):** `asset.view` (S), `asset.register` (S), `asset.custody` (S), `asset.inspect` (S), `report.view` (U), `stores.view` (S), `stores.manage` (S)
+
+### Role 24 — Police Station System Administrator
+
+- **Code:** `STATION_TECH_ADMIN` · **Tier:** 3 · **Category:** TECHNICAL
+- **Back office:** Police Station Technical Administration
+- **Organisational context:** Assigned Police Station only — assignable at: station, post
+- **Purpose:** Permitted technical functions and local account support for the assigned Station. No personnel management or assignment decisions.
+- **Permissions (4):** `org.view` (N), `user.view` (S), `user.support` (S), `health.view` (S)
+
+### Role 25 — Officer-in-Charge — Police Station GD
+
+- **Code:** `OIC_STATION_GD` · **Tier:** 3 · **Category:** BUSINESS
+- **Back office:** Police Station General Duties Administration
+- **Organisational context:** Police Station (and its posts) — assignable at: station, post
+- **Purpose:** Station-level general duties administrative oversight: personnel, contributions, submissions; approves specifically delegated matters.
+- **Permissions (13):** `dashboard.station.view` (U), `org.view` (N), `asset.view` (S), `report.view` (S), `personnel.view` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S)
+
+### Role 26 — Station Inspector — Police Station GD
+
+- **Code:** `STATION_INSPECTOR_GD` · **Tier:** 3 · **Category:** BUSINESS
+- **Back office:** Station Inspector Operations Administration
+- **Organisational context:** Police Station or Police Post — assignable at: station, post
+- **Purpose:** Supports Station administration: personnel register, contributions and submissions; delegated supervisory functions only. Does not inherit OIC approvals.
+- **Permissions (10):** `dashboard.station.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `assignment.view` (S)
+
+### Role 27 — Police Station Administrator (Stores and Admin)
+
+- **Code:** `STATION_ADMIN_STORES` · **Tier:** 3 · **Category:** FUNCTIONAL
+- **Back office:** Police Station Stores and Administration
+- **Organisational context:** Police Station — assignable at: station, post
+- **Purpose:** Station administrative records, general stores and non-sensitive assets: issue and return, requisitions, reconciliation. No sensitive equipment, firearms or ammunition.
+- **Permissions (13):** `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U), `asset.view` (S), `asset.register` (S), `asset.custody` (S), `asset.inspect` (S), `report.view` (U), `stores.view` (S), `stores.manage` (S), `stores.requisition` (S)
+
+## Retired roles
+
+The previous 41-role catalogue is retired (status RETIRED in `roles`; kept for assignment history, never any permission): `PLATFORM_ADMIN`, `SECURITY_ADMIN`, `ORG_REGISTRY_ADMIN`, `DIG_OPS_EXECUTIVE`, `HQ_OPS_COORDINATOR`, `HQ_OPS_STAFF`, `NATIONAL_PERSONNEL_ADMIN`, `NATIONAL_ASSIGNMENT_ADMIN`, `PROVINCIAL_COMMANDER`, `DIVISION_STAFF_OPS`, `PROVINCIAL_PERSONNEL_OFFICER`, `PROVINCIAL_ASSIGNMENT_COORDINATOR`, `PROVINCIAL_REPORTING_OFFICER`, `DISTRICT_COMMANDER`, `DISTRICT_OPS_OFFICER`, `DISTRICT_PERSONNEL_OFFICER`, `DISTRICT_ASSIGNMENT_COORDINATOR`, `STATION_COMMANDER`, `STATION_OPS_ADMIN`, `STATION_PERSONNEL_OFFICER`, `POST_SUPERVISOR`, `FORMATION_COMMANDER`, `FORMATION_ADMIN_OFFICER`, `DEPARTMENT_HEAD`, `COMPANY_COMMANDER`, `COMPANY_ADMIN_OFFICER`, `DETACHMENT_COMMANDER`, `DETACHMENT_ADMIN_OFFICER`, `PLATOON_COMMANDER`, `PLATOON_ADMIN_OFFICER`, `SECTION_COMMANDER`, `SECTION_ADMIN_OFFICER`, `MANPOWER_ORIGINATOR`, `ROSTER_COORDINATOR`, `ASSIGNMENT_APPROVER`, `RECEIVING_AREA_OFFICER`, `FLEET_OFFICER`, `ASSET_CUSTODIAN`, `INTERNAL_AUDITOR`, `READ_ONLY_MANAGEMENT`, `OPERATIONS_STAFF`. `COMPANY_COMMANDER` keeps its code as Role 12.

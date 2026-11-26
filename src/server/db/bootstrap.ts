@@ -10,22 +10,32 @@ import { all, createPool, one, run, tx, type DB } from "./connection";
 import { migrate } from "./migrate";
 import { seedDatabase } from "./seed";
 import { seedPhase3 } from "./seed-phase3";
-import { ROLES } from "../domain/catalogue";
+import { RETIRED_ROLE_CODES, ROLE_BY_CODE, ROLES, type RoleCode } from "../domain/catalogue";
+import { seedThreeTier } from "./seed-three-tier";
 import { REPORTS } from "../domain/reports";
 import { assignMissingUserRefs } from "../domain/iam";
 
 export const SEED_STEPS: Array<[name: string, fn: (db: DB) => Promise<void>]> = [
   ["001_base", seedDatabase],
   ["002_personnel_manpower", seedPhase3],
+  ["003_three_tier_roles", seedThreeTier],
 ];
 
 /** Upserts every catalogue role and rewrites its informational permission rows. */
 export async function syncCatalogue(db: DB) {
+  const now = new Date().toISOString();
   await tx(db, async (db) => {
+    // The superseded 41-role catalogue: retained for assignment history, never active (DEC-049).
+    for (const code of RETIRED_ROLE_CODES) {
+      if (ROLE_BY_CODE[code as RoleCode]) continue;
+      await run(db, "UPDATE roles SET status = 'RETIRED', tier = NULL, role_no = NULL, updated_at = ? WHERE code = ? AND status <> 'RETIRED'", now, code);
+      await run(db, "DELETE FROM role_permissions WHERE role_code = ?", code);
+    }
     for (const r of ROLES) {
-      await run(db, `INSERT INTO roles (code, name, description, category, requires_expiry) VALUES (?,?,?,?,?)
-                     ON DUPLICATE KEY UPDATE name = VALUES(name), description = VALUES(description), category = VALUES(category), requires_expiry = VALUES(requires_expiry)`,
-        r.code, r.name, r.description, r.category, r.requiresExpiry ? 1 : 0);
+      await run(db, `INSERT INTO roles (code, name, description, category, requires_expiry, tier, role_no, status, back_office, updated_at) VALUES (?,?,?,?,?,?,?, 'ACTIVE', ?, ?)
+                     ON DUPLICATE KEY UPDATE name = VALUES(name), description = VALUES(description), category = VALUES(category), requires_expiry = VALUES(requires_expiry),
+                       tier = VALUES(tier), role_no = VALUES(role_no), status = 'ACTIVE', back_office = VALUES(back_office), updated_at = VALUES(updated_at)`,
+        r.code, r.name, r.description, r.category, r.requiresExpiry ? 1 : 0, r.tier, r.no, r.backOffice, now);
       await run(db, "DELETE FROM role_permissions WHERE role_code = ?", r.code);
       for (const [perm, cov] of Object.entries(r.permissions)) await run(db, "INSERT INTO role_permissions (role_code, permission, coverage) VALUES (?,?,?)", r.code, perm, cov);
     }

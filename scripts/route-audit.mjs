@@ -42,6 +42,9 @@ const R = {
   contrib: await id("SELECT c.id FROM manpower_contributions c JOIN manpower_requests m ON m.id=c.request_id WHERE m.requesting_unit_id='org_hq' AND c.contributing_unit_id='org_mu_a' LIMIT 1"),
   roster: await id("SELECT id FROM roster_versions WHERE status='FINALISED' LIMIT 1"),
   transfer: await id("SELECT id FROM assignment_transfers WHERE status='COMPLETED' LIMIT 1"),
+  stoKit: await id("SELECT id FROM store_items WHERE org_unit_id='org_cb_kitwe' ORDER BY code LIMIT 1"),
+  stoLsk: await id("SELECT id FROM store_items WHERE org_unit_id='org_lsk' ORDER BY code LIMIT 1"),
+  srqKit: await id("SELECT id FROM store_requisitions WHERE store_unit_id='org_cb_kitwe' ORDER BY reference LIMIT 1"),
 };
 
 const routes = [
@@ -62,6 +65,7 @@ const routes = [
   "/app/transfers", `/app/transfers/${R.transfer}`, "/app/areas",
   "/app/areas/area_kcm", "/app/personnel/review", "/app/tasks", "/app/audit/history", "/app/org/tenants", "/app/reports/ASSIGNMENTS_BY_AREA", "/app/reports/PERSONNEL_BY_UNIT",
   "/app/assets/reconciliation", `/app/rosters/${R.roster}/pdf`, "/app/platform", "/app/workflows", "/app/notifications", "/app/search?q=kcm",
+  "/app/stores", `/app/stores/${R.stoKit}`, `/app/stores/${R.stoLsk}`, "/app/stores/requisitions", "/app/stores/requisitions/new", `/app/stores/requisitions/${R.srqKit}`,
 ];
 
 const users = await all("SELECT u.id, u.display_name, (SELECT role_code FROM role_assignments a WHERE a.user_id=u.id AND a.revoked_at IS NULL ORDER BY a.id LIMIT 1) AS role FROM users u WHERE u.status='ACTIVE' ORDER BY u.id");

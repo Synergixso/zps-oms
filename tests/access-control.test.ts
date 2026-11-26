@@ -59,7 +59,7 @@ describe("TS-03 Division Staff Ops cannot approve without delegation", () => {
     await performAction(db, await actor(db, "u_lsk_cmd"), r.id, "ASSIGN");
     // a different staff ops user at Lusaka
     await run(db, "INSERT INTO users (id, username, display_name, position_title, status, created_at) VALUES ('u_t','demo.t','Demo T','x','ACTIVE','2025-01-01')");
-    await run(db, "INSERT INTO role_assignments (id,user_id,role_code,org_unit_id,valid_from,justification,created_at) VALUES ('a_t','u_t','DIVISION_STAFF_OPS','org_lsk','2025-01-01','test','2025-01-01')");
+    await run(db, "INSERT INTO role_assignments (id,user_id,role_code,org_unit_id,valid_from,justification,created_at) VALUES ('a_t','u_t','DIVISION_STAFF_I','org_lsk','2025-01-01','test','2025-01-01')");
     await expect(performAction(db, await actor(db, "u_t"), r.id, "APPROVE")).rejects.toThrow(/delegation/i);
     await grantDelegation(db, await actor(db, "u_plat"), { userId: "u_t", orgUnitId: "org_lsk", domain: "ADMIN_REQUEST", approvalRef: "SYN-DELEG-TEST" });
     expect((await performAction(db, await actor(db, "u_t"), r.id, "APPROVE")).status).toBe("APPROVED");
@@ -94,14 +94,15 @@ describe("TS-06 Asset Custodian cannot access fleet administration", () => {
   }));
 });
 
-describe("TS-07 Internal Auditor is read-only", () => {
-  it("can read across scope but every write path is refused", () => withDb(async (db) => {
+describe("TS-07 Inspector General oversight is read-only (27-role catalogue)", () => {
+  it("sees audit evidence and summaries, never individual request records, and every write path is refused", () => withDb(async (db) => {
     const au = await actor(db, "u_audit");
-    expect((await listRequests(db, au)).length).toBeGreaterThan(0);
+    expect((await one<{ c: number }>(db, "SELECT COUNT(*) c FROM audit_events"))!.c).toBeGreaterThan(0);
+    await expect(listRequests(db, au)).rejects.toThrow(/not authorised/i);
     const sub = (await one<{ id: string }>(db, "SELECT id FROM admin_requests WHERE status='SUBMITTED' LIMIT 1"))!;
-    await expect(performAction(db, au, sub.id, "ASSIGN")).rejects.toThrow(/not authorised/i);
-    await expect(draft(db, "u_audit", HQ_ID)).rejects.toThrow(/not authorised/i);
-    await expect(assetAction(db, au, "ast_3", "INSPECT", { condition: "GOOD" })).rejects.toThrow(/not authorised/i);
+    await expect(performAction(db, au, sub.id, "ASSIGN")).rejects.toThrow(/not authorised|not found/i);
+    await expect(draft(db, "u_audit", HQ_ID)).rejects.toThrow(/not authorised|not found/i);
+    await expect(assetAction(db, au, "ast_3", "INSPECT", { condition: "GOOD" })).rejects.toThrow(/not authorised|not found/i);
     await expect(createVehicle(db, au, { fleetRef: "SYN-FLT-9999", registrationRef: "SYN-REG-ZZZ9", make: "X", model: "Y", vehicleClass: "Saloon", custodyOrgId: HQ_ID })).rejects.toThrow(/not authorised/i);
   }));
 });
@@ -119,12 +120,12 @@ describe("TS-08 Platform Administrator has no automatic business access", () => 
 describe("TS-09 No self-elevation", () => {
   it("administrators cannot grant, delegate or reactivate themselves", () => withDb(async (db) => {
     const p = await actor(db, "u_plat");
-    await expect(assignRole(db, p, { userId: "u_plat", roleCode: "DIG_OPS_EXECUTIVE", orgUnitId: HQ_ID, justification: "attempted self elevation" })).rejects.toThrow(/own access/i);
+    await expect(assignRole(db, p, { userId: "u_plat", roleCode: "DIG_OPERATIONS", orgUnitId: HQ_ID, justification: "attempted self elevation" })).rejects.toThrow(/own access/i);
     await expect(grantDelegation(db, p, { userId: "u_plat", orgUnitId: HQ_ID, domain: "ADMIN_REQUEST", approvalRef: "SYN-X-1" })).rejects.toThrow(/yourself/i);
     const s = await actor(db, "u_sec");
     await expect(setUserStatus(db, s, "u_sec", "ACTIVE", "self change")).rejects.toThrow(/own account/i);
     // business user has no IAM permissions at all
-    await expect(assignRole(db, await actor(db, "u_lsk_sops"), { userId: "u_lsk_sops", roleCode: "PROVINCIAL_COMMANDER", orgUnitId: "org_lsk", justification: "self promote attempt" })).rejects.toThrow(/not authorised/i);
+    await expect(assignRole(db, await actor(db, "u_lsk_sops"), { userId: "u_lsk_sops", roleCode: "FORMATION_COMMANDING_OFFICER", orgUnitId: "org_lsk", justification: "self promote attempt" })).rejects.toThrow(/not authorised/i);
   }));
   it("delegations cannot be given to technical roles", () => withDb(async (db) => {
     await expect(grantDelegation(db, await actor(db, "u_plat"), { userId: "u_sec", orgUnitId: HQ_ID, domain: "ADMIN_REQUEST", approvalRef: "SYN-X-2" })).rejects.toThrow(/business role/i);
@@ -144,8 +145,13 @@ describe("TS-10 Expired or revoked grants lose access", () => {
     await setUserStatus(db, await actor(db, "u_sec"), "u_lsk_cmd", "SUSPENDED", "Synthetic suspension test");
     expect(await loadActor(db, "u_lsk_cmd")).toBeNull();
   }));
-  it("auditor grants require an expiry date", () => withDb(async (db) => {
-    await expect(assignRole(db, await actor(db, "u_plat"), { userId: "u_hqc", roleCode: "INTERNAL_AUDITOR", orgUnitId: HQ_ID, justification: "Audit engagement SYN-AUD-1" })).rejects.toThrow(/time-limited/i);
+  it("retired 41-catalogue roles can no longer be granted and grant nothing", () => withDb(async (db) => {
+    await expect(assignRole(db, await actor(db, "u_plat"), { userId: "u_hqc", roleCode: "INTERNAL_AUDITOR" as never, orgUnitId: HQ_ID, justification: "Audit engagement SYN-AUD-1" })).rejects.toThrow(/unknown role/i);
+    // A fresh database never held the old codes; an upgraded one keeps them as RETIRED rows for history.
+    await run(db, "INSERT IGNORE INTO roles (code, name, description, category, requires_expiry, status) VALUES ('PROVINCIAL_COMMANDER','Provincial Commander (retired)','Retired','BUSINESS',0,'RETIRED')");
+    await run(db, "INSERT INTO role_assignments (id,user_id,role_code,org_unit_id,valid_from,justification,created_at) VALUES ('a_ret','u_staff','PROVINCIAL_COMMANDER','org_cen','2025-01-01','test','2025-01-01')");
+    const a = (await loadActor(db, "u_staff"))!;
+    expect(a.assignments.map((x) => x.roleCode)).toEqual(["PRINCIPAL_ARMOURER"]);
   }));
 });
 
@@ -201,7 +207,7 @@ describe("TS-14 Reports cannot export unauthorised fields", () => {
     expect(ok.csv).toContain("SYNTHETIC");
     expect(ok.csv).not.toContain("Copperbelt");
     expect((await one<{ c: number }>(db, "SELECT COUNT(*) c FROM report_exports WHERE user_id='u_lsk_cmd'"))!.c).toBe(1);
-    await expect(exportReport(db, await actor(db, "u_audit"), "REQ_STATUS_BY_ORG")).rejects.toThrow(/not authorised/i);
+    await expect(exportReport(db, await actor(db, "u_mu_sec"), "REQ_STATUS_BY_ORG")).rejects.toThrow(/not authorised/i);
   }));
 });
 
@@ -235,7 +241,7 @@ describe("TS-15 Organisation changes preserve history and never grant access", (
   it("proposers cannot approve their own change", () => withDb(async (db) => {
     const c = await proposeChange(db, await actor(db, "u_org"), { changeType: "RENAME_UNIT", targetId: "org_taz", name: "TAZARA Division (renamed)", reason: "Synthetic rename for separation-of-duties test.", effectiveDate: "2026-12-01" });
     // give the DIG a proposer role too and have them propose, then try to approve
-    await run(db, "INSERT INTO role_assignments (id,user_id,role_code,org_unit_id,valid_from,justification,created_at) VALUES ('a_x','u_dig','ORG_REGISTRY_ADMIN','org_hq','2025-01-01','test','2025-01-01')");
+    await run(db, "INSERT INTO role_assignments (id,user_id,role_code,org_unit_id,valid_from,justification,created_at) VALUES ('a_x','u_dig','SUPERADMIN','org_hq','2025-01-01','test','2025-01-01')");
     const c2 = await proposeChange(db, await actor(db, "u_dig"), { changeType: "RENAME_UNIT", targetId: "org_ap", name: "Airport Division (renamed)", reason: "Synthetic rename proposed by approver.", effectiveDate: "2026-12-01" });
     await expect(decideChange(db, await actor(db, "u_dig"), c2.id, "APPROVE", "", "SYN-REF")).rejects.toThrow(/separation of duties/i);
     expect(c.status).toBe("SUBMITTED");

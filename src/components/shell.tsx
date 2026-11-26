@@ -11,6 +11,7 @@ function isActive(path: string, href: string) {
   if (href === "/app/fleet") return path === "/app/fleet" || /^\/app\/fleet\/(?!maintenance)/.test(path);
   if (href === "/app/manpower") return path === "/app/manpower" || /^\/app\/manpower\/(?!contributions)/.test(path);
   if (href === "/app/audit") return path === "/app/audit";
+  if (href === "/app/stores") return path === "/app/stores" || /^\/app\/stores\/(?!requisitions)/.test(path);
   if (href === "/app/org") return path === "/app/org" || /^\/app\/org\/(?!changes|tenants)/.test(path);
   return path === href || path.startsWith(href + "/");
 }
@@ -18,6 +19,7 @@ function isActive(path: string, href: string) {
 const STORE = "zps.nav.collapsed";
 
 export interface ShellUser { name: string; role: string; initials: string }
+export interface ShellContext { id: string; role: string; unit: string; active: boolean }
 
 export function SideNav({ groups, crest, user, version }: { groups: NavGroup[]; crest: React.ReactNode; user: ShellUser; version: string }) {
   const path = usePathname();
@@ -144,7 +146,7 @@ const LABELS: Record<string, string> = {
   transfers: "Transfers", areas: "Operational areas", requests: "Requests", fleet: "Fleet", maintenance: "Maintenance", assets: "Assets", reconciliation: "Reconciliation",
   reports: "Reports", org: "Organisation", changes: "Structure changes", tenants: "Tenants", admin: "Administration", users: "Users", roles: "Roles", reviews: "Access reviews",
   audit: "Audit", history: "Record history", security: "Security", workflows: "Workflows", platform: "Platform", notifications: "Notifications", tasks: "My tasks",
-  profile: "My profile", help: "Help", messages: "Contact messages", search: "Search", new: "New", review: "Review", print: "Print",
+  stores: "Stores", requisitions: "Requisitions", profile: "My profile", help: "Help", messages: "Contact messages", search: "Search", new: "New", review: "Review", print: "Print",
 };
 
 /** Breadcrumbs derived from the path (record ids are shown as “Record”). */
@@ -168,7 +170,7 @@ export function Breadcrumbs() {
 }
 
 /** Account menu in the top bar. */
-export function UserMenu({ user, signOut }: { user: ShellUser; signOut: () => Promise<void> }) {
+export function UserMenu({ user, signOut, contexts = [], switchContext }: { user: ShellUser; signOut: () => Promise<void>; contexts?: ShellContext[]; switchContext?: (fd: FormData) => Promise<void> }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -192,7 +194,21 @@ export function UserMenu({ user, signOut }: { user: ShellUser; signOut: () => Pr
         <Icon name="chevron" className="h-4 w-4 rotate-90 text-muted" />
       </button>
       {open && (
-        <div role="menu" className="absolute right-0 z-50 mt-1 w-56 overflow-hidden rounded-xl border border-line bg-white py-1 shadow-lg">
+        <div role="menu" className="absolute right-0 z-50 mt-1 w-72 overflow-hidden rounded-xl border border-line bg-white py-1 shadow-lg">
+          {contexts.length > 1 && switchContext && (
+            <div className="border-b border-line pb-1">
+              <p className="px-3 pb-1 pt-1.5 text-[10.5px] font-bold uppercase tracking-wider text-muted">Switch role context</p>
+              {contexts.map((c) => (
+                <form key={c.id} action={switchContext}>
+                  <input type="hidden" name="assignmentId" value={c.id} />
+                  <button role="menuitemradio" aria-checked={c.active} type="submit" disabled={c.active} className={`flex w-full items-start gap-2 px-3 py-1.5 text-left text-[13px] ${c.active ? "bg-zp-blue/5" : "hover:bg-slate-50"}`}>
+                    <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full border ${c.active ? "border-zp-blue bg-zp-blue" : "border-line-2"}`} aria-hidden />
+                    <span className="min-w-0"><span className="block font-semibold text-ink">{c.role}</span><span className="block truncate text-[11.5px] text-muted">{c.unit}</span></span>
+                  </button>
+                </form>
+              ))}
+            </div>
+          )}
           <Link role="menuitem" href="/app/profile" className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50"><Icon name="userCircle" />My profile and access</Link>
           <Link role="menuitem" href="/app/tasks" className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50"><Icon name="check" />My tasks</Link>
           <Link role="menuitem" href="/app/notifications" className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50"><Icon name="bell" />Notifications</Link>

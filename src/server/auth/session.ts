@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getDb } from "../db/connection";
 import { hasPermission, loadActor, type Actor } from "../domain/policy";
 import { maintenanceMode } from "../domain/platform";
-import { resolveSession } from "../domain/sessions";
+import { resolveSessionContext } from "../domain/sessions";
 import { applyDueChanges } from "../domain/org";
 import { applyDueAssignmentEvents } from "../domain/assignments";
 
@@ -16,11 +16,12 @@ export const SHOW_DEMO_ACCOUNTS = process.env.ZPS_SHOW_DEMO_ACCOUNTS === "1" || 
 export async function getActor(): Promise<Actor | null> {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   const db = getDb();
-  const userId = await resolveSession(db, token);
-  if (!userId) return null;
+  const ctx = await resolveSessionContext(db, token);
+  if (!ctx) return null;
   await applyDueChanges(db); // effective-dated org changes become live on their date
   await applyDueAssignmentEvents(db); // commencements and review-due flags
-  return await loadActor(db, userId);
+  // The selected context is re-validated on every request; with none selected the primary assignment applies.
+  return await loadActor(db, ctx.userId, ctx.activeAssignmentId ?? "PRIMARY");
 }
 
 export async function requireActor(): Promise<Actor> {

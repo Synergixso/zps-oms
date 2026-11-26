@@ -1,6 +1,6 @@
 {
   "name": "zps-oms",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "description": "ZPS-OMS local synthetic-data prototype. Not an authorised production police system.",
   "scripts": {

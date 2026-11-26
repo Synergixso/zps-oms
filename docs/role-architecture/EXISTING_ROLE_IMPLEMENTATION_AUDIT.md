@@ -76,3 +76,12 @@ New synthetic accounts are created for roles without an equivalent: 07 Divisiona
 4. Context switching; scoped technical administration; general stores module.
 5. Role-specific navigation and dashboards (Tier 1 → Tier 2 → Tier 3), each with its tests.
 6. Migrate and extend tests (role matrix for all 27), route audit, Playwright; documentation.
+
+## 6. Outcome (v0.5.0)
+
+All gaps G1–G9 are closed; see `docs/development/ROLE_BACKOFFICE_DEVELOPMENT_STATUS.md` and `ROLE_TEST_RESULTS.md`. Adjustments made during implementation:
+
+- **Verification** is also granted to Staff II (Role 11), whose function includes verifying submissions (decision 2 above extended; DEC-055).
+- **Company Commander** (Role 12) maintains the company's personnel records within its subtree, alongside the Section Head.
+- **Workspace configuration** is code-defined (`src/server/domain/workspace-config.ts`) rather than a database table, so it is versioned and reviewed with the catalogue; the planned "workspace configuration table" in §5.1 was not needed.
+- **Stores approval** uses a new delegation domain `STORES` (migration 007) so that it follows the same delegation + business-role rule as every other approval.

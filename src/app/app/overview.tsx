@@ -4,6 +4,7 @@ import { getDb } from "@/server/db/connection";
 import { ROLE_BY_CODE, type DashboardKind } from "@/server/domain/catalogue";
 import { type Actor, hasPermission, primaryAssignment, primaryRole } from "@/server/domain/policy";
 import { activityTrends, assignmentsByArea, headlineKpis, recentActivity, systemStatus, type Kpi } from "@/server/domain/overview";
+import { quickActionsFor, workspaceFor } from "@/server/domain/workspaces";
 import { listTasks } from "@/server/domain/tasks";
 import { today } from "@/server/domain/core";
 import { Icon } from "@/components/icons";
@@ -73,6 +74,11 @@ const QUICK: Array<{ label: string; href: string; icon: IconName; any: Permissio
 ];
 
 /** The 17 modules of the Master Execution Prompt; 16 and 17 are later-phase and labelled as such. */
+const QUICK_ICON: Record<string, IconName> = {
+  "/app/stores": "database", "/app/stores/requisitions/new": "clipboardCheck", "/app/stores/requisitions?status=APPROVED": "send", "/app/admin/users": "users",
+  "/app/platform": "server", "/app/org/tenants": "network", "/app/fleet": "truck", "/app/fleet/maintenance": "wrench", "/app/reports": "chart", "/app/approvals": "stamp",
+};
+
 const MODULES: Array<{ no: number; name: string; icon: IconName; href?: string; any: Permission[]; planned?: boolean }> = [
   { no: 1, name: "Organisation & Multi-Tenant Management", icon: "bank", href: "/app/org", any: ["org.view"] },
   { no: 2, name: "User, Roles & Access Management", icon: "users", href: "/app/admin/users", any: ["user.view"] },
@@ -105,7 +111,10 @@ export async function CommandOverview({ actor, kind }: { actor: Actor; kind: Das
   const [kpis, areas, trends, activity, status, tasks] = await Promise.all([
     headlineKpis(db, actor, kind), assignmentsByArea(db, actor), activityTrends(db, actor), recentActivity(db, actor), systemStatus(db, actor), listTasks(db, actor, "OPEN"),
   ]);
-  const quick = QUICK.filter((q) => q.any.some((p) => hasPermission(actor, p))).slice(0, 7);
+  const ws = workspaceFor(actor);
+  // Role-specific quick actions from the workspace configuration; the generic list is the fallback.
+  const wsQuick = quickActionsFor(actor).map((q) => ({ ...q, icon: QUICK.find((x) => x.href === q.href)?.icon ?? QUICK_ICON[q.href] ?? "send" }));
+  const quick = wsQuick.length ? wsQuick : QUICK.filter((q) => q.any.some((p) => hasPermission(actor, p))).slice(0, 7);
   const now = new Date();
   const t = today();
   return (
@@ -129,8 +138,9 @@ export async function CommandOverview({ actor, kind }: { actor: Actor; kind: Das
         <div className="flex items-start gap-3">
           <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#e8eef9] text-[#173f8a]"><Icon name="gauge" className="h-6 w-6" /></span>
           <div>
-            <h2 className="text-[22px] font-extrabold leading-tight text-[#0d2149] md:text-[26px]">{def.dashboardTitle}</h2>
-            <p className="text-[13.5px] text-ink-2">{def.description}</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[#173f8a]">Tier {def.tier} · Role {String(def.no).padStart(2, "0")} · {def.name}</p>
+            <h2 className="text-[22px] font-extrabold leading-tight text-[#0d2149] md:text-[26px]">{ws?.backOffice ?? def.dashboardTitle}</h2>
+            <p className="text-[13.5px] text-ink-2">{ws?.purpose ?? def.description}</p>
             {pa && <p className="mt-0.5 text-[12px] font-semibold text-muted">Scope: {pa.orgUnitName}</p>}
           </div>
         </div>

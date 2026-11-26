@@ -4,7 +4,7 @@ import { loadOr404, pageAllowed } from "@/server/auth/guard";
 import { all, getDb } from "@/server/db/connection";
 import { REQUEST_CATEGORIES, ROLES, ROLE_BY_CODE } from "@/server/domain/catalogue";
 import { hasPermission } from "@/server/domain/policy";
-import { userDetail } from "@/server/domain/iam";
+import { userDetail, userInScope } from "@/server/domain/iam";
 import { assignRoleAction, grantDelegationAction, issueTemporaryPasswordAction, revokeAssignmentAction, revokeDelegationAction, setUserStatusAction, unlockAccountAction } from "@/server/actions/iam";
 import { AccessDenied, Badge, Card, DL, Notice, PageHeader, Table, td, fmtDate } from "@/components/ui";
 import { ActionForm, Hidden, Select, Submit, TextField } from "@/components/forms";
@@ -18,6 +18,8 @@ export default async function UserDetail({ params }: { params: Promise<{ id: str
   const db = getDb();
   const { user, assignments, delegations } = await loadOr404(() => userDetail(db, actor, id));
   const self = id === actor.userId;
+  // Account support is scoped: the domain re-checks, this only decides which controls are shown.
+  const support = hasPermission(actor, "user.support") && await userInScope(db, actor, "user.support", id, "all");
   const orgs = await all<{ id: string; name: string; unit_type: string }>(db, "SELECT id, name, unit_type FROM org_units WHERE status='ACTIVE' ORDER BY unit_type, name");
   const now = new Date().toISOString();
   const active = (a: { revoked_at: string | null; valid_to: string | null }) => !a.revoked_at && (!a.valid_to || a.valid_to > now);
@@ -89,7 +91,7 @@ export default async function UserDetail({ params }: { params: Promise<{ id: str
             <Card title="Record a delegation">
               <ActionForm action={grantDelegationAction} resetOnSuccess>
                 <Hidden name="userId" value={user.id} />
-                <Select label="Domain" name="domain" options={[{ value: "ADMIN_REQUEST", label: "Administrative requests" }, { value: "MAINTENANCE", label: "Fleet maintenance" }, { value: "ORG_CHANGE", label: "Organisational change (HQ only)" }, { value: "MANPOWER", label: "Manpower requests and rosters" }, { value: "ASSIGNMENT", label: "Assignments, transfers, exceptions and renewals" }]} />
+                <Select label="Domain" name="domain" options={[{ value: "ADMIN_REQUEST", label: "Administrative requests" }, { value: "MAINTENANCE", label: "Fleet maintenance" }, { value: "ORG_CHANGE", label: "Organisational change (HQ only)" }, { value: "MANPOWER", label: "Manpower requests and rosters" }, { value: "ASSIGNMENT", label: "Assignments, transfers, exceptions and renewals" }, { value: "STORES", label: "General stores requisitions" }]} />
                 <Select label="Organisation" name="orgUnitId" required placeholder="Select organisation" options={orgs.map((o) => ({ value: o.id, label: o.name }))} />
                 <Select label="Category (requests only)" name="categoryCode" placeholder="All categories" options={REQUEST_CATEGORIES.map((c) => ({ value: c.code, label: c.name }))} />
                 <TextField label="Valid to" name="validTo" type="date" />
@@ -98,16 +100,16 @@ export default async function UserDetail({ params }: { params: Promise<{ id: str
               </ActionForm>
             </Card>
           )}
-          {!self && user.status === "ACTIVE" && (hasPermission(actor, "user.provision") || hasPermission(actor, "user.suspend")) && (
+          {!self && user.status === "ACTIVE" && support && (
             <Card title="Sign-in credentials" subtitle="Temporary passwords are shown once and must be changed at first sign-in">
               <div className="space-y-3">
-                {hasPermission(actor, "user.provision") && (
+                {support && (
                   <ActionForm action={issueTemporaryPasswordAction}>
                     <Hidden name="userId" value={user.id} />
                     <Submit variant="secondary" confirm="Issue a new temporary password? The current password stops working and sessions end.">Issue temporary password</Submit>
                   </ActionForm>
                 )}
-                {hasPermission(actor, "user.suspend") && user.locked_until && user.locked_until > now && (
+                {support && user.locked_until && user.locked_until > now && (
                   <ActionForm action={unlockAccountAction}>
                     <Hidden name="userId" value={user.id} />
                     <Submit variant="secondary">Clear sign-in lockout</Submit>

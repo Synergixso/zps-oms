@@ -141,7 +141,7 @@ describe("tenants, areas, reports and history", () => {
     expect(r.moved.org_units).toBeGreaterThan(0);
     expect(Number((await one<{ c: number }>(db, "SELECT COUNT(*) AS c FROM personnel_records WHERE home_unit_id = 'org_ap' AND tenant_id <> ?", r.id))!.c)).toBe(0);
     expect((await listTenants(db, plat)).some((t) => t.id === r.id)).toBe(true);
-    await expect(provisionFormationTenant(db, await actor(db, "u_org"), { code: "FM-X", name: "Not allowed tenant", formationId: "org_pu", reason: "Should be refused here." })).rejects.toThrow(/not authorised/);
+    await expect(provisionFormationTenant(db, await actor(db, "u_sec"), { code: "FM-X", name: "Not allowed tenant", formationId: "org_pu", reason: "Should be refused here." })).rejects.toThrow(/not authorised/);
   }));
 
   it("edits an operational area with screening and shows its history", () => withDb(async (db) => {

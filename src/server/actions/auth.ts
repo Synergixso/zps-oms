@@ -3,7 +3,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getDb } from "../db/connection";
 import { authenticate, changePassword, clientKey } from "../domain/auth";
-import { createSession, destroySession, SESSION_ABSOLUTE_HOURS } from "../domain/sessions";
+import { createSession, destroySession, SESSION_ABSOLUTE_HOURS, setSessionContext } from "../domain/sessions";
 import { requireActor, SESSION_COOKIE } from "../auth/session";
 import { str, toState, type ActionState } from "./result";
 
@@ -59,4 +59,12 @@ export async function signOut() {
   await destroySession(getDb(), jar.get(SESSION_COOKIE)?.value);
   jar.delete(SESSION_COOKIE);
   redirect("/login?reason=signedout");
+}
+
+/** Switches the organisational context (role assignment) of the current session; validated server-side. */
+export async function switchContext(fd: FormData) {
+  const jar = await cookies();
+  const id = String(fd.get("assignmentId") ?? "").slice(0, 60);
+  await setSessionContext(getDb(), jar.get(SESSION_COOKIE)?.value, id);
+  redirect("/app");
 }

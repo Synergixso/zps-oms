@@ -20,8 +20,13 @@ export async function createSession(db: DB, userId: string): Promise<string> {
 
 /** Returns the user id for a valid, unexpired, non-idle session, refreshing last-seen. */
 export async function resolveSession(db: DB, token: string | undefined): Promise<string | null> {
+  return (await resolveSessionContext(db, token))?.userId ?? null;
+}
+
+/** As resolveSession, plus the organisational context (role assignment) the session has selected. */
+export async function resolveSessionContext(db: DB, token: string | undefined): Promise<{ userId: string; activeAssignmentId: string | null } | null> {
   if (!token || token.length > 200) return null;
-  const s = await one<{ id: string; user_id: string; expires_at: string; last_seen_at: string }>(db, "SELECT * FROM sessions WHERE id = ?", hash(token));
+  const s = await one<{ id: string; user_id: string; expires_at: string; last_seen_at: string; active_assignment_id: string | null }>(db, "SELECT * FROM sessions WHERE id = ?", hash(token));
   if (!s) return null;
   const t = now().getTime();
   if (Date.parse(s.expires_at) < t || Date.parse(s.last_seen_at) + SESSION_IDLE_MINUTES * 60000 < t) {
@@ -30,7 +35,27 @@ export async function resolveSession(db: DB, token: string | undefined): Promise
     return null;
   }
   await run(db, "UPDATE sessions SET last_seen_at = ? WHERE id = ?", nowIso(), s.id);
-  return s.user_id;
+  return { userId: s.user_id, activeAssignmentId: s.active_assignment_id };
+}
+
+/**
+ * Switches the session to one of the user's own valid assignments. The id from the browser is only a
+ * selector: it must be an active, unexpired, unrevoked assignment of THIS user, otherwise it is refused.
+ */
+export async function setSessionContext(db: DB, token: string | undefined, assignmentId: string): Promise<boolean> {
+  const ctx = await resolveSessionContext(db, token);
+  if (!ctx || !token) return false;
+  const t = nowIso();
+  const ok = await one(db, `SELECT a.id FROM role_assignments a JOIN roles r ON r.code = a.role_code JOIN org_units o ON o.id = a.org_unit_id
+     WHERE a.id = ? AND a.user_id = ? AND a.revoked_at IS NULL AND a.valid_from <= ? AND (a.valid_to IS NULL OR a.valid_to > ?) AND r.status = 'ACTIVE' AND o.status = 'ACTIVE'`,
+    assignmentId, ctx.userId, t, t);
+  if (!ok) {
+    await audit(db, { actorId: ctx.userId, action: "auth.context.switch", outcome: "DENIED", category: "SECURITY", entityType: "role_assignment", entityId: assignmentId.slice(0, 40) });
+    return false;
+  }
+  await run(db, "UPDATE sessions SET active_assignment_id = ? WHERE id = ?", assignmentId, hash(token));
+  await audit(db, { actorId: ctx.userId, action: "auth.context.switch", category: "AUTH", entityType: "role_assignment", entityId: assignmentId });
+  return true;
 }
 
 export async function destroySession(db: DB, token: string | undefined) {

@@ -11,7 +11,7 @@ import { actor, withDb } from "./helpers";
 
 describe("finer action permissions (Prompt §7.2)", () => {
   it("separates proposing, transferring and renewing", () => withDb(async (db) => {
-    const planner = await actor(db, "u_hqstaff"); // HQ Operations Staff: propose only
+    const planner = await actor(db, "u_kit_asg"); // Deputy OC — District: propose only
     expect(can(planner, "assignment.propose", "org_cb_kitwe")).toBe(true);
     expect(can(planner, "assignment.transfer", "org_cb_kitwe")).toBe(false);
     expect(can(planner, "assignment.renew", "org_cb_kitwe")).toBe(false);

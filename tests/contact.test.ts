@@ -19,7 +19,8 @@ describe("Public contact messages", () => {
     expect(row).toEqual({ email: "demo.visitor@example.org", status: "NEW" });
     expect((await one<{ c: number }>(db, "SELECT COUNT(*) c FROM audit_events WHERE action = 'public.contact.submit' AND outcome = 'SUCCESS'"))!.c).toBe(1);
     const notified = (await all<{ user_id: string }>(db, "SELECT user_id FROM notifications WHERE link = '/app/messages'")).map((n) => n.user_id).sort();
-    expect(notified).toEqual(["u_hqc", "u_plat"]);
+    // Holders of contact.view: Superadmin (u_plat, u_org) and Commissioner – Operations HQ (u_hqc, u_naa).
+    expect(notified).toEqual(["u_hqc", "u_naa", "u_org", "u_plat"]);
   }));
 
   it("rejects invalid input on the server", () => withDb(async (db) => {

@@ -17,7 +17,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
   const users = await listUsers(getDb(), actor, q?.slice(0, 40));
   return (
     <>
-      <PageHeader eyebrow="M02 · Identity and access" title="Users & access" description="Unique individual accounts only. No public self-registration. Access = role + organisational scope + validity window, recorded with a justification." />
+      <PageHeader eyebrow="M02 · Identity and access" title="Users & access" description={hasPermission(actor, "user.provision") ? "Unique individual accounts only. No public self-registration. Access = role + organisational scope + validity window, recorded with a justification." : "Technical account support for users assigned within your organisational scope: temporary passwords, sign-in lockouts and sessions. Role and delegation changes are referred to Headquarters."} />
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2" bodyClass="p-0">
           <form className="flex gap-3 border-b border-line p-4" role="search">

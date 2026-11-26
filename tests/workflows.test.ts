@@ -99,8 +99,8 @@ describe("WF-01/02/16/17/18 identity lifecycle", () => {
     await expect(provisionUser(db, p, { username: "john.real", displayName: "John Real", positionTitle: "Officer" })).rejects.toThrow();
     const id = await provisionUser(db, p, { username: "demo.new.user", displayName: "Demo New User", positionTitle: "Division Staff Ops (synthetic)" });
     expect((await loadActor(db, id))!.assignments.length).toBe(0); // no access by default
-    await expect(assignRole(db, p, { userId: id, roleCode: "PROVINCIAL_COMMANDER", orgUnitId: "org_mu", justification: "Wrong unit type for role" })).rejects.toThrow(/cannot be assigned/i);
-    await assignRole(db, p, { userId: id, roleCode: "DIVISION_STAFF_OPS", orgUnitId: "org_est", justification: "Synthetic posting reference SYN-POST-1" });
+    await expect(assignRole(db, p, { userId: id, roleCode: "OC_DISTRICT", orgUnitId: "org_mu", justification: "Wrong unit type for role" })).rejects.toThrow(/cannot be assigned/i);
+    await assignRole(db, p, { userId: id, roleCode: "DIVISION_STAFF_I", orgUnitId: "org_est", justification: "Synthetic posting reference SYN-POST-1" });
     expect((await loadActor(db, id))!.assignments[0].orgUnitId).toBe("org_est");
     const s = await actor(db, "u_sec");
     const rv = await openReview(db, s, "Synthetic quarterly recertification");

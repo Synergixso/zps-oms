@@ -11,7 +11,37 @@ import { all, one, run, tx } from "../db/connection";
 import { audit } from "./audit";
 import { ROLE_BY_CODE, type RoleCode } from "./catalogue";
 import { conflict, forbidden, invalid, newId, nextReference, notFound, notify, nowIso } from "./core";
-import { type Actor, HQ_ID, requirePermission } from "./policy";
+import { type Actor, HQ_ID, requirePermission, scopeFor } from "./policy";
+import type { Permission } from "./catalogue";
+
+/**
+ * Scoped technical administration (27-role directive, roles 06/07/18/24).
+ * A user is within an administrator's scope for `perm` when:
+ *  - mode "any": at least one of the user's active assignments lies inside the scope (viewing);
+ *  - mode "all": EVERY active assignment lies inside it, and (for non-national administrators) the user holds
+ *    no technical role — local administrators escalate other administrators' accounts to HQ Tech (support).
+ * National scope covers every user. Users without active assignments are national-only.
+ */
+export async function userInScope(db: DB, actor: Actor, perm: Permission, userId: string, mode: "any" | "all"): Promise<boolean> {
+  const s = scopeFor(actor, perm);
+  if (s.national) return true;
+  if (!s.units.length) return false;
+  const t = nowIso();
+  const rows = await all<{ org_unit_id: string; role_code: string }>(db,
+    "SELECT org_unit_id, role_code FROM role_assignments WHERE user_id = ? AND revoked_at IS NULL AND valid_from <= ? AND (valid_to IS NULL OR valid_to > ?)", userId, t, t);
+  const live = rows.filter((r) => ROLE_BY_CODE[r.role_code as RoleCode]);
+  if (!live.length) return false;
+  if (mode === "any") return live.some((r) => s.units.includes(r.org_unit_id));
+  return live.every((r) => s.units.includes(r.org_unit_id) && ROLE_BY_CODE[r.role_code as RoleCode].category !== "TECHNICAL");
+}
+
+async function requireSupport(db: DB, actor: Actor, userId: string) {
+  await requirePermission(db, actor, "user.support", undefined, { type: "user", id: userId });
+  if (!await userInScope(db, actor, "user.support", userId, "all")) {
+    await audit(db, { actorId: actor.userId, action: "authz.denied:user.support", outcome: "DENIED", category: "SECURITY", entityType: "user", entityId: userId, details: { reason: "outside technical-support scope" } });
+    throw notFound();
+  }
+}
 import { hashPassword, temporaryPassword } from "./auth";
 
 export interface UserRow {
@@ -26,13 +56,21 @@ export interface UserRow {
 }
 
 export async function listUsers(db: DB, actor: Actor, q?: string): Promise<UserRow[]> {
-  await requirePermission(db, actor, "user.view", HQ_ID);
+  await requirePermission(db, actor, "user.view");
   const t = nowIso();
+  const s = scopeFor(actor, "user.view");
+  const where: string[] = [];
+  const params: unknown[] = [t];
+  if (q) { where.push("(u.display_name LIKE ? OR u.username LIKE ?)"); params.push(`%${q}%`, `%${q}%`); }
+  if (!s.national) {
+    where.push(`EXISTS (SELECT 1 FROM role_assignments x WHERE x.user_id = u.id AND x.revoked_at IS NULL AND (x.valid_to IS NULL OR x.valid_to > ?) AND x.org_unit_id IN (${s.units.map(() => "?").join(",")}))`);
+    params.push(t, ...s.units);
+  }
   return await all<UserRow>(
     db,
     `SELECT u.*, (SELECT COUNT(*) FROM role_assignments a WHERE a.user_id = u.id AND a.revoked_at IS NULL AND (a.valid_to IS NULL OR a.valid_to > ?)) AS active_roles
-       FROM users u ${q ? "WHERE u.display_name LIKE ? OR u.username LIKE ?" : ""} ORDER BY u.display_name`,
-    t, ...(q ? [`%${q}%`, `%${q}%`] : []),
+       FROM users u ${where.length ? "WHERE " + where.join(" AND ") : ""} ORDER BY u.display_name`,
+    ...params,
   );
 }
 
@@ -52,7 +90,11 @@ export interface AssignmentRow {
 }
 
 export async function userDetail(db: DB, actor: Actor, userId: string) {
-  await requirePermission(db, actor, "user.view", HQ_ID);
+  await requirePermission(db, actor, "user.view");
+  if (!await userInScope(db, actor, "user.view", userId, "any")) {
+    await audit(db, { actorId: actor.userId, action: "iam.user.view", outcome: "DENIED", category: "SECURITY", entityType: "user", entityId: userId });
+    throw notFound();
+  }
   const user = await one<UserRow & { locked_until: string | null; must_change_password: number; last_login_at: string | null; has_password: number; failed_logins: number }>(db,
     "SELECT id, username, display_name, position_title, status, status_reason, created_at, 0 AS active_roles, locked_until, must_change_password, last_login_at, failed_logins, (password_hash IS NOT NULL) AS has_password FROM users WHERE id = ?", userId);
   if (!user) throw notFound();
@@ -146,7 +188,7 @@ export async function revokeAssignment(db: DB, actor: Actor, assignmentId: strin
 export const delegationSchema = z.object({
   userId: z.string().min(1),
   orgUnitId: z.string().min(1),
-  domain: z.enum(["ADMIN_REQUEST", "MAINTENANCE", "ORG_CHANGE", "MANPOWER", "ASSIGNMENT"]),
+  domain: z.enum(["ADMIN_REQUEST", "MAINTENANCE", "ORG_CHANGE", "MANPOWER", "ASSIGNMENT", "STORES"]),
   categoryCode: z.string().optional().or(z.literal("")),
   validTo: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
   approvalRef: z.string().trim().min(5, "Record the reference of the approved delegation instrument."),
@@ -286,7 +328,7 @@ export async function assignMissingUserRefs(db: DB) {
 }
 
 export async function issueTemporaryPassword(db: DB, actor: Actor, userId: string): Promise<string> {
-  await requirePermission(db, actor, "user.provision", HQ_ID);
+  await requireSupport(db, actor, userId);
   if (userId === actor.userId) throw forbidden("Use the change-password form on your profile for your own account.");
   const u = await one<{ status: string }>(db, "SELECT status FROM users WHERE id = ?", userId);
   if (!u) throw notFound();
@@ -302,7 +344,7 @@ export async function issueTemporaryPassword(db: DB, actor: Actor, userId: strin
 
 /** Clears a sign-in lockout before it expires (security administration). */
 export async function unlockAccount(db: DB, actor: Actor, userId: string) {
-  await requirePermission(db, actor, "user.suspend", HQ_ID);
+  await requireSupport(db, actor, userId);
   const u = await one<{ locked_until: string | null }>(db, "SELECT locked_until FROM users WHERE id = ?", userId);
   if (!u) throw notFound();
   await run(db, "UPDATE users SET failed_logins = 0, locked_until = NULL WHERE id = ?", userId);
@@ -311,7 +353,7 @@ export async function unlockAccount(db: DB, actor: Actor, userId: string) {
 
 /** Ends every active session of a user (security administration; e.g. suspected compromise). */
 export async function endUserSessions(db: DB, actor: Actor, userId: string) {
-  await requirePermission(db, actor, "user.suspend", HQ_ID);
+  await requireSupport(db, actor, userId);
   if (userId === actor.userId) throw forbidden("Use Sign out to end your own session.");
   const n = await run(db, "DELETE FROM sessions WHERE user_id = ?", userId);
   await audit(db, { actorId: actor.userId, action: "iam.sessions.end", category: "SECURITY", entityType: "user", entityId: userId, details: { sessions: n.changes } });

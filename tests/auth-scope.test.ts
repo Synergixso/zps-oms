@@ -58,15 +58,18 @@ describe("password authentication", () => {
     await expect(changePassword(db, staff, "not-it", "New-Strong-Pass-9")).rejects.toThrow(/current password/);
     await changePassword(db, staff, temp, "New-Strong-Pass-9");
     expect((await actor(db, "u_staff")).mustChangePassword).toBe(false);
-    await expect(issueTemporaryPassword(db, await actor(db, "u_sec"), "u_staff")).rejects.toThrow(/not authorised/);
+    // Business roles have no account-support function at all.
+    await expect(issueTemporaryPassword(db, await actor(db, "u_lsk_cmd"), "u_staff")).rejects.toThrow(/not authorised/);
   }));
 });
 
 describe("role catalogue and hierarchical scope", () => {
-  it("defines the 41 directive roles with unique numbers", () => {
-    expect(ROLES).toHaveLength(41);
-    expect(new Set(ROLES.map((r) => r.no)).size).toBe(41);
-    expect([...ROLES.map((r) => r.no)].sort((a, b) => a - b)).toEqual(Array.from({ length: 41 }, (_, i) => i + 1));
+  it("defines exactly the 27 roles of the three-tier directive with unique numbers", () => {
+    expect(ROLES).toHaveLength(27);
+    expect([...ROLES.map((r) => r.no)].sort((a, b) => a - b)).toEqual(Array.from({ length: 27 }, (_, i) => i + 1));
+    expect(ROLES.filter((r) => r.tier === 1).map((r) => r.no)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(ROLES.filter((r) => r.tier === 2).map((r) => r.no)).toEqual([7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]);
+    expect(ROLES.filter((r) => r.tier === 3).map((r) => r.no)).toEqual([18, 19, 20, 21, 22, 23, 24, 25, 26, 27]);
   });
 
   it("platform super administrator has no personnel access and no approval authority", () => withDb(async (db) => {
@@ -108,7 +111,7 @@ describe("role catalogue and hierarchical scope", () => {
     expect(can(before, "personnel.view", "org_cb_kitwe_central")).toBe(true);
     // Reassigned from Kitwe District to Mufulira District: revoke the old assignment, grant the new one.
     await run(db, "UPDATE role_assignments SET revoked_at = ?, revoke_reason = 'Reassigned' WHERE user_id = 'u_kit_per' AND revoked_at IS NULL", new Date().toISOString());
-    await run(db, "INSERT INTO role_assignments (id, user_id, role_code, org_unit_id, valid_from, justification, created_at) VALUES ('ra_test_h','u_kit_per','DISTRICT_PERSONNEL_OFFICER','org_cb_mufulira','2025-01-01T00:00:00.000Z','Test H','2025-01-01T00:00:00.000Z')");
+    await run(db, "INSERT INTO role_assignments (id, user_id, role_code, org_unit_id, valid_from, justification, created_at) VALUES ('ra_test_h','u_kit_per','DEPUTY_OPS_OFFICER_DISTRICT','org_cb_mufulira','2025-01-01T00:00:00.000Z','Test H','2025-01-01T00:00:00.000Z')");
     const after = await actor(db, "u_kit_per");
     expect(can(after, "personnel.view", "org_cb_kitwe_central")).toBe(false);
     expect(can(after, "personnel.view", "org_cb_mufulira_central")).toBe(true);

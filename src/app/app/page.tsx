@@ -14,6 +14,7 @@ import { Badge, Bar, ButtonLink, Card, SectionHeader, PageHeader, Stat, Table, t
 
 import { PersonnelDashboard } from "./dashboards";
 import { CommandOverview } from "./overview";
+import { StoresPanels, TechLocalPanels } from "./role-panels";
 
 export const metadata = { title: "Dashboard" };
 
@@ -54,10 +55,14 @@ function detail(actor: Actor, kind: NonNullable<ReturnType<typeof dashboardKind>
       return <FleetDash actor={actor} />;
     case "ASSETS":
       return <AssetDash actor={actor} />;
+    case "STORES":
+      return <StoresPanels actor={actor} />;
     case "AUDIT":
       return <AuditDash actor={actor} />;
     case "SECURITY":
       return <SecurityDash actor={actor} />;
+    case "TECH_LOCAL":
+      return <TechLocalPanels actor={actor} />;
     case "PLATFORM":
       return <PlatformDash actor={actor} />;
     case "ORG_REGISTRY":
@@ -335,7 +340,7 @@ async function StaffWorkspace({ actor }: { actor: Actor }) {
   return (
     <>
       <PageHeader
-        eyebrow={role === "DIVISION_STAFF_OPS" ? "Division Staff Ops" : role === "FORMATION_ADMIN_OFFICER" ? "Formation administration" : "My workspace"}
+        eyebrow={ROLE_BY_CODE[role]?.backOffice ?? "My workspace"}
         title={title(actor)}
         description={`${pa.orgUnitName}. Prepare, submit and track administrative work. Approval authority is not part of this role unless a delegation is separately recorded.`}
         actions={
@@ -383,7 +388,7 @@ async function FleetDash({ actor }: { actor: Actor }) {
   const maint = await listMaintenance(db, actor);
   const today = new Date().toISOString().slice(0, 10);
   const due = vehicles.filter((v) => v.status !== "DISPOSED" && v.next_service_due && v.next_service_due < today);
-  const units = [...new Set(actor.assignments.filter((a) => a.roleCode === "FLEET_OFFICER").map((a) => a.orgUnitName))];
+  const units = [...new Set(actor.assignments.filter((a) => a.roleCode === "MTO_OIC").map((a) => a.orgUnitName))];
   const open = maint.filter((m) => !["CLOSED", "REJECTED"].includes(m.status));
   return (
     <>
@@ -452,7 +457,7 @@ async function AuditDash({ actor }: { actor: Actor }) {
   const chain = await verifyAuditChain(db);
   const counts = await all<{ category: string; outcome: string; c: number }>(db, "SELECT category, outcome, COUNT(*) c FROM audit_events GROUP BY category, outcome ORDER BY category");
   const exp = (await one<{ c: number }>(db, "SELECT COUNT(*) c FROM report_exports"))!.c;
-  const pa = actor.assignments.find((a) => a.roleCode === "INTERNAL_AUDITOR");
+  const pa = actor.assignments.find((a) => a.roleCode === "INSPECTOR_GENERAL" || a.roleCode === "DIG_OPERATIONS");
   return (
     <>
       <SectionHeader eyebrow="Audit and compliance" title={title(actor)} description="Read-only evidence access within your time-limited audit grant." actions={<ButtonLink href="/app/audit" variant="primary">Open audit explorer</ButtonLink>} />

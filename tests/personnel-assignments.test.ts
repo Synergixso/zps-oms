@@ -44,7 +44,7 @@ describe("personnel registry (criterion B)", () => {
     await expect(registerPersonnel(db, officer, reg({ serviceNumber: "SYN-990002", confirmDistinct: true }))).resolves.toBeTruthy();
     // A different province cannot learn which record holds the number.
     const lsk = await actor(db, "u_lsk_sops");
-    await run(db, "INSERT INTO role_assignments (id, user_id, role_code, org_unit_id, valid_from, justification, created_at) VALUES ('t_ra','u_lsk_sops','PROVINCIAL_PERSONNEL_OFFICER','org_lsk','2025-01-01T00:00:00.000Z','test','2025-01-01T00:00:00.000Z')");
+    await run(db, "INSERT INTO role_assignments (id, user_id, role_code, org_unit_id, valid_from, justification, created_at) VALUES ('t_ra','u_lsk_sops','DIVISION_STAFF_II','org_lsk','2025-01-01T00:00:00.000Z','test','2025-01-01T00:00:00.000Z')");
     await expect(registerPersonnel(db, await actor(db, "u_lsk_sops"), reg({ homeUnitId: "org_lsk" }))).rejects.toThrow(/national registry/);
     void lsk;
   }));
