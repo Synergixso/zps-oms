@@ -100,7 +100,8 @@ export function Table({ head, children, empty, caption }: { head: ReactNode[]; c
   const hasRows = Array.isArray(children) ? children.length > 0 : !!children;
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[640px] border-collapse text-left text-[13px]">
+      {/* Narrow tables wrap on phones; wide registers scroll inside their card. */}
+      <table className={`w-full border-collapse text-left text-[13px] ${head.length <= 3 ? "" : head.length === 4 ? "min-w-[520px]" : "min-w-[640px]"}`}>
         {caption && <caption className="sr-only">{caption}</caption>}
         <thead>
           <tr className="border-b border-line bg-slate-50/70">

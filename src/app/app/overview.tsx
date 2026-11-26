@@ -172,7 +172,18 @@ export async function CommandOverview({ actor, kind }: { actor: Actor; kind: Das
           </div>
 
           <Panel title="ZPS-OMS system modules" icon="sitemap" action={<span className="text-[12px] text-white/85">15 active · 2 planned</span>}>
-            <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
+            {/* Phones: only the modules this role can open, as compact links. */}
+            <ul className="space-y-1.5 md:hidden">
+              {MODULES.filter((m) => !m.planned && m.href && (m.any.length === 0 || m.any.some((p) => hasPermission(actor, p)))).map((m) => (
+                <li key={m.no}>
+                  <Link href={m.href!} className="flex items-center gap-2.5 rounded-lg border border-line px-2.5 py-2 text-[13px] font-semibold text-[#0d2149] hover:border-[#173f8a]">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-[#173f8a] to-[#2a78d6] text-white"><Icon name={m.icon} className="h-4 w-4" /></span>
+                    {String(m.no).padStart(2, "0")}. {m.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <ul className="hidden grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid lg:grid-cols-3 2xl:grid-cols-5">
               {MODULES.map((m) => {
                 const allowed = !m.planned && (m.any.length === 0 || m.any.some((p) => hasPermission(actor, p)));
                 const body = (
@@ -193,7 +204,8 @@ export async function CommandOverview({ actor, kind }: { actor: Actor; kind: Das
           </Panel>
         </div>
 
-        <div className="space-y-4">
+        {/* On phones the actionable column (quick actions, status, activity, tasks) comes before the charts. */}
+        <div className="order-first space-y-4 xl:order-none">
             <Panel title="Quick actions" icon="send">
             {quick.length ? (
               <ul className="space-y-1.5">

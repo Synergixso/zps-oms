@@ -85,7 +85,7 @@ export async function PersonnelOpsPanel({ actor }: { actor: Actor }) {
 function header(actor: Actor, description: string) {
   const r = primaryRole(actor)!;
   const pa = primaryAssignment(actor);
-  return <SectionHeader title={ROLE_BY_CODE[r].dashboardTitle} description={description} />;
+  return <SectionHeader title={r ? "Working panels" : "Workspace"} description={description} />;
 }
 
 /** District, station and unit (post, department, company, detachment, platoon, section) command dashboards. */

@@ -12,6 +12,7 @@
 | Production build | `npm run build` | Succeeded |
 | Route audit (production build, port 3300) | `node scripts/route-audit.mjs http://localhost:3300` | **81 routes × 54 synthetic accounts, 0 server errors** (`docs/evidence/route-audit.md`) |
 | End-to-end (Playwright, Edge) | `npx playwright test` | **7 passed / 7** |
+| Phone-width review (375 × 812, production build) | `npm run review:mobile -- http://localhost:3300` | **27 / 27 dashboards, 0 horizontal overflow**; screenshots and table in `docs/evidence/mobile/` |
 
 ## 2. What the role suite proves (`tests/three-tier-roles.test.ts`)
 
@@ -60,7 +61,21 @@
 
 ✓ rendered · ✕ audited access-denied page · 404 record outside scope (existence not disclosed).
 
-## 5. Not covered by automated tests
+## 5. Phone-width review (26 November 2026)
 
-- Visual review of every one of the 27 dashboards at phone width (spot-checked: Station Stores and Admin at desktop width).
+Every role's dashboard was captured at 375 × 812 and checked for horizontal overflow (automated) and read slice by slice (manual). Findings and fixes:
+
+| Finding | Fix |
+|---|---|
+| Prototype notice wrapped to 4–5 lines on phones | Short notice on phones; role and scope stay in the dashboard heading and account menu |
+| Quick actions and tasks sat below a 17-card module list | Action column comes first on phones; phones list only the modules the role can open |
+| Back-office name repeated as the working-panel heading (and two panels used a second page heading) | Working panels have their own section heading |
+| All tables had a 640 px minimum, so 2–3 column tables scrolled sideways | Minimum width now depends on the column count; narrow tables wrap |
+| "Key activity" chart empty for stores, transport, armourer and local technical roles | Scoped activity of the role's own function (stock receipts/issues/requisitions, maintenance, own requests, sign-ins and support actions) |
+| Superadmin panel still said "Platform administrators" | Wording updated |
+
+After the fixes: 0 overflow on all 27, route audit 0 server errors, Vitest 108/108, Playwright 7/7.
+
+## 6. Not covered by automated tests
+
 - The context switcher's menu interaction in a browser (the server-side switching and validation are unit-tested).

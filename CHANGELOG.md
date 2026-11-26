@@ -2,6 +2,14 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.5.1] — 2026-11-26 — Phone-width review of the 27 role dashboards
+### Added
+- `scripts/mobile-review.mjs` (`npm run review:mobile`): opens every role's dashboard at 375 × 812, records horizontal overflow and saves screenshots (`docs/evidence/mobile/`).
+- Scoped "Key activity" figures for stores, transport, armourer and local technical roles.
+### Changed
+- Phones: short prototype notice; quick actions and tasks before the charts; only the modules the role can open; tables of up to three columns wrap instead of scrolling.
+- Working panels use their own heading instead of repeating the back-office name.
+
 ## [0.5.0] — 2026-11-26 — Three-tier 27-role institutional back offices
 ### Added
 - **27-role catalogue** in three tiers (HQ 6, Division/Formation 11, District/Station 10) with tier, number, back-office name, organisational context, assignable unit types and scoped permissions; the only active configuration (DEC-049).

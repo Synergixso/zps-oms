@@ -61,6 +61,6 @@ All accounts use the published synthetic development password (local review only
 
 ## Open items (all roles)
 
-1. Phone-width visual review of every role's dashboard.
+1. ~~Phone-width visual review of every role's dashboard~~ — done 26 Nov 2026 (`docs/evidence/mobile/`, findings in `ROLE_TEST_RESULTS.md` §5).
 2. Automated browser test of the context switcher.
 3. Institutional validation of the permission templates, the synthetic delegations and the assumptions in DEC-055.

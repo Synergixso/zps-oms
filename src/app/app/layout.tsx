@@ -66,8 +66,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </div>
         </header>
         <div className="no-print border-b border-amber-200 bg-amber-50 px-4 py-1.5 text-[12px] text-amber-900 lg:px-8">
-          <strong>Prototype environment</strong> — synthetic demonstration data only; not connected to Zambia Police Service systems. {ws ? <>{ws.backOffice} · </> : null}Active role: <strong>{role ? ROLE_BY_CODE[role].name : "none"}</strong>
-          {pa ? ` · Scope: ${pa.orgUnitName}` : ""}.
+          {/* Phones get the short notice; the role and scope are already shown in the dashboard heading and account menu. */}
+          <strong>Prototype environment</strong> — synthetic demonstration data only<span className="hidden sm:inline">; not connected to Zambia Police Service systems. {ws ? <>{ws.backOffice} · </> : null}Active role: <strong>{role ? ROLE_BY_CODE[role].name : "none"}</strong>
+          {pa ? ` · Scope: ${pa.orgUnitName}` : ""}</span>.
         </div>
         <main id="main" className="mx-auto max-w-[1600px] px-4 py-6 lg:px-8">
           <Breadcrumbs />

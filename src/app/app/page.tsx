@@ -79,9 +79,9 @@ function NoAccess() {
   );
 }
 
+/** Heading of the working panels below the command overview (the back-office name is already the page heading). */
 function title(actor: Actor) {
-  const r = primaryRole(actor)!;
-  return ROLE_BY_CODE[r].dashboardTitle;
+  return primaryRole(actor) ? "Working panels" : "Workspace";
 }
 
 function RequestTable({ rows, empty, showOrg = true }: { rows: RequestRow[]; empty: string; showOrg?: boolean }) {
@@ -204,7 +204,7 @@ async function National({ actor, coordinator }: { actor: Actor; coordinator: boo
   const formations = orgs.filter((o) => o.unit_type === "FORMATION");
   return (
     <>
-      <PageHeader
+      <SectionHeader
         eyebrow={coordinator ? "National operations · coordination" : "National operations · executive"}
         title={title(actor)}
         description="Aggregate administrative oversight across Service Headquarters, the ten Provincial Police Divisions and authorised formations. Figures are synthetic."
@@ -281,10 +281,10 @@ async function UnitCommand({ actor }: { actor: Actor }) {
   const isProv = pa.orgUnitType === "PROVINCIAL_DIVISION";
   return (
     <>
-      <PageHeader
+      <SectionHeader
         eyebrow={isProv ? "Provincial Police Division · command" : "Divisional formation · command"}
         title={pa.orgUnitName}
-        description={`${title(actor)} · Organisation code ${unit.code}. Data restricted to this ${isProv ? "division" : "formation"} and explicitly shared information.`}
+        description={`${ROLE_BY_CODE[primaryRole(actor)!].name} · Organisation code ${unit.code}. Data restricted to this ${isProv ? "division" : "formation"} and explicitly shared information.`}
         actions={
           <>
             <ButtonLink href="/app/reports">Reports</ButtonLink>
@@ -339,8 +339,8 @@ async function StaffWorkspace({ actor }: { actor: Actor }) {
   const role = primaryRole(actor)!;
   return (
     <>
-      <PageHeader
-        eyebrow={ROLE_BY_CODE[role]?.backOffice ?? "My workspace"}
+      <SectionHeader
+        eyebrow="My workspace"
         title={title(actor)}
         description={`${pa.orgUnitName}. Prepare, submit and track administrative work. Approval authority is not part of this role unless a delegation is separately recorded.`}
         actions={
@@ -536,7 +536,7 @@ async function PlatformDash({ actor }: { actor: Actor }) {
       </div>
       <div className="mt-4">
         <Notice tone="info" title="Separation of duties">
-          Platform administrators provision accounts and record approved role assignments and delegations, but cannot assign or change their own access, cannot approve business
+          The Superadmin provisions accounts and record approved role assignments and delegations, but cannot assign or change their own access, cannot approve business
           requests and cannot view requests, fleet or asset records.
         </Notice>
       </div>

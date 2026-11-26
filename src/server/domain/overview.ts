@@ -249,6 +249,31 @@ export async function activityTrends(db: DB, actor: Actor) {
     out.push({ label: "Verified backups", value: await count(db, "SELECT COUNT(*) AS c FROM backup_runs WHERE status = 'SUCCESS' AND verified = 1 AND started_at > ?", since), href: "/app/platform" });
     out.push({ label: "Accounts created", value: await count(db, "SELECT COUNT(*) AS c FROM users WHERE created_at > ?", since), href: "/app/admin/users" });
   }
+  // Functional and local roles: activity of their own function, within scope.
+  const st = !out.length ? scope(actor, "stores.view", "i.org_unit_id") : null;
+  if (st) {
+    const tx = (type: string) => count(db, `SELECT COUNT(*) AS c FROM store_transactions t JOIN store_items i ON i.id = t.item_id WHERE t.txn_type = ? AND t.created_at > ? AND ${st.sql}`, type, since, ...st.params);
+    out.push({ label: "Receipts", value: await tx("RECEIPT"), href: "/app/stores" });
+    out.push({ label: "Issues", value: await tx("ISSUE"), href: "/app/stores" });
+    const rq = scope(actor, "stores.view", "r.store_unit_id")!;
+    out.push({ label: "Requisitions received", value: await count(db, `SELECT COUNT(*) AS c FROM store_requisitions r WHERE r.status <> 'DRAFT' AND r.created_at > ? AND ${rq.sql}`, since, ...rq.params), href: "/app/stores/requisitions" });
+  }
+  const fl = !out.length ? scope(actor, "maintenance.view", "org_unit_id") : null;
+  if (fl) {
+    out.push({ label: "Maintenance raised", value: await count(db, `SELECT COUNT(*) AS c FROM maintenance_requests WHERE created_at > ? AND ${fl.sql}`, since, ...fl.params), href: "/app/fleet/maintenance" });
+    out.push({ label: "Raised and closed", value: await count(db, `SELECT COUNT(*) AS c FROM maintenance_requests WHERE status = 'CLOSED' AND created_at > ? AND ${fl.sql}`, since, ...fl.params), href: "/app/fleet/maintenance" });
+  }
+  if (!out.length && hasPermission(actor, "request.create") && !hasPermission(actor, "request.assign")) {
+    out.push({ label: "My requests raised", value: await count(db, "SELECT COUNT(*) AS c FROM admin_requests WHERE created_by = ? AND created_at > ?", actor.userId, since), href: "/app/requests" });
+    out.push({ label: "My requests closed", value: await count(db, "SELECT COUNT(*) AS c FROM admin_requests WHERE created_by = ? AND status = 'CLOSED' AND created_at > ?", actor.userId, since), href: "/app/requests" });
+  }
+  const ut = !out.length && !hasPermission(actor, "platform.view") && !hasPermission(actor, "security.view") ? usersInScope(actor) : null;
+  if (ut) {
+    const login = (ok: number) => count(db, `SELECT COUNT(*) AS c FROM login_attempts l JOIN users u ON u.username = l.username WHERE l.succeeded = ? AND l.created_at > ? AND ${ut.sql}`, ok, since, ...ut.params);
+    out.push({ label: "Sign-ins", value: await login(1), href: "/app/admin/users" });
+    out.push({ label: "Failed sign-ins", value: await login(0), href: "/app/admin/users" });
+    out.push({ label: "My support actions", value: await count(db, "SELECT COUNT(*) AS c FROM audit_events WHERE actor_id = ? AND action IN ('iam.user.password.issue','iam.user.unlock','iam.sessions.end') AND occurred_at > ?", actor.userId, since), href: "/app/admin/users" });
+  }
   if (!out.length && hasPermission(actor, "security.view")) {
     out.push({ label: "Successful sign-ins", value: await count(db, "SELECT COUNT(*) AS c FROM login_attempts WHERE succeeded = 1 AND created_at > ?", since), href: "/app/security" });
     out.push({ label: "Failed sign-ins", value: await count(db, "SELECT COUNT(*) AS c FROM login_attempts WHERE succeeded = 0 AND created_at > ?", since), href: "/app/security" });
