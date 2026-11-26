@@ -33,6 +33,15 @@ const R = {
   hqReq: await id("SELECT id FROM admin_requests WHERE origin_org_id='org_hq' AND status<>'DRAFT' LIMIT 1"),
   lskMaint: await id("SELECT id FROM maintenance_requests WHERE org_unit_id='org_lsk' LIMIT 1"),
   firstUser: "u_lsk_sops",
+  perKit: await id("SELECT id FROM personnel_records WHERE home_unit_id='org_cb_kitwe_central' ORDER BY id LIMIT 1"),
+  perLsk: await id("SELECT id FROM personnel_records WHERE home_unit_id='org_lsk_central_stn' ORDER BY id LIMIT 1"),
+  asgKcm: await id("SELECT id FROM personnel_assignments WHERE area_id='area_kcm' ORDER BY reference LIMIT 1"),
+  asgLsk: await id("SELECT id FROM personnel_assignments WHERE area_id='area_lsk_cbd' ORDER BY reference LIMIT 1"),
+  mprCb: await id("SELECT id FROM manpower_requests WHERE requesting_unit_id='org_cb' AND status='COMPLETED' LIMIT 1"),
+  mprHq: await id("SELECT id FROM manpower_requests WHERE requesting_unit_id='org_hq' LIMIT 1"),
+  contrib: await id("SELECT c.id FROM manpower_contributions c JOIN manpower_requests m ON m.id=c.request_id WHERE m.requesting_unit_id='org_hq' AND c.contributing_unit_id='org_mu_a' LIMIT 1"),
+  roster: await id("SELECT id FROM roster_versions WHERE status='FINALISED' LIMIT 1"),
+  transfer: await id("SELECT id FROM assignment_transfers WHERE status='COMPLETED' LIMIT 1"),
 };
 
 const routes = [
@@ -46,6 +55,11 @@ const routes = [
   "/app/admin/users", `/app/admin/users/${R.firstUser}`, "/app/admin/roles", "/app/admin/reviews",
   "/app/audit", "/app/security", "/app/workflows", "/app/platform",
   "/app/messages", "/app/notifications", "/app/profile", "/app/help",
+  "/app/personnel", "/app/personnel/new", `/app/personnel/${R.perKit}`, `/app/personnel/${R.perLsk}`, "/app/personnel/export",
+  "/app/manpower", "/app/manpower/new", `/app/manpower/${R.mprCb}`, `/app/manpower/${R.mprHq}`, "/app/manpower/contributions", `/app/manpower/contributions/${R.contrib}`,
+  "/app/rosters", `/app/rosters/${R.roster}`, `/app/rosters/${R.roster}/print`, `/app/rosters/${R.roster}/export`,
+  "/app/assignments", "/app/assignments/new", `/app/assignments/${R.asgKcm}`, `/app/assignments/${R.asgLsk}`,
+  "/app/transfers", `/app/transfers/${R.transfer}`, "/app/areas",
 ];
 
 const users = await all("SELECT u.id, u.display_name, (SELECT role_code FROM role_assignments a WHERE a.user_id=u.id AND a.revoked_at IS NULL ORDER BY a.id LIMIT 1) AS role FROM users u WHERE u.status='ACTIVE' ORDER BY u.id");
@@ -60,20 +74,22 @@ async function session(userId) {
 
 const results = [];
 let errors = 0;
-for (const u of users) {
+// Four users at a time (each user's routes run sequentially).
+const audited = async (u) => {
   const { token, h } = await session(u.id);
   const row = { user: `${u.display_name} (${u.role})`, cells: [] };
   for (const r of routes) {
     const res = await fetch(base + r, { headers: { cookie: `zps_session=${token}` }, redirect: "manual" });
     const body = res.status === 200 ? await res.text() : "";
-    const denied = /not authorised to view/.test(body);
+    const denied = /not authorised to view/.test(body) || res.status === 403;
     const err = res.status >= 500 || /Application error|Internal Server Error/.test(body);
     if (err) errors++;
-    row.cells.push(err ? "ERR" : res.status === 404 ? "404" : res.status >= 300 && res.status < 400 ? "→" : denied ? "✕" : "✓");
+    row.cells.push(err ? "ERR" : res.status === 403 ? "✕" : res.status === 404 ? "404" : res.status >= 300 && res.status < 400 ? "→" : denied ? "✕" : "✓");
   }
   await db.query("DELETE FROM sessions WHERE id = ?", [h]);
-  results.push(row);
-}
+  return row;
+};
+for (let i = 0; i < users.length; i += 4) results.push(...(await Promise.all(users.slice(i, i + 4).map(audited))));
 
 const header = `| User (primary role) | ${routes.map((r, i) => `R${i + 1}`).join(" | ")} |`;
 const sep = `|---|${routes.map(() => ":-:").join("|")}|`;
@@ -86,7 +102,7 @@ const md = [
   "",
   "## Routes",
   "",
-  ...routes.map((r, i) => `- R${i + 1}: \`${r.replace(/req_[a-z0-9]+|mnt_[a-z0-9]+/g, (m) => m.slice(0, 8) + "…")}\``),
+  ...routes.map((r, i) => `- R${i + 1}: \`${r.replace(/(req|mnt|mpr|mpc|rv|pas|trf)_[a-z0-9]+/g, (m) => m.slice(0, 8) + "…")}\``),
   "",
   "## Matrix",
   "",

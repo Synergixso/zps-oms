@@ -1,6 +1,6 @@
 {
   "name": "zps-oms",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "ZPS-OMS local synthetic-data prototype. Not an authorised production police system.",
   "scripts": {
@@ -12,7 +12,8 @@
     "db:reset": "node --experimental-strip-types src/server/db/migrate.ts --reset --confirm-synthetic",
     "audit:routes": "node scripts/route-audit.mjs",
     "docs:permissions": "node --experimental-strip-types scripts/gen-permission-matrix.mts",
-    "db:migrate": "node --experimental-strip-types src/server/db/migrate.ts"
+    "db:migrate": "node --experimental-strip-types src/server/db/migrate.ts",
+    "test:e2e": "playwright test"
   },
   "engines": {
     "node": ">=22.13"
@@ -26,6 +27,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4.3.5",
     "@types/node": "^22.20.7",
     "@types/react": "^19.3.3",

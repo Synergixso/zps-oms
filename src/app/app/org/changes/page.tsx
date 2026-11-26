@@ -2,7 +2,7 @@ import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
 import { canApprove, hasPermission, HQ_ID } from "@/server/domain/policy";
-import { listChanges, listOrgUnits } from "@/server/domain/org";
+import { listChanges, listOrgUnits, UNIT_TYPE_LABEL } from "@/server/domain/org";
 import { decideChangeAction, proposeChangeAction } from "@/server/actions/org";
 import { AccessDenied, Badge, Card, Notice, PageHeader, Table, td, fmtDate } from "@/components/ui";
 import { ActionForm, Hidden, Select, Submit, TextArea, TextField } from "@/components/forms";
@@ -80,7 +80,7 @@ export default async function OrgChanges() {
                     {t === "CREATE_UNIT" && (
                       <>
                         <TextField label="Code" name="code" required hint="e.g. FM-NEW" />
-                        <Select label="Entity type" name="unitType" options={[{ value: "FORMATION", label: "Divisional Unit / formation" }, { value: "PROVINCIAL_DIVISION", label: "Provincial Police Division" }, { value: "HQ_OFFICE", label: "HQ office" }]} />
+                        <Select label="Entity type" name="unitType" hint="Allowed parent and child types follow the configured organisation type rules." options={["HQ_OFFICE", "PROVINCIAL_DIVISION", "DISTRICT", "STATION", "POST", "FORMATION", "DEPARTMENT", "COMPANY", "DETACHMENT", "PLATOON", "SECTION"].map((v) => ({ value: v, label: UNIT_TYPE_LABEL[v] ?? v }))} />
                       </>
                     )}
                     {(t === "RENAME_UNIT" || t === "CREATE_UNIT") && <TextField label="Official name" name="name" required maxLength={120} />}

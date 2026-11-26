@@ -14,6 +14,11 @@
 - Single-language (English).
 
 ## Technical
+- Sign-in is by username; service-number sign-in and Government ID single sign-on are not yet available (DEC-039). There is no self-service password reset by design.
+- Tenure, renewal and exception rules are proposed defaults that require institutional authorisation before production enforcement (DEC-041).
+- Rank list, disposition labels and operational areas are synthetic/provisional configuration data.
+- PDF output uses the browser's "Save as PDF" from the print view; Excel output is CSV (opens in Excel). No server-side PDF/XLSX library is used (ZMW 0, no native dependencies).
+- Time-driven assignment events (commencement, review due) are applied on each authenticated request rather than by a scheduler.
 - Local MySQL/MariaDB under XAMPP with the default root account; a dedicated least-privilege user, backups and TLS are required before any shared deployment.
 - No rate limiting, no CSP nonces (`'unsafe-inline'` scripts allowed for Next.js bootstrap), no encryption at rest, no off-host audit storage, no backup automation, no central logging.
 - Audit hash chain detects tampering only if verified; a DB-file-level attacker could rewrite the whole chain (needs external anchoring).

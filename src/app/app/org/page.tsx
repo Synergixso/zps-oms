@@ -13,18 +13,30 @@ export default async function OrgDirectory({ searchParams }: { searchParams: Pro
   const sp = await searchParams;
   const asAt = sp.asAt && /^\d{4}-\d{2}-\d{2}$/.test(sp.asAt) ? sp.asAt : undefined;
   const units = await listOrgUnits(getDb(), actor, { asAt, includeInactive: sp.inactive === "1" });
-  const groups: Array<[string, typeof units]> = [
-    ["Service Headquarters", units.filter((u) => u.unit_type === "SERVICE_HQ" || u.unit_type === "HQ_OFFICE")],
-    ["Provincial Police Divisions", units.filter((u) => u.unit_type === "PROVINCIAL_DIVISION")],
-    ["Divisional Units and formations", units.filter((u) => u.unit_type === "FORMATION")],
+  // Tree order: each branch root followed by its subordinate units (depth-first, alphabetical).
+  const byId = new Map(units.map((u) => [u.id, u]));
+  const children = new Map<string, typeof units>();
+  for (const u of units) if (u.parent_id) children.set(u.parent_id, [...(children.get(u.parent_id) ?? []), u]);
+  const tree = (roots: typeof units, allow: (u: (typeof units)[number]) => boolean = () => true) => {
+    const out: Array<(typeof units)[number] & { depth: number }> = [];
+    const walk = (u: (typeof units)[number], depth: number) => {
+      out.push({ ...u, depth });
+      for (const c of (children.get(u.id) ?? []).filter(allow).sort((a, b) => a.name.localeCompare(b.name))) walk(c, depth + 1);
+    };
+    for (const r of roots) walk(r, 0);
+    return out;
+  };
+  const groups: Array<[string, ReturnType<typeof tree>]> = [
+    ["Service Headquarters", tree(units.filter((u) => u.unit_type === "SERVICE_HQ"), (u) => u.unit_type === "HQ_OFFICE")],
+    ["Provincial Police Divisions, District Commands, Stations and Posts", tree(units.filter((u) => u.unit_type === "PROVINCIAL_DIVISION"))],
+    ["Divisions / Formations and their sub-units", tree(units.filter((u) => u.unit_type === "FORMATION" && !byId.get(u.parent_id ?? "")?.unit_type.match(/DIVISION|DISTRICT|STATION/)))],
   ];
   return (
     <>
       <PageHeader eyebrow="M01 · Organisation registry" title="Organisation directory" description="Configurable, effective-dated directory. Names and reporting relationships are provisional until validated against the current approved DIG Operations establishment." />
       <div className="mb-4">
         <Notice tone="warn" title="Source-of-truth precedence">
-          Current approved internal establishment › signed internal directives › official public pages and organograms › developer assumptions. Districts, stations and posts are
-          intentionally not modelled.
+          Current approved internal establishment › signed internal directives › official public pages and organograms › developer assumptions. Sub-units shown are synthetic examples.
         </Notice>
       </div>
       <form className="mb-4 flex flex-wrap items-end gap-3">
@@ -44,7 +56,7 @@ export default async function OrgDirectory({ searchParams }: { searchParams: Pro
             <Table head={["Name", "Code", "Type", "Reports to / administered by", "Status", "Effective from"]}>
               {rows.map((u) => (
                 <tr key={u.id} className="hover:bg-slate-50">
-                  <td className={td}><Link href={`/app/org/${u.id}`} className="font-semibold text-zp-blue hover:underline">{u.name}</Link></td>
+                  <td className={td}><span style={{ paddingLeft: `${u.depth * 18}px` }} className="inline-block">{u.depth > 0 && <span className="mr-1 text-muted" aria-hidden>└</span>}<Link href={`/app/org/${u.id}`} className="font-semibold text-zp-blue hover:underline">{u.name}</Link></span></td>
                   <td className={`${td} font-mono text-xs`}>{u.code}</td>
                   <td className={`${td} text-ink-2`}>{UNIT_TYPE_LABEL[u.unit_type]}</td>
                   <td className={td}>{u.parent_name ?? "—"}</td>

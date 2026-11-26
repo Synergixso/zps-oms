@@ -221,6 +221,17 @@ describe("TS-15 Organisation changes preserve history and never grant access", (
     expect(asAt.parent_id).toBe(HQ_ID);
     expect(await all(db, "SELECT * FROM role_assignments ORDER BY id")).toEqual(before);
   }));
+  it("creates territorial and formation sub-units under the configured type rules (criterion A)", () => withDb(async (db) => {
+    setClock(() => new Date("2026-11-25T10:00:00Z"));
+    const org = await actor(db, "u_org");
+    const c = await proposeChange(db, org, { changeType: "CREATE_UNIT", code: "ST-CB-TEST", name: "Test Police Station (synthetic)", unitType: "STATION", parentId: "org_cb_mufulira", reason: "Synthetic establishment of a new station.", effectiveDate: "2026-11-25" });
+    await decideChange(db, await actor(db, "u_dig"), c.id, "APPROVE", "", "SYN-EST-DIR-002");
+    const unit = await one<{ id: string; tenant_id: string; branch: string }>(db, "SELECT id, tenant_id, branch FROM org_units WHERE code = 'ST-CB-TEST'");
+    expect(unit).toMatchObject({ tenant_id: "t_cb", branch: "TERRITORIAL" });
+    // The new station is immediately inside the Copperbelt commander's subtree.
+    expect(await one(db, "SELECT 1 AS ok FROM org_unit_closure WHERE ancestor_id = 'org_cb' AND descendant_id = ?", unit!.id)).toBeTruthy();
+    await expect(proposeChange(db, org, { changeType: "CREATE_UNIT", code: "ST-MU-BAD", name: "Station under a company", unitType: "STATION", parentId: "org_mu_a", reason: "Should be refused by type rules.", effectiveDate: "2026-11-25" })).rejects.toThrow(/type rules/);
+  }));
   it("proposers cannot approve their own change", () => withDb(async (db) => {
     const c = await proposeChange(db, await actor(db, "u_org"), { changeType: "RENAME_UNIT", targetId: "org_taz", name: "TAZARA Division (renamed)", reason: "Synthetic rename for separation-of-duties test.", effectiveDate: "2026-12-01" });
     // give the DIG a proposer role too and have them propose, then try to approve

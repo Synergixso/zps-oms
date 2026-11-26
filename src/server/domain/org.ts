@@ -109,7 +109,7 @@ export const changeSchema = z.discriminatedUnion("changeType", [
     changeType: z.literal("CREATE_UNIT"),
     code: z.string().trim().regex(/^[A-Z0-9-]{3,20}$/, "Code: 3–20 upper-case letters, digits or hyphens."),
     name: z.string().trim().min(3).max(120),
-    unitType: z.enum(["PROVINCIAL_DIVISION", "FORMATION", "HQ_OFFICE"]),
+    unitType: z.enum(["HQ_OFFICE", "PROVINCIAL_DIVISION", "DISTRICT", "STATION", "POST", "FORMATION", "DEPARTMENT", "COMPANY", "DETACHMENT", "PLATOON", "SECTION"]),
     parentId: z.string().min(1),
     reason: z.string().trim().min(10, "Give a reason of at least 10 characters."),
     effectiveDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -153,6 +153,14 @@ export async function proposeChange(db: DB, actor: Actor, input: z.input<typeof 
     }
   }
   if (d.changeType === "CREATE_UNIT" && await one(db, "SELECT id FROM org_units WHERE code = ?", d.code)) throw conflict("Organisation code already exists.");
+  // Parent/child type pairs are configuration (org_type_rules), checked for creation and re-parenting.
+  if ("parentId" in d) {
+    const parentType = (await one<{ unit_type: string }>(db, "SELECT unit_type FROM org_units WHERE id = ?", d.parentId))!.unit_type;
+    const childType = d.changeType === "CREATE_UNIT" ? d.unitType : (await one<{ unit_type: string }>(db, "SELECT unit_type FROM org_units WHERE id = ?", target))!.unit_type;
+    if (!(await one(db, "SELECT 1 AS ok FROM org_type_rules WHERE parent_type = ? AND child_type = ?", parentType, childType))) {
+      throw invalid(`A ${UNIT_TYPE_LABEL[childType] ?? childType} cannot be placed under a ${UNIT_TYPE_LABEL[parentType] ?? parentType} (organisation type rules).`);
+    }
+  }
   const id = newId("ocr");
   await tx(db, async (db) => {
     const ref = await nextReference(db, "ORG", "org_change_requests");

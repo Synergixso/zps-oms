@@ -2,6 +2,21 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.3.0] — 2026-11-26 — Personnel, manpower, rosters, assignments and password sign-in (Phase 3, stages 4–8)
+### Added
+- Official **System Login** page to the owner's design; username + password sign-in (scrypt), 5-failure lockout for 15 minutes, per-device throttling, Remember me, temporary passwords issued by the Platform Super Administrator with forced change, change-password on the profile.
+- **41-role catalogue** (Directive §11) with UNIT / SUBTREE / NATIONAL coverage via the closure table; hierarchical delegation-based approval (DEC-038).
+- **Personnel registry**: canonical records with unique service numbers, similar-name confirmation, effective-dated home-unit membership, verification by a second officer, modification history, scoped searchable/filterable/sortable/paginated register and audited CSV export.
+- **Manpower requests**: create, submit, review, recommend, return/resubmit, approve/reject (delegation), contribution requirements routed to units, unit contributions selected from eligible registry personnel, recall/revise, accept/return, reuse of earlier lists with revalidation.
+- **Roster builder**: consolidation from accepted contributions, grouping by unit/rank/contributor, duplicate / conflict / eligibility / outdated-record detection, manual authorised adjustments, review → approval → finalisation, immutable versions with amendments, print view (browser PDF) and audited CSV export; finalising creates the duty-area assignments.
+- **Operational areas, assignments, transfers, tenure and renewals**: one current assignment per officer, 365-day minimum tenure calculation, early release only with an approved exception (Misconduct always available), two-stage transfers (releasing approval, receiving acceptance) that close the old and open a new assignment atomically, renewals that preserve the continuous start date, full disposition history.
+- Role dashboards for district, station, unit (post to section), operations staff, personnel administration, assignment administration and management, plus personnel/manpower panels on the national, provincial and formation dashboards; manpower and assignment queues on Approvals.
+- Migration 002; incremental synthetic seed step 002 (28 new role accounts, 260 synthetic officers, six duty areas, assignment, transfer, renewal, exception and manpower history) (DEC-040).
+- 27 new Vitest tests (69 total) and Playwright end-to-end tests (`npm run test:e2e`, Microsoft Edge, dedicated `zps_oms_e2e` database).
+- Modules restored to the public menu (DEC-035).
+### Changed
+- The synthetic role simulator is retired; the sign-in page lists synthetic accounts only in development.
+
 ## [0.2.0] — 2026-11-26 — MySQL data layer and organisational hierarchy (Phase 3, stages 3–4)
 ### Changed
 - Data layer moved from SQLite (`node:sqlite`) to MySQL/MariaDB (XAMPP) via `mysql2` with raw parameterised SQL (DEC-030). Every domain function, page and server action is now async.

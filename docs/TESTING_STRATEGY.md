@@ -6,7 +6,7 @@ Rule: a test is reported as passed only with execution evidence. Results below w
 
 | Layer | Tool | Location | Status |
 |---|---|---|---|
-| Domain unit + integration (real MySQL `zps_oms_test`, recreated and seeded once per run through the real services; each test runs in a rolled-back transaction) | Vitest 5 | `tests/*.test.ts` | **42 tests, all passing** |
+| Domain unit + integration (real MySQL `zps_oms_test`, recreated and seeded once per run through the real services; each test runs in a rolled-back transaction) | Vitest 5 | `tests/*.test.ts` | **69 tests, all passing** |
 | Role-based permission & cross-organisation negative tests | Vitest | `tests/access-control.test.ts` (TS-01…TS-15) | Passing |
 | Workflow transition tests | Vitest | `tests/workflows.test.ts` | Passing |
 | Database migration tests | Vitest | `tests/migrations.test.ts` | Passing |
@@ -16,7 +16,7 @@ Rule: a test is reported as passed only with execution evidence. Results below w
 | Production build | `next build` | — | Succeeds (40 routes) |
 | Dependency vulnerability check | `npm audit` | — | 0 vulnerabilities |
 | Manual browser checks (built-in browser) | — | sign-in, dashboard, approve, create/submit with validation, 404 on out-of-scope URLs, mobile 375 px overflow | Done for listed flows |
-| Browser E2E automation (Playwright) | — | — | **Not implemented** (needs browser-binary download; decision pending) |
+| Browser E2E automation (Playwright, installed Microsoft Edge; dedicated `zps_oms_e2e` database and a second dev server on port 3200) | Playwright 1.56 | `e2e/*.spec.ts` — `npm run test:e2e` | Login, tenant isolation, assignment approval, renewal, transfer, roster build/print/export, access denial |
 | Automated accessibility (axe) | — | — | **Not implemented** |
 | Performance / load (synthetic) | — | — | **Not implemented** |
 | Backup & recovery | — | — | **Not applicable yet** (no backup design approved) |

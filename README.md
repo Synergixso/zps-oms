@@ -62,17 +62,17 @@ An *assignment* is an administrative duty-area record. It is never a location. T
 |---|---|---|
 | **Organisation registry** | Effective-dated hierarchy from HQ down to section. Approved structural changes rebuild the `org_unit_closure` table. Cycles are refused. Each unit carries its tenant. | Delivered |
 | **Identity & access** | Users, role assignments with an organisational scope, delegations of approval authority, access reviews, account suspension. | Delivered |
-| **Personnel registry** | Synthetic officer records with duplicate prevention on service number and national ID. Status history. | In delivery (Phase 3) |
-| **Manpower** | Manpower requests raised by a unit; contributions offered by subordinate units; approval through the workflow engine. | In delivery (Phase 3) |
-| **Rosters** | Versioned duty rosters built from approved manpower. Print and CSV export. | In delivery (Phase 3) |
-| **Assignments, transfers and disposition** | Duty-area assignments. The 365-day minimum tenure is enforced: earlier moves need an approved exception, and misconduct is always an available ground. Renewals and disposition records. | In delivery (Phase 3) |
+| **Personnel registry** | Synthetic officer records with duplicate prevention on service number and national ID. Status history. | Delivered |
+| **Manpower** | Manpower requests raised by a unit; contributions offered by subordinate units; approval through the workflow engine. | Delivered |
+| **Rosters** | Versioned duty rosters built from approved manpower. Print and CSV export. | Delivered |
+| **Assignments, transfers and disposition** | Duty-area assignments. The 365-day minimum tenure is enforced: earlier moves need an approved exception, and misconduct is always an available ground. Renewals and disposition records. | Delivered |
 | **Administrative requests** | Draft, submit, review, assign, approve, return, reject and close, with multi-level routing. | Delivered |
 | **Fleet maintenance** | Vehicle registry, maintenance requests, separation of duties between the requesting and verifying officers. | Delivered |
 | **Asset accountability** | Asset register, custody transfer between units, receipt acknowledgement. | Delivered |
-| **Dashboards** | A dashboard per role and level: national, provincial, district, formation and unit. | In delivery (Phase 3) |
+| **Dashboards** | A dashboard per role and level: national, provincial, district, formation and unit. | Delivered |
 | **Reports** | Scoped operational reports with CSV export. | Delivered |
 | **Audit** | A hash-chained, append-only audit log (database triggers prevent updates and deletes), an explorer, an evidence export and chain verification. | Delivered |
-| **Platform & security** | System health, security events, sessions, sign-in lockout. | In delivery (Phase 3) |
+| **Platform & security** | System health, security events, sessions, sign-in lockout. | Delivered |
 
 The detailed specifications are in `docs/MODULE_SPECIFICATIONS.md` and `docs/WORKFLOW_SPECIFICATIONS.md`. The order in which modules are delivered is in [CHANGELOG.md](CHANGELOG.md).
 
@@ -163,6 +163,7 @@ On first start the server applies any pending migrations and then loads the synt
 |---|---|
 | `npm run dev` | Development server on port 3100 |
 | `npm test` | Vitest suites against `zps_oms_test` (recreated once per run; every test runs inside a rolled-back transaction) |
+| `npm run test:e2e` | Playwright end-to-end tests in Microsoft Edge against a dedicated `zps_oms_e2e` database (port 3200) |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run build` / `npm start` | Production build and serve. For the local cookie flag, see `docs/DEPLOYMENT_GUIDE.md` |
 | `npm run db:migrate` | Apply pending SQL migrations to `DATABASE_URL` |
@@ -171,7 +172,7 @@ On first start the server applies any pending migrations and then loads the synt
 | `npm run docs:permissions` | Regenerate the permission matrix from the enforced catalogue |
 
 ## 10. Synthetic accounts and review walkthrough
-Every account is synthetic: `demo.*` usernames and "Demo" names. The development password for all of them is listed on the local sign-in page and in `docs/DEPLOYMENT_GUIDE.md`. It is a published test value for local review only.
+Every account is synthetic: `demo.*` usernames and "Demo" names. The development password for all of them is shown on the local sign-in page (development builds only) and defined in `src/server/db/constants.ts`. It is a published test value for local review only. There are 48 synthetic accounts covering all 41 roles.
 
 | Sign in as | Try |
 |---|---|
@@ -184,6 +185,12 @@ Every account is synthetic: `demo.*` usernames and "Demo" names. The development
 | Demo Platform Administrator | Provision a user, assign a role and scope, record a delegation |
 | Demo Security Administrator | Security events, suspend a user, run an access review |
 | Demo Internal Auditor | Read-only registers, audit explorer, evidence export, chain verification |
+| Demo HQ Manpower Planning Officer (`demo.hq.staff`) | Operations Staff Workspace; accept a unit contribution; build, print and export a roster |
+| Demo Copperbelt Assignment Coordinator (`demo.cb.assignments`) | Propose an assignment; initiate a transfer (tenure rule applies) |
+| Demo Copperbelt Division Commander (`demo.cb.commander`) | Approve assignments, exceptions, renewals and transfer releases |
+| Demo Mufulira Receiving Area Officer (`demo.mufulira.receiving`) | Accept a transfer into the receiving area |
+| Demo Kitwe District Commander (`demo.kitwe.commander`) | District dashboard; personnel limited to Kitwe; a Lusaka record returns 404 |
+| Demo A Company Administrative Officer (`demo.mu.acoy.admin`) | Select eligible officers for a contribution and submit |
 
 ## 11. Testing and verification evidence
 - **Domain and integration tests** run with `npm test` against real MySQL. They cover access control, tenant isolation, workflows, separation of duties, the seed, the hierarchy and closure table, migration idempotency, checksum drift and the reset safeguards.
@@ -203,7 +210,8 @@ Before every change: `npx tsc --noEmit`, then `npm test`, then `npm run audit:ro
 |---|---|
 | `DATABASE_URL` | MySQL connection URL for the app, e.g. `mysql://user:pass@127.0.0.1:3306/zps_oms_dev` |
 | `DATABASE_URL_TEST` | Test database. It must be named `zps_oms_test*` |
-| `COOKIE_SECURE` | Set to `false` only to run a local production build over plain HTTP |
+| `ZPS_INSECURE_COOKIE` | Set to `1` only to run a local production build over plain HTTP |
+| `ZPS_SHOW_DEMO_ACCOUNTS` | `1` / `0` to show or hide the synthetic account list on the sign-in page (shown by default in development only) |
 
 Put these in `.env.local`, which is never committed. `.env.example` documents them.
 

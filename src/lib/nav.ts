@@ -19,7 +19,19 @@ export const NAV: NavGroup[] = [
     label: "Overview",
     items: [
       { href: "/app", label: "Dashboard", icon: "home", any: [] },
-      { href: "/app/approvals", label: "Approvals & queues", icon: "inbox", any: ["request.assign", "request.view"] },
+      { href: "/app/approvals", label: "Approvals & queues", icon: "inbox", any: ["request.assign", "request.view", "manpower.view", "manpower.contribute", "assignment.view"] },
+    ],
+  },
+  {
+    label: "Personnel & manpower",
+    items: [
+      { href: "/app/personnel", label: "Personnel register", icon: "users", any: ["personnel.view"] },
+      { href: "/app/manpower", label: "Manpower requests", icon: "clipboardCheck", any: ["manpower.view"] },
+      { href: "/app/manpower/contributions", label: "Unit contributions", icon: "handshake", any: ["manpower.contribute"] },
+      { href: "/app/rosters", label: "Rosters", icon: "list", any: ["roster.view"] },
+      { href: "/app/assignments", label: "Assignment register", icon: "layers", any: ["assignment.view"] },
+      { href: "/app/transfers", label: "Transfers", icon: "arrow", any: ["assignment.view"] },
+      { href: "/app/areas", label: "Operational areas", icon: "target", any: ["area.view"] },
     ],
   },
   {

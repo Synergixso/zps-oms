@@ -4,7 +4,7 @@ Status key: **Implemented** (code + automated test) · **Implemented (manual)** 
 
 | Req ID | Source | Requirement | Implementation | Verification | Status |
 |---|---|---|---|---|---|
-| SCOPE-01 | Prompt C, PRD §3 | HQ + 10 divisions + formations only | `org_units` CHECK, seed | migrations test, seed test | Implemented |
+| SCOPE-01 | Directive §3 (supersedes Prompt C) | HQ, 10 divisions, districts, stations, posts, formations and sub-units | `org_units` types, `org_type_rules`, closure, seed | seed test (hierarchy + closure) | Implemented |
 | SCOPE-02 | Prompt C4 | No excluded capabilities | No modules; allowlists; term screening | prohibited-class test; review | Implemented |
 | M01-01 | PRD §7.1 | Stable IDs, effective-dated names/relationships | `org.ts`, schema | TS-15 | Implemented |
 | M01-02 | PRD §7.1 | Approval workflow for structural change | propose/decide/apply | TS-15 | Implemented |
@@ -54,3 +54,23 @@ Status key: **Implemented** (code + automated test) · **Implemented (manual)** 
 | PUB-01 | Prompt H | Six public pages, no registration, no invented contacts | `(public)/*` | Manual | Implemented |
 | ROLE-DSO | Prompt D4/T2 | "Division Staff Ops" role and dashboard | `DIVISION_STAFF_OPS` | TS-03 | Implemented |
 | ZERO-01 | Prompt N | ZMW 0 | free/local only | checklist | Implemented |
+
+## Master Directive acceptance criteria (Phase 3)
+
+| Criterion | Requirement | Implementation | Verification | Status |
+|---|---|---|---|---|
+| A | Hierarchical organisation and access boundaries | `org.ts` (closure rebuild, cycle refusal), `policy.ts` SUBTREE scope | seed test; auth-scope test "SUBTREE coverage…"; route audit | Implemented |
+| B | Officer registered once with home unit; duplicates prevented | `personnel.ts` registerPersonnel (unique service number, similar-name confirmation), memberships | personnel-assignments tests (criterion B) | Implemented |
+| C | Operations staff initiate and route manpower requests | `manpower.ts` create/submit/review/approve, setRequirement | manpower test (criterion C); e2e roster flow | Implemented |
+| D | Contributions consolidated into a roster without retyping | buildRoster from accepted contribution entries (registry ids, snapshots) | manpower test (D); e2e roster flow | Implemented |
+| E | Duplicates, conflicting assignments and outdated records detected | validateVersion; eligibilityOf | manpower test (E) | Implemented |
+| F | Assignment linked to personnel record and duty area | `assignments.ts` proposeAssignment/decideAssignment; finaliseRoster | personnel-assignments test (F); e2e assignment flow | Implemented |
+| G | Transfer closes old, creates new, preserves history | initiateTransfer → releaseDecision → acceptDecision (one transaction) | personnel-assignments test (G); e2e transfer flow | Implemented |
+| H | 365-day tenure; early withdrawal only with approved exception | computeTenure, assertTenureOrException, exceptions (Misconduct always available) | personnel-assignments test (H) | Implemented |
+| I | Renewal preserves commencement and sets next review | renewAssignment | personnel-assignments test (I); e2e renewal flow | Implemented |
+| J | Tenant and scope isolation | server-side scope filters; loadOr404 | auth-scope tests; route audit (404 / ✕ cells) | Implemented |
+| K | Reports and printable personnel lists | reports module; roster print view; CSV exports | e2e roster print/export | Implemented |
+| L | Traceable audit events | audit() on every submission, amendment, transfer, approval, renewal, disposition change | manpower and assignment tests assert audit rows | Implemented |
+| M | No decorative or non-functional controls | SSO button disabled with explanation; all figures from live queries | review; route audit | Implemented |
+| AUTH | Password authentication with lockout | `auth.ts`, sign-in action, temporary passwords | auth-scope tests; e2e login | Implemented |
+| RBAC-41 | 41-role catalogue | `catalogue.ts` | auth-scope test "defines the 41 directive roles" | Implemented |

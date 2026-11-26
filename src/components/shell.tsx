@@ -9,6 +9,7 @@ import { Icon } from "./icons";
 function isActive(path: string, href: string) {
   if (href === "/app") return path === "/app";
   if (href === "/app/fleet") return path === "/app/fleet" || (/^\/app\/fleet\/(?!maintenance)/.test(path));
+  if (href === "/app/manpower") return path === "/app/manpower" || /^\/app\/manpower\/(?!contributions)/.test(path);
   if (href === "/app/org") return path === "/app/org" || (/^\/app\/org\/(?!changes)/.test(path));
   return path === href || path.startsWith(href + "/");
 }

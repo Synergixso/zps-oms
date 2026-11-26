@@ -12,6 +12,8 @@ import { verifyAuditChain } from "@/server/domain/audit";
 import { listReviews } from "@/server/domain/iam";
 import { Badge, Bar, ButtonLink, Card, PageHeader, Stat, Table, td, fmtDate, fmtDateTime, Notice } from "@/components/ui";
 
+import { PersonnelDashboard, PersonnelOpsPanel } from "./dashboards";
+
 export const metadata = { title: "Dashboard" };
 
 export default async function Dashboard() {
@@ -21,14 +23,22 @@ export default async function Dashboard() {
   switch (kind) {
     case "NATIONAL_EXECUTIVE":
     case "NATIONAL_COORDINATION":
-      return <National actor={actor} coordinator={kind === "NATIONAL_COORDINATION"} />;
+      return <><National actor={actor} coordinator={kind === "NATIONAL_COORDINATION"} /><PersonnelOpsPanel actor={actor} /></>;
     case "DIVISION_COMMAND":
     case "FORMATION_COMMAND":
-      return <UnitCommand actor={actor} />;
+      return <><UnitCommand actor={actor} /><PersonnelOpsPanel actor={actor} /></>;
     case "DIVISION_STAFF_OPS":
     case "FORMATION_ADMIN":
     case "MY_WORKSPACE":
-      return <StaffWorkspace actor={actor} />;
+      return <><StaffWorkspace actor={actor} /><PersonnelOpsPanel actor={actor} /></>;
+    case "DISTRICT_COMMAND":
+    case "STATION":
+    case "UNIT_COMMAND":
+    case "OPS_STAFF_WORKSPACE":
+    case "PERSONNEL_ADMIN":
+    case "ASSIGNMENT_ADMIN":
+    case "MANAGEMENT":
+      return <PersonnelDashboard actor={actor} kind={kind} />;
     case "FLEET":
       return <FleetDash actor={actor} />;
     case "ASSETS":

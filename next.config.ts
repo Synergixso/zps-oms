@@ -25,6 +25,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // A separate build directory lets the Playwright server run alongside `npm run dev`.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   serverExternalPackages: [],
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
