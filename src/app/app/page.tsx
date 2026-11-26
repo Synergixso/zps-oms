@@ -10,9 +10,10 @@ import { listAssets, ASSET_STATUS_LABEL } from "@/server/domain/assets";
 import { listChanges } from "@/server/domain/org";
 import { verifyAuditChain } from "@/server/domain/audit";
 import { listReviews } from "@/server/domain/iam";
-import { Badge, Bar, ButtonLink, Card, PageHeader, Stat, Table, td, fmtDate, fmtDateTime, Notice } from "@/components/ui";
+import { Badge, Bar, ButtonLink, Card, SectionHeader, PageHeader, Stat, Table, td, fmtDate, fmtDateTime, Notice } from "@/components/ui";
 
-import { PersonnelDashboard, PersonnelOpsPanel } from "./dashboards";
+import { PersonnelDashboard } from "./dashboards";
+import { CommandOverview } from "./overview";
 
 export const metadata = { title: "Dashboard" };
 
@@ -20,17 +21,27 @@ export default async function Dashboard() {
   const actor = await requireActor();
   const kind = dashboardKind(actor);
   if (!kind) return <NoAccess />;
+  return (
+    <>
+      <CommandOverview actor={actor} kind={kind} />
+      <section aria-label="Workspace details" className="mt-8 border-t border-line pt-6">{detail(actor, kind)}</section>
+    </>
+  );
+}
+
+/** Role-specific working panels shown below the command overview. */
+function detail(actor: Actor, kind: NonNullable<ReturnType<typeof dashboardKind>>) {
   switch (kind) {
     case "NATIONAL_EXECUTIVE":
     case "NATIONAL_COORDINATION":
-      return <><National actor={actor} coordinator={kind === "NATIONAL_COORDINATION"} /><PersonnelOpsPanel actor={actor} /></>;
+      return <National actor={actor} coordinator={kind === "NATIONAL_COORDINATION"} />;
     case "DIVISION_COMMAND":
     case "FORMATION_COMMAND":
-      return <><UnitCommand actor={actor} /><PersonnelOpsPanel actor={actor} /></>;
+      return <UnitCommand actor={actor} />;
     case "DIVISION_STAFF_OPS":
     case "FORMATION_ADMIN":
     case "MY_WORKSPACE":
-      return <><StaffWorkspace actor={actor} /><PersonnelOpsPanel actor={actor} /></>;
+      return <StaffWorkspace actor={actor} />;
     case "DISTRICT_COMMAND":
     case "STATION":
     case "UNIT_COMMAND":
@@ -57,7 +68,7 @@ export default async function Dashboard() {
 function NoAccess() {
   return (
     <div className="py-12">
-      <PageHeader title="No active access" description="Your account has no active role assignment. Access is granted only through an approved role and organisational scope." />
+      <SectionHeader title="No active access" description="Your account has no active role assignment. Access is granted only through an approved role and organisational scope." />
       <Notice tone="warn">If you expected access, contact your access administrator. Expired or revoked assignments do not grant access.</Notice>
     </div>
   );
@@ -376,7 +387,7 @@ async function FleetDash({ actor }: { actor: Actor }) {
   const open = maint.filter((m) => !["CLOSED", "REJECTED"].includes(m.status));
   return (
     <>
-      <PageHeader eyebrow="Fleet and transport" title={title(actor)} description={`Granted organisations: ${units.join(", ")}. Administrative fleet records only — no location, route, mission or deployment data.`}
+      <SectionHeader eyebrow="Fleet and transport" title={title(actor)} description={`Granted organisations: ${units.join(", ")}. Administrative fleet records only — no location, route, mission or deployment data.`}
         actions={<><ButtonLink href="/app/fleet">Fleet register</ButtonLink><ButtonLink href="/app/fleet/maintenance/new" variant="primary">New maintenance request</ButtonLink></>} />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Stat label="Vehicles in scope" value={vehicles.length} href="/app/fleet" />
@@ -415,7 +426,7 @@ async function AssetDash({ actor }: { actor: Actor }) {
   const by = (st: string) => assets.filter((a) => a.status === st && units.has(a.custody_org_id)).length;
   return (
     <>
-      <PageHeader eyebrow="Assets and equipment" title={title(actor)} description="General non-sensitive assets in approved categories. Firearms, ammunition, armoury, communications and tactical equipment are excluded."
+      <SectionHeader eyebrow="Assets and equipment" title={title(actor)} description="General non-sensitive assets in approved categories. Firearms, ammunition, armoury, communications and tactical equipment are excluded."
         actions={<><ButtonLink href="/app/assets">Asset register</ButtonLink><ButtonLink href="/app/assets/new" variant="primary">Register asset</ButtonLink></>} />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
         {(["IN_STORE", "ISSUED", "UNDER_REPAIR"] as const).map((s) => <Stat key={s} label={ASSET_STATUS_LABEL[s]} value={by(s)} href={`/app/assets?status=${s}`} />)}
@@ -444,7 +455,7 @@ async function AuditDash({ actor }: { actor: Actor }) {
   const pa = actor.assignments.find((a) => a.roleCode === "INTERNAL_AUDITOR");
   return (
     <>
-      <PageHeader eyebrow="Audit and compliance" title={title(actor)} description="Read-only evidence access within your time-limited audit grant." actions={<ButtonLink href="/app/audit" variant="primary">Open audit explorer</ButtonLink>} />
+      <SectionHeader eyebrow="Audit and compliance" title={title(actor)} description="Read-only evidence access within your time-limited audit grant." actions={<ButtonLink href="/app/audit" variant="primary">Open audit explorer</ButtonLink>} />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Stat label="Audit chain integrity" value={chain.ok ? "Verified" : "BROKEN"} tone={chain.ok ? "ok" : "err"} hint={`${chain.checked} events hash-checked`} />
         <Stat label="Denied access attempts" value={counts.filter((c) => c.outcome === "DENIED").reduce((a, c) => a + c.c, 0)} href="/app/audit?outcome=DENIED" />
@@ -479,7 +490,7 @@ async function SecurityDash({ actor }: { actor: Actor }) {
   const auth = (await one<{ c: number }>(db, "SELECT COUNT(*) c FROM audit_events WHERE category='AUTH'"))!.c;
   return (
     <>
-      <PageHeader eyebrow="Security administration" title={title(actor)} description="Security events, privileged access changes and access recertification. Separate from business approvals."
+      <SectionHeader eyebrow="Security administration" title={title(actor)} description="Security events, privileged access changes and access recertification. Separate from business approvals."
         actions={<><ButtonLink href="/app/security">Security events</ButtonLink><ButtonLink href="/app/admin/reviews" variant="primary">Access reviews</ButtonLink></>} />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Stat label="Denied authorisation events" value={denied.reduce((a, d) => a + d.c, 0)} tone="warn" href="/app/security" />
@@ -510,7 +521,7 @@ async function PlatformDash({ actor }: { actor: Actor }) {
   const ver = await one<{ version: number; applied_at: string }>(db, "SELECT version, applied_at FROM schema_migrations ORDER BY version DESC LIMIT 1");
   return (
     <>
-      <PageHeader eyebrow="Platform administration" title={title(actor)} description="Technical administration and approved user provisioning. This role has no access to business records by default."
+      <SectionHeader eyebrow="Platform administration" title={title(actor)} description="Technical administration and approved user provisioning. This role has no access to business records by default."
         actions={<><ButtonLink href="/app/platform">System health</ButtonLink><ButtonLink href="/app/admin/users" variant="primary">User provisioning</ButtonLink></>} />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Stat label="Application" value="Running" tone="ok" hint="Local process" />
@@ -535,7 +546,7 @@ async function OrgDash({ actor }: { actor: Actor }) {
   const c = (t: string) => counts.find((x) => x.unit_type === t)?.c ?? 0;
   return (
     <>
-      <PageHeader eyebrow="Organisation registry" title={title(actor)} description="Propose effective-dated organisational changes for approval. You cannot approve your own proposals, and structural changes never grant user access."
+      <SectionHeader eyebrow="Organisation registry" title={title(actor)} description="Propose effective-dated organisational changes for approval. You cannot approve your own proposals, and structural changes never grant user access."
         actions={<><ButtonLink href="/app/org">Directory</ButtonLink><ButtonLink href="/app/org/changes" variant="primary">Propose a change</ButtonLink></>} />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Stat label="Service HQ" value={c("SERVICE_HQ")} />

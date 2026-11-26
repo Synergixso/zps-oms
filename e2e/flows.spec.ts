@@ -11,7 +11,9 @@ async function login(page: Page, username: string) {
 }
 
 async function logout(page: Page) {
-  await page.getByRole("button", { name: "Sign out" }).click();
+  // Sign out lives in the account menu in the top bar.
+  await page.getByRole("button", { name: "Account menu" }).click();
+  await page.getByRole("menuitem", { name: "Sign out" }).click();
   await page.waitForURL(/\/login/);
 }
 
@@ -28,7 +30,7 @@ test("system login: design elements, refused password, successful sign-in", asyn
   await page.getByRole("button", { name: "Show password" }).click();
   await expect(page.getByPlaceholder("Password")).toHaveAttribute("type", "text");
   await login(page, "demo.kitwe.commander");
-  await expect(page.getByRole("heading", { name: "District Command Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "District Command Dashboard" }).first()).toBeVisible();
 });
 
 test("tenant isolation: a district commander sees only their district's personnel", async ({ page }) => {

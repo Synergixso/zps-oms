@@ -20,6 +20,20 @@ export function PageHeader({ eyebrow, title, description, actions }: { eyebrow?:
   );
 }
 
+/** Section heading used for the working panels below the dashboard overview (the page title lives in the overview). */
+export function SectionHeader({ title, description, actions }: { eyebrow?: string; title: string; description?: ReactNode; actions?: ReactNode }) {
+  return (
+    <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+      <div>
+        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-zp-green">Workspace details</p>
+        <h2 className="text-[18px] font-bold leading-tight text-ink">{title}</h2>
+        {description && <p className="mt-0.5 max-w-3xl text-sm text-muted">{description}</p>}
+      </div>
+      {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
+    </div>
+  );
+}
+
 export function Card({ title, subtitle, action, children, className = "", bodyClass = "p-4" }: { title?: ReactNode; subtitle?: ReactNode; action?: ReactNode; children: ReactNode; className?: string; bodyClass?: string }) {
   return (
     <section className={`min-w-0 rounded-[9px] border border-line bg-surface shadow-[0_1px_2px_rgba(20,40,63,0.05)] ${className}`}>

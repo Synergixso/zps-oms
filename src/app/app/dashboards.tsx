@@ -7,7 +7,7 @@ import { DISPOSITIONS, personnelSummary } from "@/server/domain/personnel";
 import { MPR_STATUS_LABEL, manpowerInbox, manpowerSummary, listManpowerRequests, myContributions } from "@/server/domain/manpower";
 import { assignmentInbox, assignmentSummary, listAssignments, listTransfers } from "@/server/domain/assignments";
 import { addDays, today } from "@/server/domain/core";
-import { Badge, Bar, ButtonLink, Card, PageHeader, Stat, Table, td, fmtDate } from "@/components/ui";
+import { Badge, Bar, ButtonLink, Card, SectionHeader, Stat, Table, td, fmtDate } from "@/components/ui";
 
 type Inbox = Array<{ kind: string; reference: string; title: string; href: string }>;
 
@@ -85,7 +85,7 @@ export async function PersonnelOpsPanel({ actor }: { actor: Actor }) {
 function header(actor: Actor, description: string) {
   const r = primaryRole(actor)!;
   const pa = primaryAssignment(actor);
-  return <PageHeader eyebrow={pa?.orgUnitName ?? ""} title={ROLE_BY_CODE[r].dashboardTitle} description={description} />;
+  return <SectionHeader title={ROLE_BY_CODE[r].dashboardTitle} description={description} />;
 }
 
 /** District, station and unit (post, department, company, detachment, platoon, section) command dashboards. */
