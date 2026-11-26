@@ -2,12 +2,16 @@ import { requireActor } from "@/server/auth/session";
 import { all, getDb } from "@/server/db/connection";
 import { PERMISSIONS, ROLE_BY_CODE, type Permission } from "@/server/domain/catalogue";
 import { scopeFor } from "@/server/domain/policy";
-import { Card, DL, PageHeader, Table, td, fmtDate } from "@/components/ui";
+import { Card, DL, Notice, PageHeader, Table, td, fmtDate } from "@/components/ui";
+import { ActionForm, Submit, TextField } from "@/components/forms";
+import { changePasswordAction } from "@/server/actions/auth";
+import { PASSWORD_MIN_LENGTH } from "@/server/domain/auth";
 
 export const metadata = { title: "My profile and access" };
 
-export default async function Profile() {
+export default async function Profile({ searchParams }: { searchParams: Promise<{ reason?: string }> }) {
   const actor = await requireActor();
+  const { reason } = await searchParams;
   const dels = await all<{ domain: string; org_name: string; category_code: string | null; valid_to: string | null; approval_ref: string }>(
     getDb(),
     "SELECT d.*, o.name AS org_name FROM delegations d JOIN org_units o ON o.id = d.org_unit_id WHERE d.user_id = ? AND d.revoked_at IS NULL",
@@ -19,7 +23,16 @@ export default async function Profile() {
     <>
       <PageHeader eyebrow="My account" title={actor.displayName} description="Your identity, active role assignments, delegations and effective permissions as evaluated by the server right now." />
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card title="Identity"><DL items={[["Display name", actor.displayName], ["Position title", actor.positionTitle], ["Account type", "Synthetic demonstration account"], ["Authentication", "Demo role simulator (not ZPS authentication)"]]} /></Card>
+        <Card title="Identity"><DL items={[["Display name", actor.displayName], ["Position title", actor.positionTitle], ["Account type", "Synthetic demonstration account"], ["Authentication", "Username and password (scrypt)"]]} /></Card>
+        <Card title="Change password" subtitle={`At least ${PASSWORD_MIN_LENGTH} characters, using three of: lower-case, upper-case, digits, symbols`}>
+          {reason === "change-password" && <div className="mb-3"><Notice tone="warn" title="Password change required">You signed in with a temporary password. Choose a new password now.</Notice></div>}
+          <ActionForm action={changePasswordAction} resetOnSuccess>
+            <TextField label="Current password" name="current" type="password" required />
+            <TextField label="New password" name="next" type="password" required />
+            <TextField label="Confirm new password" name="confirm" type="password" required />
+            <Submit>Change password</Submit>
+          </ActionForm>
+        </Card>
         <Card title="Active role assignments" bodyClass="p-0">
           <Table head={["Role", "Organisational scope", "Valid to"]}>{actor.assignments.map((a) => <tr key={a.id}><td className={td}>{ROLE_BY_CODE[a.roleCode].name}</td><td className={td}>{a.orgUnitName}</td><td className={td}>{fmtDate(a.validTo)}</td></tr>)}</Table>
         </Card>

@@ -4,7 +4,7 @@ import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
 import { all, getDb, one } from "@/server/db/connection";
 import { verifyAuditChain } from "@/server/domain/audit";
-import { DEMO_AUTH_ENABLED } from "@/server/auth/session";
+import { SHOW_DEMO_ACCOUNTS } from "@/server/auth/session";
 import { AccessDenied, Badge, Card, DL, Notice, PageHeader, Stat, Table, td, fmtDateTime } from "@/components/ui";
 
 export const metadata = { title: "System health" };
@@ -34,7 +34,7 @@ export default async function Platform() {
       </div>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <Card title="Environment">
-          <DL items={[["Environment", "LOCAL SYNTHETIC PROTOTYPE"], ["Database engine", `MySQL / MariaDB ${server?.v ?? ""} (XAMPP)`], ["Synthetic demo sign-in", DEMO_AUTH_ENABLED ? "Enabled (must be disabled outside local review)" : "Disabled"], ["External integrations", "None (all disabled)"], ["Background jobs", "None — effective-dated org changes apply on request"], ["Error monitoring", "Server console only (no external telemetry)"]]} />
+          <DL items={[["Environment", "LOCAL SYNTHETIC PROTOTYPE"], ["Database engine", `MySQL / MariaDB ${server?.v ?? ""} (XAMPP)`], ["Authentication", SHOW_DEMO_ACCOUNTS ? "Password (scrypt) with lockout; synthetic account list shown (local review)" : "Password (scrypt) with lockout"], ["External integrations", "None (all disabled)"], ["Background jobs", "None — effective-dated org changes apply on request"], ["Error monitoring", "Server console only (no external telemetry)"]]} />
         </Card>
         <Card title="Schema migrations" bodyClass="p-0">
           <Table head={["Version", "Description", "Applied"]}>{migrations.map((m) => <tr key={m.version}><td className={td}>{m.version}</td><td className={td}>{m.name}</td><td className={td}>{fmtDateTime(m.applied_at)}</td></tr>)}</Table>

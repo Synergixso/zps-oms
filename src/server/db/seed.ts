@@ -158,10 +158,8 @@ export async function seedDatabase(db: DB) {
   await rebuildClosure(db);
 
   // Roles and permissions ---------------------------------------------------
-  for (const r of ROLES) {
-    await ins("INSERT INTO roles (code, name, description, category, requires_expiry) VALUES (?,?,?,?,?)", r.code, r.name, r.description, r.category, r.requiresExpiry ? 1 : 0);
-    for (const [perm, cov] of Object.entries(r.permissions)) await ins("INSERT INTO role_permissions (role_code, permission, coverage) VALUES (?,?,?)", r.code, perm, cov);
-  }
+  // Roles come from the code catalogue (bootstrap.syncCatalogue runs before any seed step).
+  if (!ROLES.length) throw new Error("Role catalogue is empty.");
 
   // Users, assignments, delegations -----------------------------------------
   for (const [id, username, name, title, grants] of SEED_USERS) {
@@ -198,7 +196,6 @@ export async function seedDatabase(db: DB) {
   await setting("request.sla_days", "10", "Days after submission before a request is flagged overdue (provisional).");
   await setting("integrations.external_notifications", "DISABLED", "Email/SMS/WhatsApp providers are disabled until approved (DEC-013).");
   await setting("environment.label", "LOCAL SYNTHETIC PROTOTYPE", "Displayed on every screen.");
-  await setting("assignment.minimum_tenure_days", "365", "Proposed minimum period at the same operational area before routine withdrawal or transfer. Requires institutional authorisation before production enforcement.");
 
   // Fleet -------------------------------------------------------------------
   const makes = [["Toyota", "Land Cruiser", "Utility (light)"], ["Toyota", "Hilux", "Utility (light)"], ["Nissan", "Navara", "Utility (light)"], ["Toyota", "Corolla", "Saloon"], ["Toyota", "Hiace", "Minibus"], ["Isuzu", "NPR", "Truck (general)"], ["Ford", "Ranger", "Utility (light)"], ["Mitsubishi", "Pajero", "Station wagon"]];

@@ -12,6 +12,7 @@ import { audit } from "./audit";
 import { ROLE_BY_CODE, type RoleCode } from "./catalogue";
 import { conflict, forbidden, invalid, newId, nextReference, notFound, notify, nowIso } from "./core";
 import { type Actor, HQ_ID, requirePermission } from "./policy";
+import { hashPassword, temporaryPassword } from "./auth";
 
 export interface UserRow {
   id: string;
@@ -52,7 +53,8 @@ export interface AssignmentRow {
 
 export async function userDetail(db: DB, actor: Actor, userId: string) {
   await requirePermission(db, actor, "user.view", HQ_ID);
-  const user = await one<UserRow>(db, "SELECT *, 0 AS active_roles FROM users WHERE id = ?", userId);
+  const user = await one<UserRow & { locked_until: string | null; must_change_password: number; last_login_at: string | null; has_password: number; failed_logins: number }>(db,
+    "SELECT id, username, display_name, position_title, status, status_reason, created_at, 0 AS active_roles, locked_until, must_change_password, last_login_at, failed_logins, (password_hash IS NOT NULL) AS has_password FROM users WHERE id = ?", userId);
   if (!user) throw notFound();
   const assignments = await all<AssignmentRow>(
     db,
@@ -143,7 +145,7 @@ export async function revokeAssignment(db: DB, actor: Actor, assignmentId: strin
 export const delegationSchema = z.object({
   userId: z.string().min(1),
   orgUnitId: z.string().min(1),
-  domain: z.enum(["ADMIN_REQUEST", "MAINTENANCE", "ORG_CHANGE"]),
+  domain: z.enum(["ADMIN_REQUEST", "MAINTENANCE", "ORG_CHANGE", "MANPOWER", "ASSIGNMENT"]),
   categoryCode: z.string().optional().or(z.literal("")),
   validTo: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
   approvalRef: z.string().trim().min(5, "Record the reference of the approved delegation instrument."),
@@ -267,4 +269,32 @@ export async function decideReviewItem(db: DB, actor: Actor, itemId: string, dec
       await audit(db, { actorId: actor.userId, action: "iam.review.complete", category: "IAM", entityType: "access_review", entityId: item.review_id });
     }
   });
+}
+
+/**
+ * Issues a one-time temporary password (shown once to the administrator, never stored in clear).
+ * The holder must change it at next sign-in. Existing sessions end and any lockout is cleared.
+ */
+export async function issueTemporaryPassword(db: DB, actor: Actor, userId: string): Promise<string> {
+  await requirePermission(db, actor, "user.provision", HQ_ID);
+  if (userId === actor.userId) throw forbidden("Use the change-password form on your profile for your own account.");
+  const u = await one<{ status: string }>(db, "SELECT status FROM users WHERE id = ?", userId);
+  if (!u) throw notFound();
+  if (u.status !== "ACTIVE") throw conflict("Temporary passwords can only be issued to active accounts.");
+  const pw = temporaryPassword();
+  await tx(db, async (db) => {
+    await run(db, "UPDATE users SET password_hash = ?, password_changed_at = ?, must_change_password = 1, failed_logins = 0, locked_until = NULL WHERE id = ?", await hashPassword(pw), nowIso(), userId);
+    await run(db, "DELETE FROM sessions WHERE user_id = ?", userId);
+    await audit(db, { actorId: actor.userId, action: "iam.user.password.issue", category: "SECURITY", entityType: "user", entityId: userId });
+  });
+  return pw;
+}
+
+/** Clears a sign-in lockout before it expires (security administration). */
+export async function unlockAccount(db: DB, actor: Actor, userId: string) {
+  await requirePermission(db, actor, "user.suspend", HQ_ID);
+  const u = await one<{ locked_until: string | null }>(db, "SELECT locked_until FROM users WHERE id = ?", userId);
+  if (!u) throw notFound();
+  await run(db, "UPDATE users SET failed_logins = 0, locked_until = NULL WHERE id = ?", userId);
+  await audit(db, { actorId: actor.userId, action: "iam.user.unlock", category: "SECURITY", entityType: "user", entityId: userId });
 }

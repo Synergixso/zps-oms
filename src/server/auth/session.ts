@@ -5,11 +5,12 @@ import { getDb } from "../db/connection";
 import { loadActor, type Actor } from "../domain/policy";
 import { resolveSession } from "../domain/sessions";
 import { applyDueChanges } from "../domain/org";
+import { applyDueAssignmentEvents } from "../domain/assignments";
 
 export const SESSION_COOKIE = "zps_session";
 
-/** Demo sign-in is a synthetic role simulator. It must be replaced by an approved IdP before any non-local use (DEC-005). */
-export const DEMO_AUTH_ENABLED = process.env.ZPS_DEMO_AUTH !== "off";
+/** Local review aid: list the synthetic accounts on the sign-in page. Off in production unless explicitly enabled. */
+export const SHOW_DEMO_ACCOUNTS = process.env.ZPS_SHOW_DEMO_ACCOUNTS === "1" || (process.env.NODE_ENV !== "production" && process.env.ZPS_SHOW_DEMO_ACCOUNTS !== "0");
 
 export async function getActor(): Promise<Actor | null> {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
@@ -17,12 +18,14 @@ export async function getActor(): Promise<Actor | null> {
   const userId = await resolveSession(db, token);
   if (!userId) return null;
   await applyDueChanges(db); // effective-dated org changes become live on their date
+  await applyDueAssignmentEvents(db); // commencements and review-due flags
   return await loadActor(db, userId);
 }
 
 export async function requireActor(): Promise<Actor> {
   const a = await getActor();
   if (!a) redirect("/login?reason=signin");
+  if (a.mustChangePassword && (await headers()).get("x-zps-path") !== "/app/profile") redirect("/app/profile?reason=change-password");
   return a;
 }
 

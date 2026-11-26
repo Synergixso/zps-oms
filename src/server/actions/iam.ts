@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getDb } from "../db/connection";
 import { requireActor } from "../auth/session";
-import { assignRole, decideReviewItem, grantDelegation, openReview, provisionUser, revokeAssignment, revokeDelegation, setUserStatus } from "../domain/iam";
+import { assignRole, decideReviewItem, grantDelegation, issueTemporaryPassword, openReview, provisionUser, revokeAssignment, revokeDelegation, setUserStatus, unlockAccount } from "../domain/iam";
 import { str, toState, type ActionState } from "./result";
 
 export async function provisionUserAction(_: ActionState, fd: FormData): Promise<ActionState> {
@@ -107,4 +107,26 @@ export async function decideReviewItemAction(_: ActionState, fd: FormData): Prom
   }
   revalidatePath("/app/admin/reviews", "layout");
   return { ok: true };
+}
+
+export async function issueTemporaryPasswordAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  const actor = await requireActor();
+  try {
+    const pw = await issueTemporaryPassword(getDb(), actor, str(fd, "userId"));
+    revalidatePath(`/app/admin/users/${str(fd, "userId")}`);
+    return { ok: true, message: `Temporary password (shown once — give it to the officer through the approved channel): ${pw}` };
+  } catch (e) {
+    return toState(e);
+  }
+}
+
+export async function unlockAccountAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  const actor = await requireActor();
+  try {
+    await unlockAccount(getDb(), actor, str(fd, "userId"));
+  } catch (e) {
+    return toState(e);
+  }
+  revalidatePath(`/app/admin/users/${str(fd, "userId")}`);
+  return { ok: true, message: "Sign-in lockout cleared." };
 }

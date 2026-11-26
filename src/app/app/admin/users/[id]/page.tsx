@@ -5,7 +5,7 @@ import { all, getDb } from "@/server/db/connection";
 import { REQUEST_CATEGORIES, ROLES, ROLE_BY_CODE } from "@/server/domain/catalogue";
 import { hasPermission } from "@/server/domain/policy";
 import { userDetail } from "@/server/domain/iam";
-import { assignRoleAction, grantDelegationAction, revokeAssignmentAction, revokeDelegationAction, setUserStatusAction } from "@/server/actions/iam";
+import { assignRoleAction, grantDelegationAction, issueTemporaryPasswordAction, revokeAssignmentAction, revokeDelegationAction, setUserStatusAction, unlockAccountAction } from "@/server/actions/iam";
 import { AccessDenied, Badge, Card, DL, Notice, PageHeader, Table, td, fmtDate } from "@/components/ui";
 import { ActionForm, Hidden, Select, Submit, TextField } from "@/components/forms";
 
@@ -28,7 +28,7 @@ export default async function UserDetail({ params }: { params: Promise<{ id: str
       {self && <div className="mb-4"><Notice tone="warn" title="This is your own account">You cannot change your own access, delegations or account status. Another authorised administrator must do this.</Notice></div>}
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
-          <Card title="Account"><DL items={[["Display name", user.display_name], ["Username", user.username], ["Position title (configurable)", user.position_title], ["Status", user.status], ["Status reason", user.status_reason ?? "—"], ["Created", fmtDate(user.created_at)]]} /></Card>
+          <Card title="Account"><DL items={[["Display name", user.display_name], ["Username", user.username], ["Position title (configurable)", user.position_title], ["Status", user.status], ["Status reason", user.status_reason ?? "—"], ["Created", fmtDate(user.created_at)], ["Password", user.has_password ? (user.must_change_password ? "Temporary — must change at next sign-in" : "Set") : "Not issued (cannot sign in)"], ["Last sign-in", fmtDate(user.last_login_at)], ["Sign-in lockout", user.locked_until && user.locked_until > now ? `Locked until ${new Date(user.locked_until).toLocaleTimeString("en-GB", { timeZone: "Africa/Lusaka" })}` : "Not locked"]]} /></Card>
           <Card title="Role assignments (role + organisational scope)" bodyClass="p-0">
             <Table head={["Role", "Organisation scope", "Valid from", "Valid to", "Justification", "State", ""]} empty="No role assignments — this account has no access.">
               {assignments.map((a) => (
@@ -89,13 +89,31 @@ export default async function UserDetail({ params }: { params: Promise<{ id: str
             <Card title="Record a delegation">
               <ActionForm action={grantDelegationAction} resetOnSuccess>
                 <Hidden name="userId" value={user.id} />
-                <Select label="Domain" name="domain" options={[{ value: "ADMIN_REQUEST", label: "Administrative requests" }, { value: "MAINTENANCE", label: "Fleet maintenance" }, { value: "ORG_CHANGE", label: "Organisational change (HQ only)" }]} />
+                <Select label="Domain" name="domain" options={[{ value: "ADMIN_REQUEST", label: "Administrative requests" }, { value: "MAINTENANCE", label: "Fleet maintenance" }, { value: "ORG_CHANGE", label: "Organisational change (HQ only)" }, { value: "MANPOWER", label: "Manpower requests and rosters" }, { value: "ASSIGNMENT", label: "Assignments, transfers, exceptions and renewals" }]} />
                 <Select label="Organisation" name="orgUnitId" required placeholder="Select organisation" options={orgs.map((o) => ({ value: o.id, label: o.name }))} />
                 <Select label="Category (requests only)" name="categoryCode" placeholder="All categories" options={REQUEST_CATEGORIES.map((c) => ({ value: c.code, label: c.name }))} />
                 <TextField label="Valid to" name="validTo" type="date" />
                 <TextField label="Delegation instrument reference" name="approvalRef" required />
                 <Submit>Record delegation</Submit>
               </ActionForm>
+            </Card>
+          )}
+          {!self && user.status === "ACTIVE" && (hasPermission(actor, "user.provision") || hasPermission(actor, "user.suspend")) && (
+            <Card title="Sign-in credentials" subtitle="Temporary passwords are shown once and must be changed at first sign-in">
+              <div className="space-y-3">
+                {hasPermission(actor, "user.provision") && (
+                  <ActionForm action={issueTemporaryPasswordAction}>
+                    <Hidden name="userId" value={user.id} />
+                    <Submit variant="secondary" confirm="Issue a new temporary password? The current password stops working and sessions end.">Issue temporary password</Submit>
+                  </ActionForm>
+                )}
+                {hasPermission(actor, "user.suspend") && user.locked_until && user.locked_until > now && (
+                  <ActionForm action={unlockAccountAction}>
+                    <Hidden name="userId" value={user.id} />
+                    <Submit variant="secondary">Clear sign-in lockout</Submit>
+                  </ActionForm>
+                )}
+              </div>
             </Card>
           )}
           {!self && user.status !== "DEACTIVATED" && (hasPermission(actor, "user.suspend") || hasPermission(actor, "user.deactivate")) && (

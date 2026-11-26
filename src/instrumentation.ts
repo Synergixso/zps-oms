@@ -10,7 +10,7 @@ export async function register() {
   try {
     const r = await bootstrap(url);
     if (r.applied.length) console.log(`[zps-oms] Applied migrations: ${r.applied.join(", ")}`);
-    if (r.seeded) console.log("[zps-oms] Loaded the synthetic demonstration dataset.");
+    if (r.seeded) console.log(`[zps-oms] Loaded synthetic seed steps: ${r.seedSteps.join(", ")}`);
   } catch (e) {
     console.error("[zps-oms] Database bootstrap failed:", e instanceof Error ? e.message : e);
   }

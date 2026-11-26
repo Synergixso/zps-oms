@@ -20,8 +20,9 @@ describe("database migrations", () => {
     const first = await bootstrap(url);
     expect(first.applied).toEqual(listMigrationFiles().map((m) => m.name));
     expect(first.seeded).toBe(true);
+    expect(first.seedSteps).toEqual(["001_base", "002_personnel_manpower"]);
     const second = await bootstrap(url);
-    expect(second).toEqual({ applied: [], seeded: false });
+    expect(second).toEqual({ applied: [], seeded: false, seedSteps: [] });
     const pool = createPool(url);
     try {
       const v = await one<{ c: number }>(pool, "SELECT COUNT(*) AS c FROM schema_migrations");
