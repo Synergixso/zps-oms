@@ -10,14 +10,14 @@ export async function registerAssetAction(_: ActionState, fd: FormData): Promise
   const actor = await requireActor();
   let id: string;
   try {
-    id = registerAsset(getDb(), actor, {
+    id = (await registerAsset(getDb(), actor, {
       assetTag: str(fd, "assetTag").toUpperCase(),
       categoryCode: str(fd, "categoryCode"),
       description: str(fd, "description"),
       condition: str(fd, "condition") as "NEW",
       custodyOrgId: str(fd, "custodyOrgId"),
       custodianRef: str(fd, "custodianRef"),
-    }).id;
+    })).id;
   } catch (e) {
     return toState(e);
   }
@@ -32,7 +32,7 @@ export async function assetWorkflowAction(_: ActionState, fd: FormData): Promise
   const action = str(fd, "action") as AssetAction;
   if (!OK.includes(action)) return { error: "Unknown action." };
   try {
-    assetAction(getDb(), actor, str(fd, "id"), action, {
+    await assetAction(getDb(), actor, str(fd, "id"), action, {
       custodianRef: str(fd, "custodianRef"),
       toOrgId: str(fd, "toOrgId"),
       condition: str(fd, "condition") || undefined,

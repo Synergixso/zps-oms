@@ -9,7 +9,7 @@ import type { DB } from "../db/connection";
 import { all, one, run, tx } from "../db/connection";
 import { audit } from "./audit";
 import { PROHIBITED_TERMS } from "./catalogue";
-import { conflict, forbidden, invalid, newId, nowIso } from "./core";
+import { conflict, forbidden, invalid, newId, nowIso, tenantOf } from "./core";
 import { notFound } from "./core";
 import { type Actor, can, requirePermission, scopeFor } from "./policy";
 
@@ -47,8 +47,8 @@ function assetScope(actor: Actor) {
   return scopeFor(actor, "asset.view");
 }
 
-export function listAssets(db: DB, actor: Actor, f: { q?: string; status?: string; category?: string } = {}): AssetRow[] {
-  requirePermission(db, actor, "asset.view");
+export async function listAssets(db: DB, actor: Actor, f: { q?: string; status?: string; category?: string } = {}): Promise<AssetRow[]> {
+  await requirePermission(db, actor, "asset.view");
   const s = assetScope(actor);
   const where: string[] = [];
   const params: unknown[] = [];
@@ -61,23 +61,23 @@ export function listAssets(db: DB, actor: Actor, f: { q?: string; status?: strin
   if (f.q) { where.push("(a.asset_tag LIKE ? OR a.description LIKE ?)"); params.push(`%${f.q}%`, `%${f.q}%`); }
   if (f.status) { where.push("a.status = ?"); params.push(f.status); }
   if (f.category) { where.push("a.category_code = ?"); params.push(f.category); }
-  return all<AssetRow>(db, `${A_SELECT} ${where.length ? "WHERE " + where.join(" AND ") : ""} ORDER BY a.asset_tag LIMIT 500`, ...params);
+  return await all<AssetRow>(db, `${A_SELECT} ${where.length ? "WHERE " + where.join(" AND ") : ""} ORDER BY a.asset_tag LIMIT 500`, ...params);
 }
 
-export function getAsset(db: DB, actor: Actor, id: string): AssetRow {
-  const a = one<AssetRow>(db, `${A_SELECT} WHERE a.id = ?`, id);
+export async function getAsset(db: DB, actor: Actor, id: string): Promise<AssetRow> {
+  const a = await one<AssetRow>(db, `${A_SELECT} WHERE a.id = ?`, id);
   if (!a || !(can(actor, "asset.view", a.custody_org_id) || (a.transfer_to_org_id && can(actor, "asset.view", a.transfer_to_org_id)))) {
-    audit(db, { actorId: actor.userId, action: "asset.view", outcome: "DENIED", category: "SECURITY", entityType: "asset", entityId: id });
+    await audit(db, { actorId: actor.userId, action: "asset.view", outcome: "DENIED", category: "SECURITY", entityType: "asset", entityId: id });
     throw notFound();
   }
   return a;
 }
 
-export function assetEvents(db: DB, actor: Actor, id: string) {
-  getAsset(db, actor, id);
-  return all<{ id: string; event_type: string; before_state: string | null; after_state: string | null; reference: string | null; note: string | null; created_at: string; actor_name: string }>(
+export async function assetEvents(db: DB, actor: Actor, id: string) {
+  await getAsset(db, actor, id);
+  return await all<{ id: string; event_type: string; before_state: string | null; after_state: string | null; reference: string | null; note: string | null; created_at: string; actor_name: string }>(
     db,
-    "SELECT e.*, u.display_name AS actor_name FROM asset_events e JOIN users u ON u.id = e.actor_id WHERE e.asset_id = ? ORDER BY e.created_at DESC, e.rowid DESC",
+    "SELECT e.*, u.display_name AS actor_name FROM asset_events e JOIN users u ON u.id = e.actor_id WHERE e.asset_id = ? ORDER BY e.created_at DESC, e.seq DESC",
     id,
   );
 }
@@ -101,24 +101,24 @@ function snapshot(a: AssetRow) {
   return JSON.stringify({ status: a.status, condition: a.condition, custody: a.custody_name, custodian: a.custodian_ref });
 }
 
-export function registerAsset(db: DB, actor: Actor, input: z.input<typeof assetSchema>): AssetRow {
+export async function registerAsset(db: DB, actor: Actor, input: z.input<typeof assetSchema>): Promise<AssetRow> {
   const d = assetSchema.parse(input);
-  requirePermission(db, actor, "asset.register", d.custodyOrgId);
-  const cat = one<{ allowed: number }>(db, "SELECT allowed FROM asset_categories WHERE code = ?", d.categoryCode);
+  await requirePermission(db, actor, "asset.register", d.custodyOrgId);
+  const cat = await one<{ allowed: number }>(db, "SELECT allowed FROM asset_categories WHERE code = ?", d.categoryCode);
   if (!cat || !cat.allowed) throw invalid("Category is not on the approved asset category allowlist.");
   screen(d.description);
   if (d.custodianRef) screen(d.custodianRef);
-  if (one(db, "SELECT id FROM assets WHERE asset_tag = ?", d.assetTag)) throw conflict("Asset tag already exists.");
+  if (await one(db, "SELECT id FROM assets WHERE asset_tag = ?", d.assetTag)) throw conflict("Asset tag already exists.");
   const id = newId("ast");
-  tx(db, () => {
+  await tx(db, async (db) => {
     const t = nowIso();
-    run(db, `INSERT INTO assets (id, asset_tag, category_code, description, condition, status, custody_org_id, custodian_ref, created_at, updated_at)
-             VALUES (?,?,?,?,?, 'IN_STORE', ?,?,?,?)`, id, d.assetTag, d.categoryCode, d.description, d.condition, d.custodyOrgId, d.custodianRef || null, t, t);
-    run(db, "INSERT INTO asset_events (id, asset_id, event_type, actor_id, after_state, created_at) VALUES (?,?,?,?,?,?)",
+    await run(db, `INSERT INTO assets (id, tenant_id, asset_tag, category_code, description, \`condition\`, status, custody_org_id, custodian_ref, created_at, updated_at)
+             VALUES (?,?,?,?,?,?, 'IN_STORE', ?,?,?,?)`, id, await tenantOf(db, d.custodyOrgId), d.assetTag, d.categoryCode, d.description, d.condition, d.custodyOrgId, d.custodianRef || null, t, t);
+    await run(db, "INSERT INTO asset_events (id, asset_id, event_type, actor_id, after_state, created_at) VALUES (?,?,?,?,?,?)",
       newId("ase"), id, "REGISTER", actor.userId, JSON.stringify({ status: "IN_STORE", condition: d.condition }), t);
-    audit(db, { actorId: actor.userId, action: "asset.register", category: "BUSINESS", entityType: "asset", entityId: id, orgUnitId: d.custodyOrgId, details: { tag: d.assetTag } });
+    await audit(db, { actorId: actor.userId, action: "asset.register", category: "BUSINESS", entityType: "asset", entityId: id, orgUnitId: d.custodyOrgId, details: { tag: d.assetTag } });
   });
-  return getAsset(db, actor, id);
+  return await getAsset(db, actor, id);
 }
 
 export type AssetAction = "ISSUE" | "RETURN" | "TRANSFER" | "RECEIVE" | "INSPECT" | "SEND_REPAIR" | "REPAIRED" | "DISPOSE";
@@ -131,8 +131,8 @@ export interface AssetActionInput {
   note?: string;
 }
 
-export function assetAction(db: DB, actor: Actor, id: string, action: AssetAction, input: AssetActionInput = {}): AssetRow {
-  const a = getAsset(db, actor, id);
+export async function assetAction(db: DB, actor: Actor, id: string, action: AssetAction, input: AssetActionInput = {}): Promise<AssetRow> {
+  const a = await getAsset(db, actor, id);
   const ent = { type: "asset", id };
   if (a.status === "DISPOSED") throw conflict("Disposed assets cannot be changed. Their history is preserved.");
   const note = input.note?.trim() || null;
@@ -141,23 +141,23 @@ export function assetAction(db: DB, actor: Actor, id: string, action: AssetActio
   let eventOrg = a.custody_org_id;
   switch (action) {
     case "ISSUE":
-      requirePermission(db, actor, "asset.custody", a.custody_org_id, ent);
+      await requirePermission(db, actor, "asset.custody", a.custody_org_id, ent);
       if (a.status !== "IN_STORE") throw conflict("Only assets in store can be issued.");
       if (!input.custodianRef?.trim()) throw invalid("Enter the receiving office/post reference.");
       screen(input.custodianRef);
       set = { status: "ISSUED", custodian_ref: input.custodianRef.trim() };
       break;
     case "RETURN":
-      requirePermission(db, actor, "asset.custody", a.custody_org_id, ent);
+      await requirePermission(db, actor, "asset.custody", a.custody_org_id, ent);
       if (a.status !== "ISSUED") throw conflict("Only issued assets can be returned.");
       set = { status: "IN_STORE", custodian_ref: null, condition: input.condition ?? a.condition };
       break;
     case "TRANSFER": {
-      requirePermission(db, actor, "asset.custody", a.custody_org_id, ent);
+      await requirePermission(db, actor, "asset.custody", a.custody_org_id, ent);
       if (a.status !== "IN_STORE") throw conflict("Return the asset to store before transferring it.");
       const to = input.toOrgId;
       if (!to || to === a.custody_org_id) throw invalid("Select a different receiving organisation.");
-      const org = one<{ status: string }>(db, "SELECT status FROM org_units WHERE id = ?", to);
+      const org = await one<{ status: string }>(db, "SELECT status FROM org_units WHERE id = ?", to);
       if (!org || org.status !== "ACTIVE") throw invalid("Receiving organisation is not active.");
       if (!input.reference?.trim()) throw invalid("A transfer authority reference is required.");
       set = { status: "IN_TRANSFER", transfer_to_org_id: to };
@@ -165,27 +165,27 @@ export function assetAction(db: DB, actor: Actor, id: string, action: AssetActio
     }
     case "RECEIVE":
       if (a.status !== "IN_TRANSFER" || !a.transfer_to_org_id) throw conflict("Asset is not in transfer.");
-      requirePermission(db, actor, "asset.custody", a.transfer_to_org_id, ent);
+      await requirePermission(db, actor, "asset.custody", a.transfer_to_org_id, ent);
       set = { status: "IN_STORE", custody_org_id: a.transfer_to_org_id, transfer_to_org_id: null, custodian_ref: null, condition: input.condition ?? a.condition };
       eventOrg = a.transfer_to_org_id;
       break;
     case "INSPECT":
-      requirePermission(db, actor, "asset.inspect", a.custody_org_id, ent);
+      await requirePermission(db, actor, "asset.inspect", a.custody_org_id, ent);
       if (!input.condition || !(CONDITIONS as readonly string[]).includes(input.condition)) throw invalid("Select the inspected condition.");
       set = { condition: input.condition, last_inspected_at: nowIso() };
       break;
     case "SEND_REPAIR":
-      requirePermission(db, actor, "asset.custody", a.custody_org_id, ent);
+      await requirePermission(db, actor, "asset.custody", a.custody_org_id, ent);
       if (a.status !== "IN_STORE") throw conflict("Only assets in store can be sent for repair.");
       set = { status: "UNDER_REPAIR" };
       break;
     case "REPAIRED":
-      requirePermission(db, actor, "asset.custody", a.custody_org_id, ent);
+      await requirePermission(db, actor, "asset.custody", a.custody_org_id, ent);
       if (a.status !== "UNDER_REPAIR") throw conflict("Asset is not under repair.");
       set = { status: "IN_STORE", condition: input.condition ?? a.condition };
       break;
     case "DISPOSE":
-      requirePermission(db, actor, "asset.dispose", a.custody_org_id, ent);
+      await requirePermission(db, actor, "asset.dispose", a.custody_org_id, ent);
       if (a.status !== "IN_STORE") throw conflict("Only assets in store can be disposed of.");
       if (!input.reference?.trim()) throw invalid("A disposal authority reference is required.");
       set = { status: "DISPOSED" };
@@ -193,16 +193,16 @@ export function assetAction(db: DB, actor: Actor, id: string, action: AssetActio
     default:
       throw forbidden();
   }
-  tx(db, () => {
+  await tx(db, async (db) => {
     const t = nowIso();
     const cols = Object.keys(set);
-    run(db, `UPDATE assets SET ${cols.map((c) => `${c} = ?`).join(", ")}, updated_at = ? WHERE id = ?`, ...cols.map((c) => set[c]), t, id);
-    const after = one<AssetRow>(db, `${A_SELECT} WHERE a.id = ?`, id)!;
-    run(db, "INSERT INTO asset_events (id, asset_id, event_type, actor_id, before_state, after_state, reference, note, created_at) VALUES (?,?,?,?,?,?,?,?,?)",
+    await run(db, `UPDATE assets SET ${cols.map((c) => `\`${c}\` = ?`).join(", ")}, updated_at = ? WHERE id = ?`, ...cols.map((c) => set[c]), t, id);
+    const after = (await one<AssetRow>(db, `${A_SELECT} WHERE a.id = ?`, id))!;
+    await run(db, "INSERT INTO asset_events (id, asset_id, event_type, actor_id, before_state, after_state, reference, note, created_at) VALUES (?,?,?,?,?,?,?,?,?)",
       newId("ase"), id, action, actor.userId, snapshot(a), snapshot(after), input.reference?.trim() || null, note, t);
-    audit(db, { actorId: actor.userId, action: `asset.${action.toLowerCase()}`, category: "BUSINESS", entityType: "asset", entityId: id, orgUnitId: eventOrg, details: { tag: a.asset_tag, from: a.status, to: after.status } });
+    await audit(db, { actorId: actor.userId, action: `asset.${action.toLowerCase()}`, category: "BUSINESS", entityType: "asset", entityId: id, orgUnitId: eventOrg, details: { tag: a.asset_tag, from: a.status, to: after.status } });
   });
-  return one<AssetRow>(db, `${A_SELECT} WHERE a.id = ?`, id)!;
+  return (await one<AssetRow>(db, `${A_SELECT} WHERE a.id = ?`, id))!;
 }
 
 export function assetActionsFor(actor: Actor, a: AssetRow): AssetAction[] {

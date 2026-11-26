@@ -29,14 +29,16 @@ function Rows({ rows }: { rows: RequestRow[] }) {
 
 export default async function Approvals() {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "request.view", "request.assign")) return <AccessDenied what="approval queues" />;
+  if (!await pageAllowed(actor, "request.view", "request.assign")) return <AccessDenied what="approval queues" />;
   const db = getDb();
-  const inbox = approvalInbox(db, actor);
-  const queue = assignmentQueue(db, actor);
-  const myReturned = hasPermission(actor, "request.view") ? listRequests(db, actor, { status: "RETURNED" }).filter((r) => r.created_by === actor.userId) : [];
-  const overdue = hasPermission(actor, "request.view") ? overdueRequests(listRequests(db, actor)) : [];
-  const maint = hasPermission(actor, "maintenance.view") ? listMaintenance(db, actor).filter((m) => maintenanceActions(db, actor, m).length > 0) : [];
-  const orgPending = hasPermission(actor, "org.view") ? listChanges(db, actor).filter((c) => c.status === "SUBMITTED") : [];
+  const inbox = await approvalInbox(db, actor);
+  const queue = await assignmentQueue(db, actor);
+  const myReturned = hasPermission(actor, "request.view") ? (await listRequests(db, actor, { status: "RETURNED" })).filter((r) => r.created_by === actor.userId) : [];
+  const overdue = hasPermission(actor, "request.view") ? overdueRequests(await listRequests(db, actor)) : [];
+  const maintAll = hasPermission(actor, "maintenance.view") ? await listMaintenance(db, actor) : [];
+  const actionable = await Promise.all(maintAll.map(async (m) => ((await maintenanceActions(db, actor, m)).length > 0 ? m : null)));
+  const maint = actionable.filter((m): m is NonNullable<typeof m> => m !== null);
+  const orgPending = hasPermission(actor, "org.view") ? (await listChanges(db, actor)).filter((c) => c.status === "SUBMITTED") : [];
   return (
     <>
       <PageHeader eyebrow="Work queues" title="Approvals & queues" description="Items awaiting your decision or action. Approval items appear only where you hold a recorded delegation for that organisation, category and level." />

@@ -7,7 +7,7 @@ export const metadata = { title: "Roles & permissions" };
 
 export default async function RolesPage() {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "user.view", "audit.view", "platform.view")) return <AccessDenied what="the permission catalogue" />;
+  if (!await pageAllowed(actor, "user.view", "audit.view", "platform.view")) return <AccessDenied what="the permission catalogue" />;
   const perms = Object.keys(PERMISSIONS) as Permission[];
   return (
     <>

@@ -25,16 +25,38 @@ export const notFound = (msg = "Record not found or not within your authorised s
 export const invalid = (msg: string) => new DomainError("INVALID", msg);
 export const conflict = (msg: string) => new DomainError("CONFLICT", msg);
 
+/** Calendar arithmetic on YYYY-MM-DD dates in UTC (replaces SQLite date(?, '+N days')). */
+export function addDays(date: string, days: number): string {
+  const d = new Date(`${date.slice(0, 10)}T00:00:00.000Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+/** Adds calendar months, clamping to the last day of the target month (e.g. 31 Aug + 6 months = 28/29 Feb). */
+export function addMonths(date: string, months: number): string {
+  const [y, m, day] = date.slice(0, 10).split("-").map(Number);
+  const target = new Date(Date.UTC(y, m - 1 + months, 1));
+  const last = new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0)).getUTCDate();
+  target.setUTCDate(Math.min(day, last));
+  return target.toISOString().slice(0, 10);
+}
+
+/** The tenant that owns an organisation unit (records inherit their organisation's tenant). */
+export async function tenantOf(db: DB, orgUnitId: string): Promise<string> {
+  const row = await one<{ tenant_id: string }>(db, "SELECT tenant_id FROM org_units WHERE id = ?", orgUnitId);
+  if (!row) throw invalid("Organisation not found.");
+  return row.tenant_id;
+}
+
 /** Generates a sequential human reference such as REQ-2026-000014. */
-export function nextReference(db: DB, prefix: string, table: string): string {
+export async function nextReference(db: DB, prefix: string, table: string): Promise<string> {
   const year = nowIso().slice(0, 4);
   const like = `${prefix}-${year}-%`;
-  const row = one<{ c: number }>(db, `SELECT COUNT(*) AS c FROM ${table} WHERE reference LIKE ?`, like);
+  const row = await one<{ c: number }>(db, `SELECT COUNT(*) AS c FROM ${table} WHERE reference LIKE ?`, like);
   return `${prefix}-${year}-${String((row?.c ?? 0) + 1).padStart(6, "0")}`;
 }
 
-export function notify(db: DB, userId: string, title: string, body: string, link?: string) {
-  run(
+export async function notify(db: DB, userId: string, title: string, body: string, link?: string) {
+  await run(
     db,
     "INSERT INTO notifications (id, user_id, title, body, link, created_at) VALUES (?,?,?,?,?,?)",
     newId("ntf"),

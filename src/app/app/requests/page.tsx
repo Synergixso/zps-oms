@@ -11,9 +11,9 @@ export const metadata = { title: "Administrative requests" };
 
 export default async function RequestsPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "request.view")) return <AccessDenied what="administrative requests" />;
+  if (!await pageAllowed(actor, "request.view")) return <AccessDenied what="administrative requests" />;
   const sp = await searchParams;
-  const rows = listRequests(getDb(), actor, { status: sp.status, category: sp.category, q: sp.q?.slice(0, 60) });
+  const rows = await listRequests(getDb(), actor, { status: sp.status, category: sp.category, q: sp.q?.slice(0, 60) });
   const today = new Date().toISOString().slice(0, 10);
   const catName = Object.fromEntries(REQUEST_CATEGORIES.map((c) => [c.code, c.name]));
   return (

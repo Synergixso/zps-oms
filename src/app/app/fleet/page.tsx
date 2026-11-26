@@ -10,9 +10,9 @@ export const metadata = { title: "Fleet register" };
 
 export default async function FleetPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "fleet.view")) return <AccessDenied what="the fleet register" />;
+  if (!await pageAllowed(actor, "fleet.view")) return <AccessDenied what="the fleet register" />;
   const sp = await searchParams;
-  const rows = listVehicles(getDb(), actor, { q: sp.q?.slice(0, 40), status: sp.status, due: sp.due });
+  const rows = await listVehicles(getDb(), actor, { q: sp.q?.slice(0, 40), status: sp.status, due: sp.due });
   const today = new Date().toISOString().slice(0, 10);
   return (
     <>

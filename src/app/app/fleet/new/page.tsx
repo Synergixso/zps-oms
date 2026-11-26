@@ -9,7 +9,7 @@ export const metadata = { title: "Add vehicle record" };
 
 export default async function NewVehicle() {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "fleet.manage")) return <AccessDenied what="fleet record creation" />;
+  if (!await pageAllowed(actor, "fleet.manage")) return <AccessDenied what="fleet record creation" />;
   const units = scopeFor(actor, "fleet.manage").units;
   const orgs = [...new Map(actor.assignments.filter((a) => units.includes(a.orgUnitId)).map((a) => [a.orgUnitId, { value: a.orgUnitId, label: a.orgUnitName }])).values()];
   return (

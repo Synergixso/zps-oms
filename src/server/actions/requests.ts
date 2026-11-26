@@ -10,7 +10,7 @@ export async function createRequestAction(_: ActionState, fd: FormData): Promise
   const actor = await requireActor();
   let id: string;
   try {
-    const r = createDraft(getDb(), actor, {
+    const r = await createDraft(getDb(), actor, {
       categoryCode: str(fd, "categoryCode"),
       title: str(fd, "title"),
       details: str(fd, "details"),
@@ -18,7 +18,7 @@ export async function createRequestAction(_: ActionState, fd: FormData): Promise
       originOrgId: str(fd, "originOrgId") || undefined,
     });
     id = r.id;
-    if (str(fd, "intent") === "submit") performAction(getDb(), actor, id, "SUBMIT");
+    if (str(fd, "intent") === "submit") await performAction(getDb(), actor, id, "SUBMIT");
   } catch (e) {
     return toState(e);
   }
@@ -30,7 +30,7 @@ export async function updateRequestAction(_: ActionState, fd: FormData): Promise
   const actor = await requireActor();
   const id = str(fd, "id");
   try {
-    updateDraft(getDb(), actor, id, { categoryCode: str(fd, "categoryCode"), title: str(fd, "title"), details: str(fd, "details"), priority: (str(fd, "priority") || "ROUTINE") as "ROUTINE" });
+    await updateDraft(getDb(), actor, id, { categoryCode: str(fd, "categoryCode"), title: str(fd, "title"), details: str(fd, "details"), priority: (str(fd, "priority") || "ROUTINE") as "ROUTINE" });
   } catch (e) {
     return toState(e);
   }
@@ -46,7 +46,7 @@ export async function requestWorkflowAction(_: ActionState, fd: FormData): Promi
   const action = str(fd, "action") as RequestAction;
   if (!ALLOWED.includes(action)) return { error: "Unknown action." };
   try {
-    performAction(getDb(), actor, id, action, {
+    await performAction(getDb(), actor, id, action, {
       reason: str(fd, "reason"),
       assigneeId: str(fd, "assigneeId") || undefined,
       expectedVersion: Number(str(fd, "version")) || undefined,

@@ -11,12 +11,12 @@ export const metadata = { title: "Audit explorer" };
 
 export default async function AuditPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "audit.view")) return <AccessDenied what="the audit explorer" />;
+  if (!await pageAllowed(actor, "audit.view")) return <AccessDenied what="the audit explorer" />;
   const sp = await searchParams;
   const db = getDb();
   const f = { q: sp.q?.slice(0, 60), category: sp.category, outcome: sp.outcome, from: sp.from, to: sp.to };
-  const rows = searchAudit(db, actor, f);
-  const chain = verifyAuditChain(db);
+  const rows = await searchAudit(db, actor, f);
+  const chain = await verifyAuditChain(db);
   const qs = new URLSearchParams(Object.entries(f).filter(([, v]) => v) as [string, string][]).toString();
   return (
     <>

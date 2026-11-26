@@ -8,7 +8,7 @@ import { str, toState, type ActionState } from "./result";
 /** Public, unauthenticated: the domain layer validates, rate-limits and audits. */
 export async function submitContactAction(_: ActionState, fd: FormData): Promise<ActionState> {
   try {
-    const { reference } = submitContactMessage(getDb(), {
+    const { reference } = await submitContactMessage(getDb(), {
       fullName: str(fd, "fullName"),
       email: str(fd, "email"),
       phone: str(fd, "phone"),
@@ -25,7 +25,7 @@ export async function submitContactAction(_: ActionState, fd: FormData): Promise
 export async function markContactHandledAction(_: ActionState, fd: FormData): Promise<ActionState> {
   const actor = await requireActor();
   try {
-    markContactHandled(getDb(), actor, str(fd, "id"), str(fd, "note"));
+    await markContactHandled(getDb(), actor, str(fd, "id"), str(fd, "note"));
   } catch (e) {
     return toState(e);
   }

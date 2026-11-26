@@ -92,6 +92,7 @@ if (process.argv[1] && process.argv[1].replace(/\\/g, "/").endsWith("src/server/
   }
   (async () => {
     if (process.argv.includes("--reset")) {
+      if (!process.argv.includes("--confirm-synthetic")) throw new Error("--reset destroys the database. Re-run with --confirm-synthetic, only for a local SYNTHETIC database you have backed up or do not need.");
       await recreateDatabase(url);
       console.log("Database recreated.");
     }

@@ -8,7 +8,7 @@ export const metadata = { title: "My profile and access" };
 
 export default async function Profile() {
   const actor = await requireActor();
-  const dels = all<{ domain: string; org_name: string; category_code: string | null; valid_to: string | null; approval_ref: string }>(
+  const dels = await all<{ domain: string; org_name: string; category_code: string | null; valid_to: string | null; approval_ref: string }>(
     getDb(),
     "SELECT d.*, o.name AS org_name FROM delegations d JOIN org_units o ON o.id = d.org_unit_id WHERE d.user_id = ? AND d.revoked_at IS NULL",
     actor.userId,

@@ -9,10 +9,10 @@ export const metadata = { title: "Organisation directory" };
 
 export default async function OrgDirectory({ searchParams }: { searchParams: Promise<{ asAt?: string; inactive?: string }> }) {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "org.view")) return <AccessDenied what="the organisation directory" />;
+  if (!await pageAllowed(actor, "org.view")) return <AccessDenied what="the organisation directory" />;
   const sp = await searchParams;
   const asAt = sp.asAt && /^\d{4}-\d{2}-\d{2}$/.test(sp.asAt) ? sp.asAt : undefined;
-  const units = listOrgUnits(getDb(), actor, { asAt, includeInactive: sp.inactive === "1" });
+  const units = await listOrgUnits(getDb(), actor, { asAt, includeInactive: sp.inactive === "1" });
   const groups: Array<[string, typeof units]> = [
     ["Service Headquarters", units.filter((u) => u.unit_type === "SERVICE_HQ" || u.unit_type === "HQ_OFFICE")],
     ["Provincial Police Divisions", units.filter((u) => u.unit_type === "PROVINCIAL_DIVISION")],

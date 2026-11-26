@@ -27,14 +27,14 @@ export default async function RequestDetail({ params }: { params: Promise<{ id: 
   const { id } = await params;
   const actor = await requireActor();
   const db = getDb();
-  const r = loadOr404(() => getRequest(db, actor, id));
-  const history = requestHistory(db, actor, id);
-  const actions = availableActions(db, actor, r);
+  const r = await loadOr404(() => getRequest(db, actor, id));
+  const history = await requestHistory(db, actor, id);
+  const actions = await availableActions(db, actor, r);
   const steps = stepsOf(r);
   const cat = REQUEST_CATEGORIES.find((c) => c.code === r.category_code);
   const editable = ["DRAFT", "RETURNED"].includes(r.status) && r.created_by === actor.userId;
   const processors = actions.includes("ASSIGN")
-    ? all<{ id: string; display_name: string }>(
+    ? await all<{ id: string; display_name: string }>(
         db,
         `SELECT DISTINCT u.id, u.display_name FROM role_assignments a JOIN users u ON u.id = a.user_id
           WHERE a.org_unit_id = ? AND a.revoked_at IS NULL AND u.status='ACTIVE' AND a.role_code IN ('PROVINCIAL_COMMANDER','FORMATION_COMMANDER','DIVISION_STAFF_OPS','FORMATION_ADMIN_OFFICER','HQ_OPS_COORDINATOR','DIG_OPS_EXECUTIVE')

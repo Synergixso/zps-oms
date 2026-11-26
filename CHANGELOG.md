@@ -2,6 +2,22 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.2.0] — 2026-11-26 — MySQL data layer and organisational hierarchy (Phase 3, stages 3–4)
+### Changed
+- Data layer moved from SQLite (`node:sqlite`) to MySQL/MariaDB (XAMPP) via `mysql2` with raw parameterised SQL (DEC-030). Every domain function, page and server action is now async.
+- Versioned SQL migrations (`db/migrations/001_core_schema.sql`) with checksum-verified `schema_migrations`; the server migrates on start and seeds the synthetic dataset only when the database has no users (guarded by a MySQL named lock).
+- Nested transactions use savepoints, so a failed inner operation rolls back only its own writes.
+- SQLite date arithmetic replaced by application helpers (`addDays`, `addMonths`); `julianday` ageing and approval-time figures computed in code; history ordering uses explicit `seq` columns.
+- `npm run db:reset` now drops and recreates the local `zps_oms_*` database and requires `--confirm-synthetic`; it refuses any other database name.
+- Route-audit script reads the MySQL database. Access matrix unchanged from the SQLite build (20 users × 40 routes, 0 server errors).
+### Added
+- Tenants (national, ten provincial, Mobile Unit formation); every organisation unit, vehicle, asset, administrative and maintenance request records its tenant.
+- Organisation types District Command, Police Station, Police Post, Department, Company, Detachment, Platoon and Section, with configurable parent/child type rules and a synthetic sample hierarchy (Kitwe, Mufulira and Lusaka Central commands; Mobile Unit companies down to sections).
+- `org_unit_closure` ancestry table, rebuilt after approved structural changes; re-parenting a unit under its own subordinate is refused.
+- Tests run against `zps_oms_test` (recreated once per run, each test in a rolled-back transaction): 42 tests, including hierarchy/tenant consistency, migration idempotency, checksum drift and reset safeguards.
+### Removed
+- `src/server/db/schema.ts` (SQLite schema) and `scripts/reset-db.mjs`.
+
 ## [0.1.14] — 2026-11-26 — Kamfinsa technical structure
 ### Changed
 - Technical Team page, Kamfinsa Mobile Unit structure: "Engineering & Mechanical Services (MTU)" and "Information Technology & Communications (Technical Services Section and Signals Sections)".

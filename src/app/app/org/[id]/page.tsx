@@ -10,10 +10,10 @@ export const metadata = { title: "Organisation" };
 export default async function OrgDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const actor = await requireActor();
-  if (!pageAllowed(actor, "org.view")) return <AccessDenied />;
+  if (!await pageAllowed(actor, "org.view")) return <AccessDenied />;
   const db = getDb();
-  const u = loadOr404(() => getOrgUnit(db, actor, id));
-  const hist = relationshipHistory(db, actor, id);
+  const u = await loadOr404(() => getOrgUnit(db, actor, id));
+  const hist = await relationshipHistory(db, actor, id);
   return (
     <>
       <p className="mb-2 text-sm"><Link href="/app/org" className="text-zp-blue hover:underline">← Organisation directory</Link></p>

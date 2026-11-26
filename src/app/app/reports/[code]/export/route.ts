@@ -18,7 +18,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cod
   const fd = await req.formData();
   const fields = fd.getAll("fields").filter((f): f is string => typeof f === "string");
   try {
-    const { filename, csv } = exportReport(getDb(), actor, code, fields);
+    const { filename, csv } = await exportReport(getDb(), actor, code, fields);
     return new NextResponse(csv, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",

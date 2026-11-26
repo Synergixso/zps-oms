@@ -12,7 +12,7 @@ export default async function ReportView({ params, searchParams }: { params: Pro
   const { code } = await params;
   const { error } = await searchParams;
   const actor = await requireActor();
-  const { def, rows } = loadOr404(() => runReport(getDb(), actor, code));
+  const { def, rows } = await loadOr404(() => runReport(getDb(), actor, code));
   const canExport = hasPermission(actor, "report.export");
   return (
     <>

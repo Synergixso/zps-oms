@@ -1,6 +1,6 @@
 # Route audit evidence
 
-Generated 2026-11-25T22:09:11.599Z against http://localhost:3100 with the synthetic dataset. ✓ = rendered, ✕ = access-denied page (audited), 404 = record outside scope (existence not disclosed), → = redirect, ERR = server error.
+Generated 2026-11-25T23:49:45.014Z against http://localhost:3100 with the synthetic dataset. ✓ = rendered, ✕ = access-denied page (audited), 404 = record outside scope (existence not disclosed), → = redirect, ERR = server error.
 
 **Server errors: 0**
 
@@ -10,10 +10,10 @@ Generated 2026-11-25T22:09:11.599Z against http://localhost:3100 with the synthe
 - R2: `/app/approvals`
 - R3: `/app/requests`
 - R4: `/app/requests/new`
-- R5: `/app/requests/req_5005…`
-- R6: `/app/requests/req_7b1b…`
-- R7: `/app/requests/req_124e…`
-- R8: `/app/requests/req_65b2…`
+- R5: `/app/requests/req_1752…`
+- R6: `/app/requests/req_2cb2…`
+- R7: `/app/requests/req_5a3b…`
+- R8: `/app/requests/req_da7e…`
 - R9: `/app/fleet`
 - R10: `/app/fleet/new`
 - R11: `/app/fleet/veh_1`
@@ -21,7 +21,7 @@ Generated 2026-11-25T22:09:11.599Z against http://localhost:3100 with the synthe
 - R13: `/app/fleet/veh_15`
 - R14: `/app/fleet/maintenance`
 - R15: `/app/fleet/maintenance/new`
-- R16: `/app/fleet/maintenance/mnt_9487…`
+- R16: `/app/fleet/maintenance/mnt_040e…`
 - R17: `/app/assets`
 - R18: `/app/assets/new`
 - R19: `/app/assets/ast_1`

@@ -11,8 +11,8 @@ export const metadata = { title: "Access reviews" };
 
 export default async function Reviews() {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "accessreview.manage")) return <AccessDenied what="access reviews" />;
-  const reviews = listReviews(getDb(), actor);
+  if (!await pageAllowed(actor, "accessreview.manage")) return <AccessDenied what="access reviews" />;
+  const reviews = await listReviews(getDb(), actor);
   return (
     <>
       <PageHeader eyebrow="M02 · Access recertification" title="Access reviews" description="Periodic recertification of every active role assignment. Reviewers cannot certify their own access. Revocations take effect immediately." />

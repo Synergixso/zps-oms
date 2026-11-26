@@ -10,7 +10,7 @@ export async function provisionUserAction(_: ActionState, fd: FormData): Promise
   const actor = await requireActor();
   let id: string;
   try {
-    id = provisionUser(getDb(), actor, { username: str(fd, "username").toLowerCase(), displayName: str(fd, "displayName"), positionTitle: str(fd, "positionTitle") });
+    id = await provisionUser(getDb(), actor, { username: str(fd, "username").toLowerCase(), displayName: str(fd, "displayName"), positionTitle: str(fd, "positionTitle") });
   } catch (e) {
     return toState(e);
   }
@@ -20,7 +20,7 @@ export async function provisionUserAction(_: ActionState, fd: FormData): Promise
 export async function assignRoleAction(_: ActionState, fd: FormData): Promise<ActionState> {
   const actor = await requireActor();
   try {
-    assignRole(getDb(), actor, {
+    await assignRole(getDb(), actor, {
       userId: str(fd, "userId"),
       roleCode: str(fd, "roleCode"),
       orgUnitId: str(fd, "orgUnitId"),
@@ -37,7 +37,7 @@ export async function assignRoleAction(_: ActionState, fd: FormData): Promise<Ac
 export async function revokeAssignmentAction(_: ActionState, fd: FormData): Promise<ActionState> {
   const actor = await requireActor();
   try {
-    revokeAssignment(getDb(), actor, str(fd, "assignmentId"), str(fd, "reason"));
+    await revokeAssignment(getDb(), actor, str(fd, "assignmentId"), str(fd, "reason"));
   } catch (e) {
     return toState(e);
   }
@@ -48,7 +48,7 @@ export async function revokeAssignmentAction(_: ActionState, fd: FormData): Prom
 export async function grantDelegationAction(_: ActionState, fd: FormData): Promise<ActionState> {
   const actor = await requireActor();
   try {
-    grantDelegation(getDb(), actor, {
+    await grantDelegation(getDb(), actor, {
       userId: str(fd, "userId"),
       orgUnitId: str(fd, "orgUnitId"),
       domain: str(fd, "domain") as "ADMIN_REQUEST",
@@ -66,7 +66,7 @@ export async function grantDelegationAction(_: ActionState, fd: FormData): Promi
 export async function revokeDelegationAction(_: ActionState, fd: FormData): Promise<ActionState> {
   const actor = await requireActor();
   try {
-    revokeDelegation(getDb(), actor, str(fd, "delegationId"));
+    await revokeDelegation(getDb(), actor, str(fd, "delegationId"));
   } catch (e) {
     return toState(e);
   }
@@ -79,7 +79,7 @@ export async function setUserStatusAction(_: ActionState, fd: FormData): Promise
   const status = str(fd, "status");
   if (!["ACTIVE", "SUSPENDED", "DEACTIVATED"].includes(status)) return { error: "Invalid status." };
   try {
-    setUserStatus(getDb(), actor, str(fd, "userId"), status as "ACTIVE", str(fd, "reason"));
+    await setUserStatus(getDb(), actor, str(fd, "userId"), status as "ACTIVE", str(fd, "reason"));
   } catch (e) {
     return toState(e);
   }
@@ -91,7 +91,7 @@ export async function openReviewAction(_: ActionState, fd: FormData): Promise<Ac
   const actor = await requireActor();
   let id: string;
   try {
-    id = openReview(getDb(), actor, str(fd, "title"));
+    id = await openReview(getDb(), actor, str(fd, "title"));
   } catch (e) {
     return toState(e);
   }
@@ -101,7 +101,7 @@ export async function openReviewAction(_: ActionState, fd: FormData): Promise<Ac
 export async function decideReviewItemAction(_: ActionState, fd: FormData): Promise<ActionState> {
   const actor = await requireActor();
   try {
-    decideReviewItem(getDb(), actor, str(fd, "itemId"), str(fd, "decision") === "REVOKE" ? "REVOKE" : "RETAIN", str(fd, "note"));
+    await decideReviewItem(getDb(), actor, str(fd, "itemId"), str(fd, "decision") === "REVOKE" ? "REVOKE" : "RETAIN", str(fd, "note"));
   } catch (e) {
     return toState(e);
   }

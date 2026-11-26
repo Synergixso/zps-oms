@@ -58,10 +58,26 @@ export async function run(db: DB, sql: string, ...params: unknown[]): Promise<{ 
   return { changes: h.affectedRows, insertId: h.insertId };
 }
 
-/** Runs `fn` in a transaction; rolls back on any thrown error. */
+let savepointSeq = 0;
+
+/**
+ * Runs `fn` in a transaction; rolls back on any thrown error.
+ * Inside an outer transaction it uses a SAVEPOINT, so a failure undoes only this call's writes.
+ */
 export async function tx<T>(db: DB, fn: (db: PoolConnection) => Promise<T>): Promise<T> {
   const maybe = db as TxConnection;
-  if (maybe[TX]) return fn(maybe); // join the outer transaction
+  if (maybe[TX]) {
+    const sp = `sp_${++savepointSeq}`;
+    await maybe.query(`SAVEPOINT ${sp}`);
+    try {
+      const out = await fn(maybe);
+      await maybe.query(`RELEASE SAVEPOINT ${sp}`);
+      return out;
+    } catch (e) {
+      await maybe.query(`ROLLBACK TO SAVEPOINT ${sp}`);
+      throw e;
+    }
+  }
   const conn = (await (db as Pool).getConnection()) as TxConnection;
   try {
     await conn.beginTransaction();
@@ -74,6 +90,23 @@ export async function tx<T>(db: DB, fn: (db: PoolConnection) => Promise<T>): Pro
     throw e;
   } finally {
     conn[TX] = false;
+    conn.release();
+  }
+}
+
+/**
+ * Runs `fn` on one connection inside a transaction that is ALWAYS rolled back.
+ * Used by the test suite for per-test isolation against a seeded test database.
+ */
+export async function withRollback<T>(pool: Pool, fn: (db: PoolConnection) => Promise<T>): Promise<T> {
+  const conn = (await pool.getConnection()) as TxConnection;
+  try {
+    await conn.beginTransaction();
+    conn[TX] = true;
+    return await fn(conn);
+  } finally {
+    conn[TX] = false;
+    await conn.rollback();
     conn.release();
   }
 }

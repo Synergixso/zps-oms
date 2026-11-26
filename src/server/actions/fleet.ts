@@ -10,7 +10,7 @@ export async function createVehicleAction(_: ActionState, fd: FormData): Promise
   const actor = await requireActor();
   let id: string;
   try {
-    id = createVehicle(getDb(), actor, {
+    id = (await createVehicle(getDb(), actor, {
       fleetRef: str(fd, "fleetRef").toUpperCase(),
       registrationRef: str(fd, "registrationRef").toUpperCase(),
       make: str(fd, "make"),
@@ -20,7 +20,7 @@ export async function createVehicleAction(_: ActionState, fd: FormData): Promise
       nextServiceDue: str(fd, "nextServiceDue"),
       licenceExpiry: str(fd, "licenceExpiry"),
       insuranceExpiry: str(fd, "insuranceExpiry"),
-    }).id;
+    })).id;
   } catch (e) {
     return toState(e);
   }
@@ -32,7 +32,7 @@ export async function updateVehicleAction(_: ActionState, fd: FormData): Promise
   const actor = await requireActor();
   const id = str(fd, "id");
   try {
-    updateVehicleAdmin(getDb(), actor, id, {
+    await updateVehicleAdmin(getDb(), actor, id, {
       status: str(fd, "status") || undefined,
       nextServiceDue: str(fd, "nextServiceDue"),
       licenceExpiry: str(fd, "licenceExpiry"),
@@ -49,7 +49,7 @@ export async function recordServiceAction(_: ActionState, fd: FormData): Promise
   const actor = await requireActor();
   const id = str(fd, "vehicleId");
   try {
-    recordService(getDb(), actor, {
+    await recordService(getDb(), actor, {
       vehicleId: id,
       serviceDate: str(fd, "serviceDate"),
       serviceType: str(fd, "serviceType") as "Routine service",
@@ -69,12 +69,12 @@ export async function createMaintenanceAction(_: ActionState, fd: FormData): Pro
   let id: string;
   try {
     const cost = str(fd, "estimatedCost");
-    id = createMaintenance(getDb(), actor, {
+    id = (await createMaintenance(getDb(), actor, {
       vehicleId: str(fd, "vehicleId"),
       serviceType: str(fd, "serviceType") as "Routine service",
       description: str(fd, "description"),
       estimatedCost: cost === "" ? undefined : Number(cost),
-    }).id;
+    })).id;
   } catch (e) {
     return toState(e);
   }
@@ -89,7 +89,7 @@ export async function maintenanceWorkflowAction(_: ActionState, fd: FormData): P
   const action = str(fd, "action") as MaintAction;
   if (!OK.includes(action)) return { error: "Unknown action." };
   try {
-    maintenanceAction(getDb(), actor, str(fd, "id"), action, {
+    await maintenanceAction(getDb(), actor, str(fd, "id"), action, {
       note: str(fd, "note"),
       workshopRef: str(fd, "workshopRef") || undefined,
       costRef: str(fd, "costRef") || undefined,

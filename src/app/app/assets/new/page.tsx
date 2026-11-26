@@ -11,7 +11,7 @@ export const metadata = { title: "Register asset" };
 
 export default async function NewAsset() {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "asset.register")) return <AccessDenied what="asset registration" />;
+  if (!await pageAllowed(actor, "asset.register")) return <AccessDenied what="asset registration" />;
   const units = scopeFor(actor, "asset.register").units;
   const orgs = [...new Map(actor.assignments.filter((a) => units.includes(a.orgUnitId)).map((a) => [a.orgUnitId, { value: a.orgUnitId, label: a.orgUnitName }])).values()];
   return (

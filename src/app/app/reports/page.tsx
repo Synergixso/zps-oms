@@ -9,7 +9,7 @@ export const metadata = { title: "Reports" };
 
 export default async function Reports() {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "report.view")) return <AccessDenied what="management reports" />;
+  if (!await pageAllowed(actor, "report.view")) return <AccessDenied what="management reports" />;
   const reports = availableReports(actor);
   const s = scopeFor(actor, "report.view");
   const scopeLabel = s.national ? "National (all organisations)" : actor.assignments.filter((a) => s.units.includes(a.orgUnitId)).map((a) => a.orgUnitName).filter((v, i, arr) => arr.indexOf(v) === i).join(", ");

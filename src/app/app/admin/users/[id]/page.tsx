@@ -14,11 +14,11 @@ export const metadata = { title: "User" };
 export default async function UserDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const actor = await requireActor();
-  if (!pageAllowed(actor, "user.view")) return <AccessDenied what="user administration" />;
+  if (!await pageAllowed(actor, "user.view")) return <AccessDenied what="user administration" />;
   const db = getDb();
-  const { user, assignments, delegations } = loadOr404(() => userDetail(db, actor, id));
+  const { user, assignments, delegations } = await loadOr404(() => userDetail(db, actor, id));
   const self = id === actor.userId;
-  const orgs = all<{ id: string; name: string; unit_type: string }>(db, "SELECT id, name, unit_type FROM org_units WHERE status='ACTIVE' ORDER BY unit_type, name");
+  const orgs = await all<{ id: string; name: string; unit_type: string }>(db, "SELECT id, name, unit_type FROM org_units WHERE status='ACTIVE' ORDER BY unit_type, name");
   const now = new Date().toISOString();
   const active = (a: { revoked_at: string | null; valid_to: string | null }) => !a.revoked_at && (!a.valid_to || a.valid_to > now);
   return (

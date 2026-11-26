@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
   const f = { q: sp.get("q") ?? undefined, category: sp.get("category") ?? undefined, outcome: sp.get("outcome") ?? undefined, from: sp.get("from") ?? undefined, to: sp.get("to") ?? undefined };
   try {
-    const { filename, csv } = exportAuditEvidence(getDb(), actor, f);
+    const { filename, csv } = await exportAuditEvidence(getDb(), actor, f);
     return new NextResponse(csv, { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="${filename}"`, "Cache-Control": "no-store" } });
   } catch (e) {
     return new NextResponse(e instanceof DomainError ? e.message : "Export failed.", { status: e instanceof DomainError && e.code === "FORBIDDEN" ? 403 : 400 });

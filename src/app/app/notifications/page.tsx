@@ -8,7 +8,7 @@ export const metadata = { title: "Notifications" };
 
 export default async function Notifications() {
   const actor = await requireActor();
-  const rows = all<{ id: string; title: string; body: string; link: string | null; created_at: string; read_at: string | null }>(
+  const rows = await all<{ id: string; title: string; body: string; link: string | null; created_at: string; read_at: string | null }>(
     getDb(),
     "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 200",
     actor.userId,

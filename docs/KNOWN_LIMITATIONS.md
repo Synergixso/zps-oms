@@ -14,7 +14,7 @@
 - Single-language (English).
 
 ## Technical
-- SQLite (`node:sqlite`, flagged experimental by Node) — single-writer, local file; not the production database.
+- Local MySQL/MariaDB under XAMPP with the default root account; a dedicated least-privilege user, backups and TLS are required before any shared deployment.
 - No rate limiting, no CSP nonces (`'unsafe-inline'` scripts allowed for Next.js bootstrap), no encryption at rest, no off-host audit storage, no backup automation, no central logging.
 - Audit hash chain detects tampering only if verified; a DB-file-level attacker could rewrite the whole chain (needs external anchoring).
 

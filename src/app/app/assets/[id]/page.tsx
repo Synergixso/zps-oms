@@ -24,10 +24,10 @@ export default async function AssetDetail({ params }: { params: Promise<{ id: st
   const { id } = await params;
   const actor = await requireActor();
   const db = getDb();
-  const a = loadOr404(() => getAsset(db, actor, id));
-  const events = assetEvents(db, actor, id);
+  const a = await loadOr404(() => getAsset(db, actor, id));
+  const events = await assetEvents(db, actor, id);
   const actions = assetActionsFor(actor, a);
-  const orgs = actions.includes("TRANSFER") ? all<{ id: string; name: string }>(db, "SELECT id, name FROM org_units WHERE status='ACTIVE' AND id <> ? ORDER BY name", a.custody_org_id) : [];
+  const orgs = actions.includes("TRANSFER") ? await all<{ id: string; name: string }>(db, "SELECT id, name FROM org_units WHERE status='ACTIVE' AND id <> ? ORDER BY name", a.custody_org_id) : [];
   const conds = CONDITIONS.map((c) => ({ value: c, label: c.charAt(0) + c.slice(1).toLowerCase() }));
   return (
     <>

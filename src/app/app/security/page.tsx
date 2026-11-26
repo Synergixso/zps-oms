@@ -10,12 +10,12 @@ export const metadata = { title: "Security events" };
 
 export default async function SecurityPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "security.view")) return <AccessDenied what="security events" />;
+  if (!await pageAllowed(actor, "security.view")) return <AccessDenied what="security events" />;
   const sp = await searchParams;
   const db = getDb();
-  const rows = securityEvents(db, actor, { q: sp.q?.slice(0, 60), category: sp.category, outcome: sp.outcome, from: sp.from, to: sp.to });
-  const sessions = all<{ display_name: string; created_at: string; last_seen_at: string }>(db, "SELECT u.display_name, s.created_at, s.last_seen_at FROM sessions s JOIN users u ON u.id = s.user_id ORDER BY s.last_seen_at DESC");
-  const byActor = all<{ name: string | null; c: number }>(db, "SELECT u.display_name name, COUNT(*) c FROM audit_events e LEFT JOIN users u ON u.id=e.actor_id WHERE e.outcome='DENIED' GROUP BY e.actor_id ORDER BY c DESC LIMIT 6");
+  const rows = await securityEvents(db, actor, { q: sp.q?.slice(0, 60), category: sp.category, outcome: sp.outcome, from: sp.from, to: sp.to });
+  const sessions = await all<{ display_name: string; created_at: string; last_seen_at: string }>(db, "SELECT u.display_name, s.created_at, s.last_seen_at FROM sessions s JOIN users u ON u.id = s.user_id ORDER BY s.last_seen_at DESC");
+  const byActor = await all<{ name: string | null; c: number }>(db, "SELECT u.display_name name, COUNT(*) c FROM audit_events e LEFT JOIN users u ON u.id=e.actor_id WHERE e.outcome='DENIED' GROUP BY e.actor_id ORDER BY c DESC LIMIT 6");
   return (
     <>
       <PageHeader eyebrow="M10 · Security administration" title="Security events" description="Authentication, access-control, privileged change and denied-access activity. Investigate suspicious patterns; this view does not grant business-record access." />

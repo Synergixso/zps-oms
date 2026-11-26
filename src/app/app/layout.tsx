@@ -17,7 +17,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const groups = NAV.map((g) => ({ ...g, items: g.items.filter((i) => i.any.length === 0 || i.any.some((p) => hasPermission(actor, p))) })).filter((g) => g.items.length);
   const role = primaryRole(actor);
   const pa = primaryAssignment(actor);
-  const unread = one<{ c: number }>(getDb(), "SELECT COUNT(*) AS c FROM notifications WHERE user_id = ? AND read_at IS NULL", actor.userId)?.c ?? 0;
+  const unread = (await one<{ c: number }>(getDb(), "SELECT COUNT(*) AS c FROM notifications WHERE user_id = ? AND read_at IS NULL", actor.userId))?.c ?? 0;
   const initials = actor.displayName.replace(/^Demo\s+/, "").split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 
   return (

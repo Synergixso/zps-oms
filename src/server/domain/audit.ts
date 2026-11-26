@@ -35,8 +35,8 @@ function computeHash(prev: string, e: Record<string, unknown>) {
 }
 
 /** Appends a hash-chained audit event. Secrets are never written (keys matching REDACT_KEYS are masked). */
-export function audit(db: DB, input: AuditInput) {
-  const prev = one<{ hash: string }>(db, "SELECT hash FROM audit_events ORDER BY seq DESC LIMIT 1")?.hash ?? GENESIS;
+export async function audit(db: DB, input: AuditInput) {
+  const prev = (await one<{ hash: string }>(db, "SELECT hash FROM audit_events ORDER BY seq DESC LIMIT 1"))?.hash ?? GENESIS;
   const e = {
     id: newId("aud"),
     occurred_at: nowIso(),
@@ -50,7 +50,7 @@ export function audit(db: DB, input: AuditInput) {
     details: redact(input.details),
   };
   const hash = computeHash(prev, e);
-  run(
+  await run(
     db,
     `INSERT INTO audit_events (id, occurred_at, actor_id, action, outcome, entity_type, entity_id, org_unit_id, category, details, prev_hash, hash)
      VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
@@ -59,8 +59,8 @@ export function audit(db: DB, input: AuditInput) {
 }
 
 /** Recomputes the chain; returns the first broken sequence number, if any. */
-export function verifyAuditChain(db: DB): { ok: boolean; checked: number; brokenAt?: number } {
-  const rows = all<Record<string, unknown> & { seq: number; prev_hash: string; hash: string }>(
+export async function verifyAuditChain(db: DB): Promise<{ ok: boolean; checked: number; brokenAt?: number }> {
+  const rows = await all<Record<string, unknown> & { seq: number; prev_hash: string; hash: string }>(
     db,
     "SELECT * FROM audit_events ORDER BY seq ASC",
   );

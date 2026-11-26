@@ -11,13 +11,13 @@ export const metadata = { title: "Structure changes" };
 
 export default async function OrgChanges() {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "org.view", "org.propose")) return <AccessDenied what="organisational changes" />;
+  if (!await pageAllowed(actor, "org.view", "org.propose")) return <AccessDenied what="organisational changes" />;
   const db = getDb();
-  const changes = listChanges(db, actor);
-  const units = listOrgUnits(db, actor);
+  const changes = await listChanges(db, actor);
+  const units = await listOrgUnits(db, actor);
   const unitOpts = units.map((u) => ({ value: u.id, label: u.name }));
   const canPropose = hasPermission(actor, "org.propose");
-  const approver = canApprove(db, actor, "ORG_CHANGE", HQ_ID);
+  const approver = await canApprove(db, actor, "ORG_CHANGE", HQ_ID);
   const tomorrow = new Date(Date.now() + 864e5).toISOString().slice(0, 10);
   const common = (
     <>

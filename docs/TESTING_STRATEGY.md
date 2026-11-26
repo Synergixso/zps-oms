@@ -6,7 +6,7 @@ Rule: a test is reported as passed only with execution evidence. Results below w
 
 | Layer | Tool | Location | Status |
 |---|---|---|---|
-| Domain unit + integration (real SQLite, in-memory, seeded through the real services) | Vitest 5 | `tests/*.test.ts` | **34 tests, all passing** |
+| Domain unit + integration (real MySQL `zps_oms_test`, recreated and seeded once per run through the real services; each test runs in a rolled-back transaction) | Vitest 5 | `tests/*.test.ts` | **42 tests, all passing** |
 | Role-based permission & cross-organisation negative tests | Vitest | `tests/access-control.test.ts` (TS-01…TS-15) | Passing |
 | Workflow transition tests | Vitest | `tests/workflows.test.ts` | Passing |
 | Database migration tests | Vitest | `tests/migrations.test.ts` | Passing |

@@ -10,18 +10,18 @@ export const metadata = { title: "Fleet maintenance" };
 
 export default async function MaintenancePage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "maintenance.view")) return <AccessDenied what="fleet maintenance" />;
+  if (!await pageAllowed(actor, "maintenance.view")) return <AccessDenied what="fleet maintenance" />;
   const sp = await searchParams;
   const db = getDb();
-  const all = listMaintenance(db, actor);
-  const rows = listMaintenance(db, actor, { status: sp.status, q: sp.q?.slice(0, 40) });
+  const all = await listMaintenance(db, actor);
+  const rows = await listMaintenance(db, actor, { status: sp.status, q: sp.q?.slice(0, 40) });
   const n = (s: string[]) => all.filter((m) => s.includes(m.status)).length;
   return (
     <>
       <PageHeader
         eyebrow="M04 · Fleet maintenance"
         title="Maintenance workbench"
-        description={`Request → validation → approval (estimated cost ≥ ZMW ${approvalThreshold(db).toLocaleString()} — provisional) → workshop referral → work in progress → completion → verification → closure.`}
+        description={`Request → validation → approval (estimated cost ≥ ZMW ${(await approvalThreshold(db)).toLocaleString()} — provisional) → workshop referral → work in progress → completion → verification → closure.`}
         actions={hasPermission(actor, "maintenance.create") ? <ButtonLink href="/app/fleet/maintenance/new" variant="primary">New maintenance request</ButtonLink> : undefined}
       />
       <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">

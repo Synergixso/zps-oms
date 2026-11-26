@@ -15,9 +15,9 @@ export default async function VehicleDetail({ params }: { params: Promise<{ id: 
   const { id } = await params;
   const actor = await requireActor();
   const db = getDb();
-  const v = loadOr404(() => getVehicle(db, actor, id));
-  const history = serviceHistory(db, actor, id);
-  const maint = can(actor, "maintenance.view", v.custody_org_id) ? listMaintenance(db, actor, { vehicleId: id }) : [];
+  const v = await loadOr404(() => getVehicle(db, actor, id));
+  const history = await serviceHistory(db, actor, id);
+  const maint = can(actor, "maintenance.view", v.custody_org_id) ? await listMaintenance(db, actor, { vehicleId: id }) : [];
   const canManage = can(actor, "fleet.manage", v.custody_org_id) && v.status !== "DISPOSED";
   const canRecord = can(actor, "service.record", v.custody_org_id);
   return (

@@ -3,7 +3,8 @@
 > This guide covers **local review only**. No hosting, production network, real data or production identity integration is authorised (DEC-023).
 
 ## Prerequisites
-- Node.js ≥ 22.13 (tested 22.23.4) — provides the built-in `node:sqlite` module. No database server is needed.
+- Node.js ≥ 22.13 (tested 22.23.4).
+- MySQL 8 or MariaDB 10.4+ (tested with XAMPP MariaDB 10.4.32). Connection via `DATABASE_URL` in `.env.local`; migrations in `db/migrations/` are applied automatically on start or with `npm run db:migrate`. Use a dedicated least-privilege database user outside local review.
 - npm. No paid services, accounts or API keys.
 
 ## Run locally

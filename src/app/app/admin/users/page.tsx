@@ -12,9 +12,9 @@ export const metadata = { title: "Users & access" };
 
 export default async function UsersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "user.view")) return <AccessDenied what="user administration" />;
+  if (!await pageAllowed(actor, "user.view")) return <AccessDenied what="user administration" />;
   const { q } = await searchParams;
-  const users = listUsers(getDb(), actor, q?.slice(0, 40));
+  const users = await listUsers(getDb(), actor, q?.slice(0, 40));
   return (
     <>
       <PageHeader eyebrow="M02 · Identity and access" title="Users & access" description="Unique individual accounts only. No public self-registration. Access = role + organisational scope + validity window, recorded with a justification." />

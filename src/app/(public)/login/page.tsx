@@ -18,12 +18,14 @@ const REASONS: Record<string, [string, "info" | "warn" | "err" | "ok"]> = {
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ reason?: string }> }) {
   if (await getActor()) redirect("/app");
   const { reason } = await searchParams;
-  const users = all<{ id: string; display_name: string; position_title: string; status: string; role_code: RoleCode; org_name: string }>(
+  const users = (await all<{ id: string; display_name: string; position_title: string; status: string; role_code: RoleCode; org_name: string }>(
     getDb(),
     `SELECT u.id, u.display_name, u.position_title, u.status, a.role_code, o.name AS org_name
-       FROM users u JOIN role_assignments a ON a.user_id = u.id AND a.revoked_at IS NULL JOIN org_units o ON o.id = a.org_unit_id
-      WHERE u.synthetic = 1 GROUP BY u.id ORDER BY u.display_name`,
-  ).sort((a, b) => DASHBOARD_PRECEDENCE.indexOf(a.role_code) - DASHBOARD_PRECEDENCE.indexOf(b.role_code));
+       FROM users u
+       JOIN role_assignments a ON a.id = (SELECT MIN(x.id) FROM role_assignments x WHERE x.user_id = u.id AND x.revoked_at IS NULL)
+       JOIN org_units o ON o.id = a.org_unit_id
+      WHERE u.synthetic = 1 ORDER BY u.display_name`,
+  )).sort((a, b) => DASHBOARD_PRECEDENCE.indexOf(a.role_code) - DASHBOARD_PRECEDENCE.indexOf(b.role_code));
   const msg = reason ? REASONS[reason] : undefined;
   return (
     <div className="mx-auto max-w-[1180px] px-4 py-10">

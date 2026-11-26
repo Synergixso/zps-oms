@@ -24,9 +24,9 @@ export default async function MaintenanceDetail({ params }: { params: Promise<{ 
   const { id } = await params;
   const actor = await requireActor();
   const db = getDb();
-  const m = loadOr404(() => getMaintenance(db, actor, id));
-  const history = maintenanceHistory(db, actor, id);
-  const actions = maintenanceActions(db, actor, m);
+  const m = await loadOr404(() => getMaintenance(db, actor, id));
+  const history = await maintenanceHistory(db, actor, id);
+  const actions = await maintenanceActions(db, actor, m);
   return (
     <>
       <p className="mb-2 text-sm"><Link href="/app/fleet/maintenance" className="text-zp-blue hover:underline">← Maintenance workbench</Link></p>

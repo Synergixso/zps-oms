@@ -13,8 +13,8 @@ export const metadata = { title: "Access review" };
 export default async function ReviewDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const actor = await requireActor();
-  if (!pageAllowed(actor, "accessreview.manage")) return <AccessDenied what="access reviews" />;
-  const { review, items } = loadOr404(() => reviewItems(getDb(), actor, id));
+  if (!await pageAllowed(actor, "accessreview.manage")) return <AccessDenied what="access reviews" />;
+  const { review, items } = await loadOr404(() => reviewItems(getDb(), actor, id));
   const open = review.status === "OPEN";
   return (
     <>

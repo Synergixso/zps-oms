@@ -140,8 +140,8 @@ function FleetAssetSummary({ s, fleet, assets }: { s: Summary; fleet: boolean; a
   );
 }
 
-function Notifications({ actor }: { actor: Actor }) {
-  const rows = all<{ id: string; title: string; body: string; link: string | null; created_at: string; read_at: string | null }>(
+async function Notifications({ actor }: { actor: Actor }) {
+  const rows = await all<{ id: string; title: string; body: string; link: string | null; created_at: string; read_at: string | null }>(
     getDb(),
     "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 5",
     actor.userId,
@@ -166,14 +166,14 @@ function Notifications({ actor }: { actor: Actor }) {
 
 // ---------------------------------------------------------------------------
 
-function National({ actor, coordinator }: { actor: Actor; coordinator: boolean }) {
+async function National({ actor, coordinator }: { actor: Actor; coordinator: boolean }) {
   const db = getDb();
   const scope = scopeFor(actor, "dashboard.national.view");
-  const s = computeSummary(db, scope);
-  const orgs = breakdownByOrg(db, scope);
-  const inbox = approvalInbox(db, actor);
-  const queue = coordinator ? assignmentQueue(db, actor) : [];
-  const overdue = coordinator ? overdueRequests(listRequests(db, actor)) : [];
+  const s = await computeSummary(db, scope);
+  const orgs = await breakdownByOrg(db, scope);
+  const inbox = await approvalInbox(db, actor);
+  const queue = coordinator ? await assignmentQueue(db, actor) : [];
+  const overdue = coordinator ? overdueRequests(await listRequests(db, actor)) : [];
   const provinces = orgs.filter((o) => o.unit_type === "PROVINCIAL_DIVISION");
   const formations = orgs.filter((o) => o.unit_type === "FORMATION");
   return (
@@ -242,16 +242,16 @@ function National({ actor, coordinator }: { actor: Actor; coordinator: boolean }
   );
 }
 
-function UnitCommand({ actor }: { actor: Actor }) {
+async function UnitCommand({ actor }: { actor: Actor }) {
   const db = getDb();
   const pa = primaryAssignment(actor)!;
   const scope = { national: false, units: [pa.orgUnitId] };
-  const s = computeSummary(db, scope);
-  const inbox = approvalInbox(db, actor);
-  const queue = assignmentQueue(db, actor);
-  const recent = listRequests(db, actor).slice(0, 8);
-  const maint = hasPermission(actor, "maintenance.view") ? listMaintenance(db, actor).filter((m) => m.status === "VALIDATED") : [];
-  const unit = one<{ code: string; validation_note: string | null }>(db, "SELECT code, validation_note FROM org_units WHERE id = ?", pa.orgUnitId)!;
+  const s = await computeSummary(db, scope);
+  const inbox = await approvalInbox(db, actor);
+  const queue = await assignmentQueue(db, actor);
+  const recent = (await listRequests(db, actor)).slice(0, 8);
+  const maint = hasPermission(actor, "maintenance.view") ? (await listMaintenance(db, actor)).filter((m) => m.status === "VALIDATED") : [];
+  const unit = (await one<{ code: string; validation_note: string | null }>(db, "SELECT code, validation_note FROM org_units WHERE id = ?", pa.orgUnitId))!;
   const isProv = pa.orgUnitType === "PROVINCIAL_DIVISION";
   return (
     <>
@@ -299,10 +299,10 @@ function UnitCommand({ actor }: { actor: Actor }) {
   );
 }
 
-function StaffWorkspace({ actor }: { actor: Actor }) {
+async function StaffWorkspace({ actor }: { actor: Actor }) {
   const db = getDb();
   const pa = primaryAssignment(actor)!;
-  const all_ = listRequests(db, actor);
+  const all_ = await listRequests(db, actor);
   const mine = all_.filter((r) => r.created_by === actor.userId);
   const drafts = mine.filter((r) => r.status === "DRAFT");
   const returned = mine.filter((r) => r.status === "RETURNED");
@@ -356,10 +356,10 @@ function StaffWorkspace({ actor }: { actor: Actor }) {
   );
 }
 
-function FleetDash({ actor }: { actor: Actor }) {
+async function FleetDash({ actor }: { actor: Actor }) {
   const db = getDb();
-  const vehicles = listVehicles(db, actor);
-  const maint = listMaintenance(db, actor);
+  const vehicles = await listVehicles(db, actor);
+  const maint = await listMaintenance(db, actor);
   const today = new Date().toISOString().slice(0, 10);
   const due = vehicles.filter((v) => v.status !== "DISPOSED" && v.next_service_due && v.next_service_due < today);
   const units = [...new Set(actor.assignments.filter((a) => a.roleCode === "FLEET_OFFICER").map((a) => a.orgUnitName))];
@@ -395,9 +395,9 @@ function FleetDash({ actor }: { actor: Actor }) {
   );
 }
 
-function AssetDash({ actor }: { actor: Actor }) {
+async function AssetDash({ actor }: { actor: Actor }) {
   const db = getDb();
-  const assets = listAssets(db, actor);
+  const assets = await listAssets(db, actor);
   const units = new Set(scopeFor(actor, "asset.custody").units);
   const inbound = assets.filter((a) => a.status === "IN_TRANSFER" && a.transfer_to_org_id && units.has(a.transfer_to_org_id));
   const yearAgo = new Date(Date.now() - 365 * 864e5).toISOString();
@@ -426,11 +426,11 @@ function AssetDash({ actor }: { actor: Actor }) {
   );
 }
 
-function AuditDash({ actor }: { actor: Actor }) {
+async function AuditDash({ actor }: { actor: Actor }) {
   const db = getDb();
-  const chain = verifyAuditChain(db);
-  const counts = all<{ category: string; outcome: string; c: number }>(db, "SELECT category, outcome, COUNT(*) c FROM audit_events GROUP BY category, outcome ORDER BY category");
-  const exp = one<{ c: number }>(db, "SELECT COUNT(*) c FROM report_exports")!.c;
+  const chain = await verifyAuditChain(db);
+  const counts = await all<{ category: string; outcome: string; c: number }>(db, "SELECT category, outcome, COUNT(*) c FROM audit_events GROUP BY category, outcome ORDER BY category");
+  const exp = (await one<{ c: number }>(db, "SELECT COUNT(*) c FROM report_exports"))!.c;
   const pa = actor.assignments.find((a) => a.roleCode === "INTERNAL_AUDITOR");
   return (
     <>
@@ -460,13 +460,13 @@ function AuditDash({ actor }: { actor: Actor }) {
   );
 }
 
-function SecurityDash({ actor }: { actor: Actor }) {
+async function SecurityDash({ actor }: { actor: Actor }) {
   const db = getDb();
-  const denied = all<{ action: string; c: number }>(db, "SELECT action, COUNT(*) c FROM audit_events WHERE outcome='DENIED' GROUP BY action ORDER BY c DESC LIMIT 8");
-  const iam = all<{ occurred_at: string; action: string; actor: string | null; entity_id: string | null }>(db, "SELECT e.occurred_at, e.action, u.display_name actor, e.entity_id FROM audit_events e LEFT JOIN users u ON u.id=e.actor_id WHERE e.category='IAM' ORDER BY e.seq DESC LIMIT 8");
-  const suspended = one<{ c: number }>(db, "SELECT COUNT(*) c FROM users WHERE status <> 'ACTIVE'")!.c;
-  const reviews = listReviews(db, actor);
-  const auth = one<{ c: number }>(db, "SELECT COUNT(*) c FROM audit_events WHERE category='AUTH'")!.c;
+  const denied = await all<{ action: string; c: number }>(db, "SELECT action, COUNT(*) c FROM audit_events WHERE outcome='DENIED' GROUP BY action ORDER BY c DESC LIMIT 8");
+  const iam = await all<{ occurred_at: string; action: string; actor: string | null; entity_id: string | null }>(db, "SELECT e.occurred_at, e.action, u.display_name actor, e.entity_id FROM audit_events e LEFT JOIN users u ON u.id=e.actor_id WHERE e.category='IAM' ORDER BY e.seq DESC LIMIT 8");
+  const suspended = (await one<{ c: number }>(db, "SELECT COUNT(*) c FROM users WHERE status <> 'ACTIVE'"))!.c;
+  const reviews = await listReviews(db, actor);
+  const auth = (await one<{ c: number }>(db, "SELECT COUNT(*) c FROM audit_events WHERE category='AUTH'"))!.c;
   return (
     <>
       <PageHeader eyebrow="Security administration" title={title(actor)} description="Security events, privileged access changes and access recertification. Separate from business approvals."
@@ -493,11 +493,11 @@ function SecurityDash({ actor }: { actor: Actor }) {
   );
 }
 
-function PlatformDash({ actor }: { actor: Actor }) {
+async function PlatformDash({ actor }: { actor: Actor }) {
   const db = getDb();
-  const users = one<{ c: number }>(db, "SELECT COUNT(*) c FROM users")!.c;
-  const sessions = one<{ c: number }>(db, "SELECT COUNT(*) c FROM sessions")!.c;
-  const ver = one<{ version: number; applied_at: string }>(db, "SELECT version, applied_at FROM schema_migrations ORDER BY version DESC LIMIT 1");
+  const users = (await one<{ c: number }>(db, "SELECT COUNT(*) c FROM users"))!.c;
+  const sessions = (await one<{ c: number }>(db, "SELECT COUNT(*) c FROM sessions"))!.c;
+  const ver = await one<{ version: number; applied_at: string }>(db, "SELECT version, applied_at FROM schema_migrations ORDER BY version DESC LIMIT 1");
   return (
     <>
       <PageHeader eyebrow="Platform administration" title={title(actor)} description="Technical administration and approved user provisioning. This role has no access to business records by default."
@@ -518,10 +518,10 @@ function PlatformDash({ actor }: { actor: Actor }) {
   );
 }
 
-function OrgDash({ actor }: { actor: Actor }) {
+async function OrgDash({ actor }: { actor: Actor }) {
   const db = getDb();
-  const changes = listChanges(db, actor);
-  const counts = all<{ unit_type: string; c: number }>(db, "SELECT unit_type, COUNT(*) c FROM org_units WHERE status='ACTIVE' GROUP BY unit_type");
+  const changes = await listChanges(db, actor);
+  const counts = await all<{ unit_type: string; c: number }>(db, "SELECT unit_type, COUNT(*) c FROM org_units WHERE status='ACTIVE' GROUP BY unit_type");
   const c = (t: string) => counts.find((x) => x.unit_type === t)?.c ?? 0;
   return (
     <>

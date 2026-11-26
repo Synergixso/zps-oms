@@ -11,9 +11,9 @@ export const metadata = { title: "General assets" };
 
 export default async function AssetsPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "asset.view")) return <AccessDenied what="the asset register" />;
+  if (!await pageAllowed(actor, "asset.view")) return <AccessDenied what="the asset register" />;
   const sp = await searchParams;
-  const rows = listAssets(getDb(), actor, { q: sp.q?.slice(0, 40), status: sp.status, category: sp.category });
+  const rows = await listAssets(getDb(), actor, { q: sp.q?.slice(0, 40), status: sp.status, category: sp.category });
   return (
     <>
       <PageHeader eyebrow="M05 · General assets" title="General asset register" description="Approved non-sensitive categories only, within your organisational scope. Inbound transfers to your unit are included."

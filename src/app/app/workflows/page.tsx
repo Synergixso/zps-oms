@@ -9,8 +9,8 @@ export const metadata = { title: "Workflow definitions" };
 
 export default async function Workflows() {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "workflow.view")) return <AccessDenied what="workflow definitions" />;
-  const defs = all<{ id: string; category_code: string; name: string; version: number; approval_steps: string; status: string; note: string; created_at: string }>(
+  if (!await pageAllowed(actor, "workflow.view")) return <AccessDenied what="workflow definitions" />;
+  const defs = await all<{ id: string; category_code: string; name: string; version: number; approval_steps: string; status: string; note: string; created_at: string }>(
     getDb(),
     "SELECT w.*, c.name FROM workflow_definitions w JOIN request_categories c ON c.code = w.category_code ORDER BY c.name, w.version",
   );

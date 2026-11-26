@@ -14,10 +14,10 @@ export const DEMO_AUTH_ENABLED = process.env.ZPS_DEMO_AUTH !== "off";
 export async function getActor(): Promise<Actor | null> {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   const db = getDb();
-  const userId = resolveSession(db, token);
+  const userId = await resolveSession(db, token);
   if (!userId) return null;
-  applyDueChanges(db); // effective-dated org changes become live on their date
-  return loadActor(db, userId);
+  await applyDueChanges(db); // effective-dated org changes become live on their date
+  return await loadActor(db, userId);
 }
 
 export async function requireActor(): Promise<Actor> {

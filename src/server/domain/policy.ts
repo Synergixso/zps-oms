@@ -40,15 +40,15 @@ export interface Scope {
 }
 
 /** Loads the actor fresh from the database on every request so revocation/expiry take effect immediately. */
-export function loadActor(db: DB, userId: string): Actor | null {
-  const user = one<{ id: string; display_name: string; position_title: string; status: string }>(
+export async function loadActor(db: DB, userId: string): Promise<Actor | null> {
+  const user = await one<{ id: string; display_name: string; position_title: string; status: string }>(
     db,
     "SELECT id, display_name, position_title, status FROM users WHERE id = ?",
     userId,
   );
   if (!user || user.status !== "ACTIVE") return null;
   const t = nowIso();
-  const rows = all<{ id: string; role_code: RoleCode; org_unit_id: string; name: string; unit_type: string; valid_to: string | null }>(
+  const rows = await all<{ id: string; role_code: RoleCode; org_unit_id: string; name: string; unit_type: string; valid_to: string | null }>(
     db,
     `SELECT a.id, a.role_code, a.org_unit_id, o.name, o.unit_type, a.valid_to
        FROM role_assignments a JOIN org_units o ON o.id = a.org_unit_id
@@ -98,10 +98,10 @@ export function can(actor: Actor, perm: Permission, orgUnitId: string): boolean 
 }
 
 /** Throws FORBIDDEN and writes a DENIED audit event when the check fails. */
-export function requirePermission(db: DB, actor: Actor, perm: Permission, orgUnitId?: string, entity?: { type: string; id?: string }) {
+export async function requirePermission(db: DB, actor: Actor, perm: Permission, orgUnitId?: string, entity?: { type: string; id?: string }) {
   const ok = orgUnitId ? can(actor, perm, orgUnitId) : hasPermission(actor, perm);
   if (!ok) {
-    audit(db, {
+    await audit(db, {
       actorId: actor.userId,
       action: `authz.denied:${perm}`,
       outcome: "DENIED",
@@ -124,9 +124,9 @@ export function scopeSql(actor: Actor, perm: Permission, column: string): { sql:
 
 export type DelegationDomain = "ADMIN_REQUEST" | "MAINTENANCE" | "ORG_CHANGE";
 
-export function hasDelegation(db: DB, actor: Actor, domain: DelegationDomain, orgUnitId: string, categoryCode?: string | null): boolean {
+export async function hasDelegation(db: DB, actor: Actor, domain: DelegationDomain, orgUnitId: string, categoryCode?: string | null): Promise<boolean> {
   const t = nowIso();
-  const row = one(
+  const row = await one(
     db,
     `SELECT id FROM delegations
       WHERE user_id = ? AND domain = ? AND org_unit_id = ? AND revoked_at IS NULL
@@ -149,9 +149,9 @@ export function hasDelegation(db: DB, actor: Actor, domain: DelegationDomain, or
  * Technical, security, audit and functional roles can never approve, even
  * if a delegation were recorded in error.
  */
-export function canApprove(db: DB, actor: Actor, domain: DelegationDomain, orgUnitId: string, categoryCode?: string | null): boolean {
+export async function canApprove(db: DB, actor: Actor, domain: DelegationDomain, orgUnitId: string, categoryCode?: string | null): Promise<boolean> {
   const business = actor.assignments.some((a) => a.orgUnitId === orgUnitId && ROLE_BY_CODE[a.roleCode]?.category === "BUSINESS");
-  return business && hasDelegation(db, actor, domain, orgUnitId, categoryCode);
+  return business && await hasDelegation(db, actor, domain, orgUnitId, categoryCode);
 }
 
 export function primaryRole(actor: Actor): RoleCode | null {

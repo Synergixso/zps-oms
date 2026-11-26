@@ -10,7 +10,7 @@ export const metadata = { title: "New administrative request" };
 
 export default async function NewRequest() {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "request.create")) return <AccessDenied what="request creation" />;
+  if (!await pageAllowed(actor, "request.create")) return <AccessDenied what="request creation" />;
   const units = scopeFor(actor, "request.create").units;
   const orgOptions = actor.assignments.filter((a) => units.includes(a.orgUnitId)).map((a) => ({ value: a.orgUnitId, label: a.orgUnitName }));
   const uniqueOrgs = [...new Map(orgOptions.map((o) => [o.value, o])).values()];

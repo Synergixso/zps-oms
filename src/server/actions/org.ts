@@ -18,7 +18,7 @@ export async function proposeChangeAction(_: ActionState, fd: FormData): Promise
           : t === "CHANGE_PARENT"
             ? { changeType: t, targetId: str(fd, "targetId"), parentId: str(fd, "parentId"), ...base }
             : { changeType: "DEACTIVATE_UNIT", targetId: str(fd, "targetId"), ...base };
-    const c = proposeChange(getDb(), actor, input as never);
+    const c = await proposeChange(getDb(), actor, input as never);
     revalidatePath("/app/org", "layout");
     return { ok: true, message: `Change ${c.reference} submitted for approval.` };
   } catch (e) {
@@ -29,7 +29,7 @@ export async function proposeChangeAction(_: ActionState, fd: FormData): Promise
 export async function decideChangeAction(_: ActionState, fd: FormData): Promise<ActionState> {
   const actor = await requireActor();
   try {
-    decideChange(getDb(), actor, str(fd, "id"), str(fd, "decision") === "APPROVE" ? "APPROVE" : "REJECT", str(fd, "reason"), str(fd, "approvalRef"));
+    await decideChange(getDb(), actor, str(fd, "id"), str(fd, "decision") === "APPROVE" ? "APPROVE" : "REJECT", str(fd, "reason"), str(fd, "approvalRef"));
   } catch (e) {
     return toState(e);
   }

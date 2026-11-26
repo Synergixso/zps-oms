@@ -12,10 +12,10 @@ export const metadata = { title: "Contact messages" };
 
 export default async function Messages({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "contact.view")) return <AccessDenied what="contact messages" />;
+  if (!await pageAllowed(actor, "contact.view")) return <AccessDenied what="contact messages" />;
   const { status } = await searchParams;
   const filter = status === "HANDLED" || status === "NEW" ? status : undefined;
-  const rows = listContactMessages(getDb(), actor, filter);
+  const rows = await listContactMessages(getDb(), actor, filter);
   const canManage = hasPermission(actor, "contact.manage");
   const tab = (s: string | undefined, label: string) => (
     <Link

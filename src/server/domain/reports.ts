@@ -31,37 +31,43 @@ export interface Summary {
   assetsInTransfer: number;
 }
 
-const countBy = (db: DB, sql: string, params: unknown[]) =>
-  Object.fromEntries(all<{ k: string; c: number }>(db, sql, ...params).map((r) => [r.k, Number(r.c)]));
+/** Fractional days from an ISO timestamp to a millisecond instant (replaces SQLite julianday arithmetic). */
+const daysBetween = (fromIso: string, toMs: number) => (toMs - Date.parse(fromIso)) / 86400000;
+
+const countBy = async (db: DB, sql: string, params: unknown[]) =>
+  Object.fromEntries((await all<{ k: string; c: number }>(db, sql, ...params)).map((r) => [r.k, Number(r.c)]));
 
 /** Aggregates for a scope. Callers must have already authorised the scope. */
-export function computeSummary(db: DB, scope: Scope): Summary {
+export async function computeSummary(db: DB, scope: Scope): Promise<Summary> {
   const r = inScope(scope, "origin_org_id");
   const t = today();
-  const requests = countBy(db, `SELECT status AS k, COUNT(*) AS c FROM admin_requests WHERE status <> 'DRAFT' AND ${r.sql} GROUP BY status`, r.params);
+  const requests = await countBy(db, `SELECT status AS k, COUNT(*) AS c FROM admin_requests WHERE status <> 'DRAFT' AND ${r.sql} GROUP BY status`, r.params);
   const open = ["SUBMITTED", "UNDER_REVIEW", "APPROVED", "IN_PROGRESS", "RETURNED"];
   const requestsOpen = open.reduce((s, k) => s + (requests[k] ?? 0), 0);
-  const requestsOverdue = Number(one<{ c: number }>(db, `SELECT COUNT(*) AS c FROM admin_requests WHERE due_date < ? AND status IN ('SUBMITTED','UNDER_REVIEW','APPROVED','IN_PROGRESS') AND ${r.sql}`, t, ...r.params)?.c ?? 0);
-  const ageRows = all<{ days: number }>(db, `SELECT julianday(?) - julianday(submitted_at) AS days FROM admin_requests WHERE submitted_at IS NOT NULL AND status IN ('SUBMITTED','UNDER_REVIEW','APPROVED','IN_PROGRESS') AND ${r.sql}`, nowIso(), ...r.params);
+  const requestsOverdue = Number((await one<{ c: number }>(db, `SELECT COUNT(*) AS c FROM admin_requests WHERE due_date < ? AND status IN ('SUBMITTED','UNDER_REVIEW','APPROVED','IN_PROGRESS') AND ${r.sql}`, t, ...r.params))?.c ?? 0);
+  const now = Date.parse(nowIso());
+  const ageRows = (await all<{ submitted_at: string }>(db, `SELECT submitted_at FROM admin_requests WHERE submitted_at IS NOT NULL AND status IN ('SUBMITTED','UNDER_REVIEW','APPROVED','IN_PROGRESS') AND ${r.sql}`, ...r.params))
+    .map((x) => ({ days: daysBetween(x.submitted_at, now) }));
   const bands = [["0–5 days", 5], ["6–10 days", 10], ["11–20 days", 20], ["Over 20 days", Infinity]] as const;
   const bandOf = (d: number) => bands.findIndex(([, hi]) => d <= hi);
   const ageing = bands.map(([band], i) => ({ band, count: ageRows.filter((x) => bandOf(x.days) === i).length }));
-  const avg = one<{ d: number | null }>(
+  const approvals = await all<{ submitted_at: string; approved_at: string }>(
     db,
-    `SELECT AVG(julianday(a.created_at) - julianday(r.submitted_at)) AS d FROM admin_requests r
-       JOIN request_actions a ON a.request_id = r.id AND a.to_status = 'APPROVED' WHERE ${r.sql}`,
+    `SELECT r.submitted_at, a.created_at AS approved_at FROM admin_requests r
+       JOIN request_actions a ON a.request_id = r.id AND a.to_status = 'APPROVED' WHERE r.submitted_at IS NOT NULL AND ${r.sql}`,
     ...r.params,
   );
+  const avg = { d: approvals.length ? approvals.reduce((sum, x) => sum + daysBetween(x.submitted_at, Date.parse(x.approved_at)), 0) / approvals.length : null };
   const m = inScope(scope, "org_unit_id");
-  const maintenance = countBy(db, `SELECT status AS k, COUNT(*) AS c FROM maintenance_requests WHERE ${m.sql} GROUP BY status`, m.params);
+  const maintenance = await countBy(db, `SELECT status AS k, COUNT(*) AS c FROM maintenance_requests WHERE ${m.sql} GROUP BY status`, m.params);
   const v = inScope(scope, "custody_org_id");
-  const vehicles = countBy(db, `SELECT status AS k, COUNT(*) AS c FROM vehicles WHERE ${v.sql} GROUP BY status`, v.params);
-  const vehiclesServiceOverdue = Number(one<{ c: number }>(db, `SELECT COUNT(*) AS c FROM vehicles WHERE status <> 'DISPOSED' AND next_service_due < ? AND ${v.sql}`, t, ...v.params)?.c ?? 0);
+  const vehicles = await countBy(db, `SELECT status AS k, COUNT(*) AS c FROM vehicles WHERE ${v.sql} GROUP BY status`, v.params);
+  const vehiclesServiceOverdue = Number((await one<{ c: number }>(db, `SELECT COUNT(*) AS c FROM vehicles WHERE status <> 'DISPOSED' AND next_service_due < ? AND ${v.sql}`, t, ...v.params))?.c ?? 0);
   const in60 = new Date(Date.parse(t) + 60 * 86400000).toISOString().slice(0, 10);
-  const vehiclesDocsExpiring = Number(one<{ c: number }>(db, `SELECT COUNT(*) AS c FROM vehicles WHERE status <> 'DISPOSED' AND (licence_expiry < ? OR insurance_expiry < ?) AND ${v.sql}`, in60, in60, ...v.params)?.c ?? 0);
-  const assets = countBy(db, `SELECT status AS k, COUNT(*) AS c FROM assets WHERE ${v.sql} GROUP BY status`, v.params);
+  const vehiclesDocsExpiring = Number((await one<{ c: number }>(db, `SELECT COUNT(*) AS c FROM vehicles WHERE status <> 'DISPOSED' AND (licence_expiry < ? OR insurance_expiry < ?) AND ${v.sql}`, in60, in60, ...v.params))?.c ?? 0);
+  const assets = await countBy(db, `SELECT status AS k, COUNT(*) AS c FROM assets WHERE ${v.sql} GROUP BY status`, v.params);
   const yearAgo = new Date(Date.parse(t) - 365 * 86400000).toISOString();
-  const assetsNotInspected12m = Number(one<{ c: number }>(db, `SELECT COUNT(*) AS c FROM assets WHERE status <> 'DISPOSED' AND (last_inspected_at IS NULL OR last_inspected_at < ?) AND ${v.sql}`, yearAgo, ...v.params)?.c ?? 0);
+  const assetsNotInspected12m = Number((await one<{ c: number }>(db, `SELECT COUNT(*) AS c FROM assets WHERE status <> 'DISPOSED' AND (last_inspected_at IS NULL OR last_inspected_at < ?) AND ${v.sql}`, yearAgo, ...v.params))?.c ?? 0);
   return {
     requests, requestsOpen, requestsOverdue, ageing,
     avgApprovalDays: avg?.d != null ? Math.round(avg.d * 10) / 10 : null,
@@ -71,9 +77,9 @@ export function computeSummary(db: DB, scope: Scope): Summary {
 }
 
 /** Per-organisation breakdown (national/coordination dashboards). */
-export function breakdownByOrg(db: DB, scope: Scope) {
+export async function breakdownByOrg(db: DB, scope: Scope) {
   const o = inScope(scope, "o.id");
-  return all<{ id: string; name: string; unit_type: string; open_requests: number; overdue: number; vehicles: number; maint_open: number; assets: number }>(
+  return await all<{ id: string; name: string; unit_type: string; open_requests: number; overdue: number; vehicles: number; maint_open: number; assets: number }>(
     db,
     `SELECT o.id, o.name, o.unit_type,
        (SELECT COUNT(*) FROM admin_requests r WHERE r.origin_org_id = o.id AND r.status IN ('SUBMITTED','UNDER_REVIEW','APPROVED','IN_PROGRESS','RETURNED')) AS open_requests,
@@ -134,21 +140,30 @@ export function availableReports(actor: Actor): ReportDef[] {
   return REPORTS.filter((r) => r.domain.some((p) => hasPermission(actor, p)));
 }
 
-function reportRows(db: DB, code: string, scope: Scope): Record<string, string | number>[] {
+async function reportRows(db: DB, code: string, scope: Scope): Promise<Record<string, string | number>[]> {
   const o = inScope(scope, "o.id");
   const t = today();
   switch (code) {
     case "REQ_STATUS_BY_ORG":
-      return all(db, `SELECT o.name AS organisation, r.status AS status, COUNT(*) AS count FROM admin_requests r JOIN org_units o ON o.id = r.origin_org_id
+      return await all(db, `SELECT o.name AS organisation, r.status AS status, COUNT(*) AS count FROM admin_requests r JOIN org_units o ON o.id = r.origin_org_id
                        WHERE r.status <> 'DRAFT' AND ${o.sql} GROUP BY o.name, r.status ORDER BY o.name, r.status`, ...o.params);
-    case "REQ_AGEING":
-      return all(db, `SELECT o.name AS organisation,
-                        CASE WHEN julianday(?) - julianday(r.submitted_at) <= 5 THEN '0-5 days' WHEN julianday(?) - julianday(r.submitted_at) <= 10 THEN '6-10 days'
-                             WHEN julianday(?) - julianday(r.submitted_at) <= 20 THEN '11-20 days' ELSE 'Over 20 days' END AS age_band, COUNT(*) AS count
-                       FROM admin_requests r JOIN org_units o ON o.id = r.origin_org_id
-                       WHERE r.status IN ('SUBMITTED','UNDER_REVIEW','APPROVED','IN_PROGRESS') AND ${o.sql} GROUP BY o.name, age_band ORDER BY o.name`, nowIso(), nowIso(), nowIso(), ...o.params);
+    case "REQ_AGEING": {
+      const now = Date.parse(nowIso());
+      const rows = await all<{ organisation: string; submitted_at: string }>(db, `SELECT o.name AS organisation, r.submitted_at FROM admin_requests r JOIN org_units o ON o.id = r.origin_org_id
+                       WHERE r.submitted_at IS NOT NULL AND r.status IN ('SUBMITTED','UNDER_REVIEW','APPROVED','IN_PROGRESS') AND ${o.sql} ORDER BY o.name`, ...o.params);
+      const band = (d: number) => (d <= 5 ? "0-5 days" : d <= 10 ? "6-10 days" : d <= 20 ? "11-20 days" : "Over 20 days");
+      const counts = new Map<string, { organisation: string; age_band: string; count: number }>();
+      for (const x of rows) {
+        const b = band(daysBetween(x.submitted_at, now));
+        const k = `${x.organisation}\u0000${b}`;
+        const e = counts.get(k) ?? { organisation: x.organisation, age_band: b, count: 0 };
+        e.count++;
+        counts.set(k, e);
+      }
+      return [...counts.values()];
+    }
     case "FLEET_MAINTENANCE":
-      return all(db, `SELECT o.name AS organisation,
+      return await all(db, `SELECT o.name AS organisation,
                         (SELECT COUNT(*) FROM vehicles v WHERE v.custody_org_id = o.id AND v.status <> 'DISPOSED') AS vehicles_active,
                         (SELECT COUNT(*) FROM vehicles v WHERE v.custody_org_id = o.id AND v.status <> 'DISPOSED' AND v.next_service_due < ?) AS service_overdue,
                         (SELECT COUNT(*) FROM maintenance_requests m WHERE m.org_unit_id = o.id AND m.status NOT IN ('CLOSED','REJECTED')) AS maintenance_open,
@@ -156,7 +171,7 @@ function reportRows(db: DB, code: string, scope: Scope): Record<string, string |
                        FROM org_units o WHERE o.status = 'ACTIVE' AND ${o.sql} ORDER BY o.name`, t, ...o.params);
     case "ASSET_ACCOUNTABILITY": {
       const yearAgo = new Date(Date.parse(t) - 365 * 86400000).toISOString();
-      return all(db, `SELECT o.name AS organisation,
+      return await all(db, `SELECT o.name AS organisation,
                         SUM(a.status = 'IN_STORE') AS in_store, SUM(a.status = 'ISSUED') AS issued, SUM(a.status = 'IN_TRANSFER') AS in_transfer,
                         SUM(a.status = 'UNDER_REPAIR') AS under_repair,
                         SUM(a.status <> 'DISPOSED' AND (a.last_inspected_at IS NULL OR a.last_inspected_at < ?)) AS not_inspected_12m
@@ -166,29 +181,29 @@ function reportRows(db: DB, code: string, scope: Scope): Record<string, string |
   throw invalid("Unknown report.");
 }
 
-export function runReport(db: DB, actor: Actor, code: string) {
+export async function runReport(db: DB, actor: Actor, code: string) {
   const def = REPORTS.find((r) => r.code === code);
   if (!def) throw invalid("Unknown report.");
-  requirePermission(db, actor, "report.view", undefined, { type: "report", id: code });
+  await requirePermission(db, actor, "report.view", undefined, { type: "report", id: code });
   if (!def.domain.some((p) => hasPermission(actor, p))) {
-    audit(db, { actorId: actor.userId, action: "report.view", outcome: "DENIED", category: "SECURITY", entityType: "report", entityId: code });
+    await audit(db, { actorId: actor.userId, action: "report.view", outcome: "DENIED", category: "SECURITY", entityType: "report", entityId: code });
     throw forbidden("This report is not within your authorised functions.");
   }
-  return { def, rows: reportRows(db, code, scopeFor(actor, "report.view")) };
+  return { def, rows: await reportRows(db, code, scopeFor(actor, "report.view")) };
 }
 
 /** Exports an approved report as CSV. Requested fields outside the definition are refused. */
-export function exportReport(db: DB, actor: Actor, code: string, requestedFields?: string[]) {
+export async function exportReport(db: DB, actor: Actor, code: string, requestedFields?: string[]) {
   const def = REPORTS.find((r) => r.code === code);
   if (!def) throw invalid("Unknown report.");
-  requirePermission(db, actor, "report.export", undefined, { type: "report", id: code });
+  await requirePermission(db, actor, "report.export", undefined, { type: "report", id: code });
   const fields = requestedFields && requestedFields.length ? requestedFields : def.fields;
   const bad = fields.filter((f) => !def.fields.includes(f));
   if (bad.length) {
-    audit(db, { actorId: actor.userId, action: "report.export", outcome: "DENIED", category: "EXPORT", entityType: "report", entityId: code, details: { unauthorisedFields: bad } });
+    await audit(db, { actorId: actor.userId, action: "report.export", outcome: "DENIED", category: "EXPORT", entityType: "report", entityId: code, details: { unauthorisedFields: bad } });
     throw forbidden(`Field(s) not approved for export in this report: ${bad.join(", ")}.`);
   }
-  const { rows } = runReport(db, actor, code);
+  const { rows } = await runReport(db, actor, code);
   const esc = (v: unknown) => {
     const s = String(v ?? "");
     const safe = /^[=+\-@]/.test(s) ? `'${s}` : s; // CSV formula-injection guard
@@ -202,8 +217,8 @@ export function exportReport(db: DB, actor: Actor, code: string, requestedFields
     ...rows.map((r) => fields.map((f) => esc(r[f])).join(",")),
   ].join("\n");
   const id = newId("exp");
-  run(db, "INSERT INTO report_exports (id, report_code, user_id, filters, fields, row_count, created_at) VALUES (?,?,?,?,?,?,?)",
+  await run(db, "INSERT INTO report_exports (id, report_code, user_id, filters, fields, row_count, created_at) VALUES (?,?,?,?,?,?,?)",
     id, code, actor.userId, JSON.stringify({ scope: exportScope }), JSON.stringify(fields), rows.length, nowIso());
-  audit(db, { actorId: actor.userId, action: "report.export", category: "EXPORT", entityType: "report", entityId: code, details: { exportId: id, fields, rows: rows.length } });
+  await audit(db, { actorId: actor.userId, action: "report.export", category: "EXPORT", entityType: "report", entityId: code, details: { exportId: id, fields, rows: rows.length } });
   return { filename: `zps-oms-${code.toLowerCase()}-${today()}.csv`, csv };
 }

@@ -12,13 +12,13 @@ export const metadata = { title: "New maintenance request" };
 
 export default async function NewMaintenance({ searchParams }: { searchParams: Promise<{ vehicle?: string }> }) {
   const actor = await requireActor();
-  if (!pageAllowed(actor, "maintenance.create")) return <AccessDenied what="maintenance requests" />;
+  if (!await pageAllowed(actor, "maintenance.create")) return <AccessDenied what="maintenance requests" />;
   const { vehicle } = await searchParams;
   const db = getDb();
-  const vehicles = listVehicles(db, actor).filter((v) => v.status !== "DISPOSED" && can(actor, "maintenance.create", v.custody_org_id));
+  const vehicles = (await listVehicles(db, actor)).filter((v) => v.status !== "DISPOSED" && can(actor, "maintenance.create", v.custody_org_id));
   return (
     <>
-      <PageHeader eyebrow="M04 · Fleet maintenance" title="New maintenance request" description={`Requests with an estimated cost of ZMW ${approvalThreshold(db).toLocaleString()} or more require delegated approval (provisional threshold).`} />
+      <PageHeader eyebrow="M04 · Fleet maintenance" title="New maintenance request" description={`Requests with an estimated cost of ZMW ${(await approvalThreshold(db)).toLocaleString()} or more require delegated approval (provisional threshold).`} />
       <Card className="max-w-3xl">
         <ActionForm action={createMaintenanceAction}>
           <Select label="Vehicle" name="vehicleId" required defaultValue={vehicle} placeholder="Select a vehicle in your scope" options={vehicles.map((v) => ({ value: v.id, label: `${v.fleet_ref} · ${v.make} ${v.model} · ${v.custody_name}` }))} />

@@ -1,6 +1,6 @@
 # Database Schema — ZPS-OMS
 
-Source of truth: `src/server/db/schema.ts` (migration 001). Engine: SQLite via `node:sqlite` for the local prototype (ADR-003); SQL kept portable to PostgreSQL.
+Source of truth: versioned migrations in `db/migrations/` (001_core_schema.sql onward), applied by `src/server/db/migrate.ts` and recorded with checksums in `schema_migrations`. Engine: MySQL/MariaDB via `mysql2` (DEC-030). Timestamps are ISO-8601 UTC strings (CHAR(24)); dates are CHAR(10). The hierarchy is held in `org_relationships` (effective-dated) with a derived `org_unit_closure` table rebuilt after every structural change. Sections below describing the earlier SQLite schema are retained for history until the full schema reference is regenerated.
 
 ## Entity overview
 
