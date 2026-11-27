@@ -8,6 +8,7 @@ import { hasPermission } from "@/server/domain/policy";
 import { EDITABLE_SETTINGS, backupDir, listRestoreChecks, platformOverview } from "@/server/domain/platform";
 import { SHOW_DEMO_ACCOUNTS } from "@/server/auth/session";
 import { backupAction, maintenanceAction, restoreDrillAction, runJobsAction, settingAction, verifyBackupAction } from "@/server/actions/platform";
+import { AppointmentAccessCard } from "./appointment-access";
 import { AccessDenied, Badge, Card, DL, Notice, PageHeader, Stat, Table, td, fmtDateTime } from "@/components/ui";
 import { ActionForm, Hidden, Submit, TextField } from "@/components/forms";
 
@@ -108,6 +109,7 @@ export default async function Platform() {
           <Table head={["Version", "Migration", "Checksum", "Applied"]}>{p.migrations.map((m) => <tr key={m.version}><td className={td}>{m.version}</td><td className={`${td} font-mono text-xs`}>{m.name}</td><td className={`${td} font-mono text-xs text-muted`}>{m.checksum.slice(0, 12)}…</td><td className={`${td} text-xs`}>{fmtDateTime(m.applied_at)}</td></tr>)}</Table>
         </Card>
 
+        <AppointmentAccessCard actor={actor} />
         <Card title="Maintenance mode">
           {configure ? (
             <ActionForm action={maintenanceAction}>

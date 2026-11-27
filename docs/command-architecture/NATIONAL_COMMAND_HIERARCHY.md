@@ -52,8 +52,8 @@ An office records a **proposed** application role (`mapped_role_code`, flagged "
 | Office | Proposed mapping | Status |
 |---|---|---|
 | Divisional Commander | Formation Commanding Officer (role 09) | Plausible; requires validation |
-| Area Commander (Mobile Unit) | Company Commander (role 13) | **Uncertain**: Area Commander may be a distinct appointment; requires validation |
+| Area Commander (Mobile Unit) | **Not mapped** (proposal to map to Company Commander withdrawn after review, migration 015) | To be decided by the Service; see `DEC-075_VALIDATION_REVIEW.md` M-3 |
 | Section/Platoon Commander (Chief Inspector) | Section Head (role 14) | Requires validation |
 | Inspector | Section Head (role 14) | Requires validation |
-| Sergeant, Police Officer / Constable | **None of the 31 roles** | Appointment-only access to their own directives and reports, behind `command.appointment_access` (on by default outside production). **Owner decision required** |
+| Sergeant, Police Officer / Constable | **None of the 31 roles** | Appointment-only access to their own directives and reports (DEC-076, owner direction 27 Nov 2026), governed on the platform console; production needs a Service decision reference |
 | DIG Administration, DIG Special Duties | None | Recorded as offices under the IG for hierarchy only; no ZPS-OMS Operations authority |

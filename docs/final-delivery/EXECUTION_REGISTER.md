@@ -38,10 +38,26 @@ Live task register (directive §15). Statuses: Not Started · In Progress · Par
 | V10 | 10, 11 | 09, 12, 13, 14 | Liaison metadata, routing channels, receipt, acknowledgement, notifications, history, dashboards | V05 | Completed and Verified | `liaison` 8/8; `e2e/liaison.spec.ts` 5/5 | `INTELLIGENCE_LIAISON_SCOPE_AND_ACCESS_CONTROLS.md` | — |
 | V11 | 10 | 12 | Dashboard module panel showed Modules 16 and 17 as "planned" | — | Completed and Verified | browser | `src/app/app/overview.tsx` | — |
 | V12 | 12 | Public site | Modules page removed, `/modules` → `/features`, accurate copy, no intelligence functionality implied | — | Tested | `e2e/public-site.spec.ts` | DEC-073 (liaison roles not advertised) | — |
-| V13 | 13 | Security | Multi-tenant and liaison security verification; new HTTP probes | V10 | In Progress | security probes (see results) | `MULTI_TENANT_SECURITY_REPORT.md` | — |
-| V14 | 14, 15 | All | Beta and end-to-end testing for all 31 roles; defects fixed | V13 | In Progress | see results | `END_TO_END_TEST_RESULTS.md` | — |
-| V15 | 16 | All | Production-readiness verification and documentation | V14 | In Progress | — | `PRODUCTION_READINESS_REPORT.md` | — |
+| V13 | 13 | Security | Multi-tenant and liaison security verification; new HTTP probes | V10 | Tested | 37/37 security probes | `MULTI_TENANT_SECURITY_REPORT.md` | — |
+| V14 | 14, 15 | All | Beta and end-to-end testing for all 31 roles; defects fixed | V13 | Tested | 189/189 unit; 30/30 browser; route audit 0 server errors | `END_TO_END_TEST_RESULTS.md` | — |
+| V15 | 16 | All | Production-readiness verification and documentation | V14 | Implemented | readiness report complete | `PRODUCTION_READINESS_REPORT.md` | Penetration test; production environment |
 | X07 | — | Liaison | Information-security and legal review of the liaison metadata, classification list and retention | Service | Blocked by External Dependency | — | DEC-073 | Service decision |
+
+## v0.11.0 — Command hierarchy, directives and reporting (owner directive 27 Nov 2026)
+
+| ID | Stage | Area | Requirement | Status | Test result | Evidence |
+|---|---|---|---|---|---|---|
+| W01 | 1–3 | All | Code, database and application audit; evidence-based baseline status report with weighted percentages; remaining register; new-direction gap analysis | Completed and Verified | Baseline 64.8 % / 64.0 % | `COMPLETE_ZPS_OMS_DEVELOPMENT_STATUS_REPORT.md` (generated) |
+| W02 | 4 | Hierarchy | IG as the highest authority; DIG offices under the IG; no upward instruction | Completed and Verified | Test A | `NATIONAL_COMMAND_HIERARCHY.md` |
+| W03 | 5 | Directives | Downward directives with authority validation, categories, acknowledgement, assignment onward, progress, completion, closure, consolidated status | Completed and Verified | Test B | `DIRECTIVE_WORKFLOW.md` |
+| W04 | 6 | Reports | Upward reports with acknowledgement, review, return, resubmission, forwarding, closure | Completed and Verified | Tests C, D, F | `UPWARD_REPORTING_WORKFLOW.md` |
+| W05 | 7 | Mobile Unit | Junior chain and the Area Commander's two channels; one report with separate recipient records | Completed and Verified (structure requires validation) | Test E | `MOBILE_UNIT_REPORTING_STRUCTURE.md`, `PARALLEL_REPORTING_MODEL.md` |
+| W06 | 8 | Authority | Acting appointments with delegated actions and expiry; conflict referral to the common superior | Completed and Verified | Tests G, H | `ACTING_AUTHORITY_AND_DELEGATION.md`, `COMMAND_CONFLICT_RESOLUTION.md` |
+| W07 | 9 | Roles | Command pages and dashboard panel for every office holder; appointment-only access | Completed and Verified (DEC-076 needs owner decision) | browser; route audit | `REPORTING_PERMISSION_MATRIX.md` |
+| W08 | 11 | Security | Visibility by office chain; refusals audited; technical and liaison exclusion; loops refused | Completed and Verified | Test I; 10 probes | `MULTI_TENANT_SECURITY_REPORT.md` |
+| W09 | 11 | Integration | Directives referencing manpower requests, assignments and transfers within scope; notifications; audit | Completed and Verified | Test J | `COMMAND_AND_REPORTING_TEST_RESULTS.md` |
+| W10 | 11–13 | All | Full regression, defects fixed, percentages updated, readiness report | Completed and Verified | full chain exit 0 (27–28 Nov 2026) | `END_TO_END_TEST_RESULTS.md` |
+| X08 | — | Command | Validation of the command structure, channels, precedence and mappings; decision on appointment-only access | Blocked by External Dependency | — | DEC-075, DEC-076 |
 
 ## External dependencies
 

@@ -30,7 +30,7 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Headline figures:** `orgUnits`, `personnel`, `activeAssignments`, `contributionsDue`, `storesAwaitingDecision`, `pendingDecisions`
 - **Quick actions:** Review approvals, Stores and stock, Open reports
 - **Working panels:** dashboard kind `DISTRICT_COMMAND`
-- **Permissions (16):** `dashboard.district.view` (U), `org.view` (N), `asset.view` (S), `report.view` (S), `personnel.view` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S)
+- **Permissions (17):** `dashboard.district.view` (U), `org.view` (N), `asset.view` (S), `report.view` (S), `personnel.view` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S), `command.structure.view` (S)
 
 ### Role 22 — Deputy OC — District
 
@@ -43,7 +43,7 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Headline figures:** `orgUnits`, `personnel`, `activeAssignments`, `contributionsDue`, `pendingDecisions`, `myTasks`
 - **Quick actions:** Review approvals, Prepare contribution
 - **Working panels:** dashboard kind `DISTRICT_COMMAND`
-- **Permissions (13):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S)
+- **Permissions (14):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S), `command.structure.view` (S)
 
 ### Role 23 — Operations Officer — District
 
@@ -56,7 +56,7 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Headline figures:** `openManpower`, `contributionsToReview`, `contributionsDue`, `activeAssignments`, `transfersOpen`, `pendingDecisions`
 - **Quick actions:** New manpower request, Register personnel, New stores requisition
 - **Working panels:** dashboard kind `DISTRICT_COMMAND`
-- **Permissions (25):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.receive` (S), `disposition.change` (S), `stores.requisition` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S), `correspondence.manage` (S)
+- **Permissions (26):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.receive` (S), `disposition.change` (S), `stores.requisition` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S), `correspondence.manage` (S), `command.structure.view` (S)
 
 ### Role 24 — Deputy Operations Officer — District
 

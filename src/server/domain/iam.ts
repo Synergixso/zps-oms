@@ -23,7 +23,8 @@ import type { Permission } from "./catalogue";
  *  - mode "any": at least one of the user's active assignments lies inside the scope (viewing);
  *  - mode "all": EVERY active assignment lies inside it, and (for non-national administrators) the user holds
  *    no technical role — local administrators escalate other administrators' accounts to HQ Tech (support).
- * National scope covers every user. Users without active assignments are national-only.
+ * National scope covers every user. A user without active role assignments is in scope through the units of the command
+ * offices they hold (appointment-only accounts, DEC-076); with neither, national-only.
  */
 export async function userInScope(db: DB, actor: Actor, perm: Permission, userId: string, mode: "any" | "all"): Promise<boolean> {
   const s = scopeFor(actor, perm);
@@ -33,7 +34,13 @@ export async function userInScope(db: DB, actor: Actor, perm: Permission, userId
   const rows = await all<{ org_unit_id: string; role_code: string }>(db,
     "SELECT org_unit_id, role_code FROM role_assignments WHERE user_id = ? AND revoked_at IS NULL AND valid_from <= ? AND (valid_to IS NULL OR valid_to > ?)", userId, t, t);
   const live = rows.filter((r) => ROLE_BY_CODE[r.role_code as RoleCode]);
-  if (!live.length) return false;
+  if (!live.length) {
+    // Appointment-only accounts (DEC-076): scope follows the units of the command offices they currently hold.
+    const offices = await all<{ org_unit_id: string }>(db, `SELECT p.org_unit_id FROM position_appointments a JOIN command_positions p ON p.id = a.position_id
+      WHERE a.user_id = ? AND a.ended_at IS NULL AND a.valid_from <= ? AND (a.valid_to IS NULL OR a.valid_to > ?)`, userId, t, t);
+    if (!offices.length) return false;
+    return mode === "any" ? offices.some((o) => s.units.includes(o.org_unit_id)) : offices.every((o) => s.units.includes(o.org_unit_id));
+  }
   if (mode === "any") return live.some((r) => s.units.includes(r.org_unit_id));
   return live.every((r) => s.units.includes(r.org_unit_id) && ROLE_BY_CODE[r.role_code as RoleCode].category !== "TECHNICAL");
 }

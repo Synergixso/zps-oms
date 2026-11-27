@@ -155,6 +155,7 @@ const LABELS: Record<string, string> = {
   audit: "Audit", history: "Record history", security: "Security", workflows: "Workflows", platform: "Platform", notifications: "Notifications", tasks: "My tasks",
   stores: "Stores", requisitions: "Requisitions", profile: "My profile", help: "Help", messages: "Contact messages", search: "Search", new: "New", review: "Review", print: "Print", calendar: "Administrative calendar", correspondence: "Correspondence", setup: "Setup",
   liaison: "Liaison register",
+  command: "Command overview", directives: "Directives", issued: "Issued", submitted: "Submitted", acting: "Acting appointments", conflicts: "Conflicts", structure: "Structure",
 };
 /** Labels under /app/liaison (the "records" segment has no page of its own and is not shown). */
 const LIAISON_LABELS: Record<string, string> = {

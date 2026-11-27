@@ -8,7 +8,7 @@
 | Back office | Divisional Motor Transport Administration |
 | Organisational context | Provincial Division or Unit/Formation transport |
 | Category | FUNCTIONAL |
-| Synthetic account(s) | `demo.fleet.officer` (Mobile Unit Division / SPOM, Kamfinsa); `demo.fleet.officer` (Lusaka Division); `demo.fleet.verifier` (Lusaka Division) |
+| Synthetic account(s) | `demo.fleet.officer` (Lusaka Division); `demo.fleet.officer` (Mobile Unit Division / SPOM, Kamfinsa); `demo.fleet.verifier` (Lusaka Division) |
 
 **Purpose:** Divisional motor transport administration: vehicle register, documentation, maintenance and service history.
 

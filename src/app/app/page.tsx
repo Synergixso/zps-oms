@@ -16,16 +16,28 @@ import { PersonnelDashboard } from "./dashboards";
 import { CommandOverview } from "./overview";
 import { StoresPanels, TechLocalPanels } from "./role-panels";
 import { LiaisonPanels } from "./liaison-panels";
+import { CommandPanel } from "./command/panel";
+import { officesHeld } from "@/server/domain/command";
 
 export const metadata = { title: "Dashboard" };
 
 export default async function Dashboard() {
   const actor = await requireActor();
   const kind = dashboardKind(actor);
-  if (!kind) return <NoAccess />;
+  if (!kind) {
+    // Appointment holders without an application role (DEC-076) see their command and reporting work only.
+    if ((await officesHeld(getDb(), actor)).length) return (
+      <>
+        <PageHeaderLite name={actor.displayName} />
+        <CommandPanel actor={actor} standalone />
+      </>
+    );
+    return <NoAccess />;
+  }
   return (
     <>
       <CommandOverview actor={actor} kind={kind} />
+      <CommandPanel actor={actor} />
       <section aria-label="Workspace details" className="mt-8 border-t border-line pt-6">{detail(actor, kind)}</section>
     </>
   );
@@ -71,6 +83,16 @@ function detail(actor: Actor, kind: NonNullable<ReturnType<typeof dashboardKind>
     case "ORG_REGISTRY":
       return <OrgDash actor={actor} />;
   }
+}
+
+function PageHeaderLite({ name }: { name: string }) {
+  return (
+    <div className="mb-6">
+      <p className="text-[11px] font-bold uppercase tracking-wider text-[#173f8a]">Command appointment · no application role</p>
+      <h1 className="text-[24px] font-extrabold text-[#0d2149]">{name}</h1>
+      <p className="text-sm text-ink-2">Your account holds a command office but none of the 31 application roles, so ZPS-OMS shows only the directives and reports of your own office. Access to other modules needs an approved role and organisational scope.</p>
+    </div>
+  );
 }
 
 function NoAccess() {

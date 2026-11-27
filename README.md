@@ -103,6 +103,7 @@ National HQ (tenant t_zps)
 - **Sessions:** random tokens, stored server-side only as a hash, in HttpOnly, SameSite cookies, with idle and absolute expiry.
 - **Passwords:** scrypt hashes with per-user salts. Repeated failures lock the account temporarily, and every attempt is recorded.
 - **Audit:** each event stores the hash of the previous event; appends are serialised so the chain cannot fork under concurrent requests. MySQL triggers reject `UPDATE` and `DELETE` on the audit table. Chain verification is available in the app and as `npm run verify:audit`.
+- **Command and reporting:** directives flow down from the Inspector General through configured command offices, and status reports flow up, with parallel recipients, acting appointments and conflict referral (`docs/command-architecture/`). Authority comes from offices held, not roles or ranks.
 - **Roles:** 31 roles in four levels (`docs/final-delivery/UPDATED_31_ROLE_CATALOGUE.md`). Technical administrators (Superadmin, HQ Tech, Division/Unit, District and Station system administrators) never hold personnel access or approval authority. The four Police Intelligence Officer roles (07, 19, 30, 31) hold only restricted liaison administration: metadata such as reference numbers, offices, dates, status and routing, with no content field and no access to personnel or operational registers (`docs/final-delivery/INTELLIGENCE_LIAISON_SCOPE_AND_ACCESS_CONTROLS.md`).
 - **Database:** every connection runs in strict SQL mode, so values are never silently truncated.
 - **Data hygiene:** synthetic data only; credentials only in `.env.local`, which is git-ignored; no paid or external services.
@@ -184,7 +185,7 @@ On first start the server applies any pending migrations and then loads the synt
 | `npm run docs:permissions` | Regenerate the role catalogue, permission matrix, dashboard configuration and tier documents from the enforced configuration |
 
 ## 10. Synthetic accounts and review walkthrough
-Every account is synthetic: `demo.*` usernames and "Demo" names. The development password for all of them is shown on the local sign-in page (development builds only) and defined in `src/server/db/constants.ts`. It is a published test value for local review only. There are 60 synthetic accounts covering all 31 roles; the per-role list is in `docs/development/ROLE_BACKOFFICE_DEVELOPMENT_STATUS.md` and the user acceptance scripts in `docs/uat/`.
+Every account is synthetic: `demo.*` usernames and "Demo" names. The development password for all of them is shown on the local sign-in page (development builds only) and defined in `src/server/db/constants.ts`. It is a published test value for local review only. There are 65 synthetic accounts covering all 31 roles, plus two appointment-only accounts (Sergeant, Constable); the per-role list is in `docs/development/ROLE_BACKOFFICE_DEVELOPMENT_STATUS.md` and the user acceptance scripts in `docs/uat/`.
 
 | Sign in as | Try |
 |---|---|
@@ -205,12 +206,15 @@ Every account is synthetic: `demo.*` usernames and "Demo" names. The development
 | Demo Mufulira Receiving Area Officer (`demo.mufulira.receiving`) | Accept a transfer into the receiving area |
 | Police Intelligence Officer, Kitwe Central (`demo.kitwec.pio`) | Record a liaison reference (free text is refused) and submit it to Kitwe District |
 | District Police Intelligence Officer, Kitwe (`demo.kitwe.pio`) | Record receipt, acknowledge, route onward to the Division; open `/app/personnel` → access denied |
+| Inspector General (`demo.hq.readonly`) | National Command Overview; issue a directive to DIG Operations (no office can instruct the IG) |
+| Area Commander, Mobile Unit (`demo.mu.acoy.commander`) | Submit one area report to Staff II, the Kitwe Operations Officer and the OC Kitwe; each acknowledges separately |
+| Constable (`demo.mu.constable`) | Appointment-only access: own directives and reports only |
 | National Police Intelligence Officer (`demo.hq.pio`) | Liaison activity register, organisational routing, audit history; station drafts are not visible |
 | Demo Kitwe District Commander (`demo.kitwe.commander`) | District dashboard; personnel limited to Kitwe; a Lusaka record returns 404 |
 | Demo A Company Administrative Officer (`demo.mu.acoy.admin`) | Select eligible officers for a contribution and submit |
 
 ## 11. Testing and verification evidence
-- **Domain and integration tests** (`npm test`, 169 tests in 28 files, strict SQL mode) cover access control, tenant isolation, the 31-role matrix, the liaison boundary and the safe role migration, context switching, scoped technical administration, stores, workflows and decision chains, separation of duties, scheduled delivery, Excel export, backups and restore drills, audit-chain concurrency, migrations and the seed.
+- **Domain and integration tests** (`npm test`, 183 tests in 29 files, strict SQL mode) cover access control, tenant isolation, the 31-role matrix, the liaison boundary and the safe role migration, context switching, scoped technical administration, stores, workflows and decision chains, separation of duties, scheduled delivery, Excel export, backups and restore drills, audit-chain concurrency, migrations and the seed.
 - **Playwright** (`npm run test:e2e`, Microsoft Edge): 8 journeys, the axe-core accessibility scan (`docs/evidence/accessibility.md`), the reflow/200 % zoom/tablet check (`docs/evidence/reflow.md`), the A4 print check (`docs/evidence/print.md`) and the Content Security Policy check.
 - **Load and page-weight baseline** (`npm run test:load -- http://localhost:3100` against `npm run start`) — `docs/evidence/load-test.md`.
 - **Route audit** (`npm run audit:routes`): every route against every user — `docs/evidence/route-audit.md`. **Phone-width review** (`npm run review:mobile`) — `docs/evidence/mobile/`.

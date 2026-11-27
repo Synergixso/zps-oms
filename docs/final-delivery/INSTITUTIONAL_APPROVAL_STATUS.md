@@ -18,6 +18,7 @@ The institutional decisions pack (`docs/governance/INSTITUTIONAL_DECISIONS_PACK.
 
 - the role catalogue and permission allocation (31 roles, DEC-072), delegations and approval chains, and the authorised reassignment of any account flagged when a role left the catalogue;
 - the four Police Intelligence Officer roles: an information-security and legal review of the liaison metadata, the administrative classification list and retention, and confirmation that the metadata-only boundary is acceptable (DEC-073). No intelligence content is in scope without a separate authorised proposal;
+- the institutional command structure: command offices, reporting relationships and channels (including the Mobile Unit Area Commander's two channels), conflict precedence, and the proposed office-to-role mappings (DEC-075). An advisory review with a sign-off sheet is in `docs/command-architecture/DEC-075_VALIDATION_REVIEW.md`; it is **not** a Service validation. Appointment-only command access for Sergeants and Constables (DEC-076) is implemented under the project owner's direction; enabling it in production needs a Service decision reference;
 - tenure, renewal and early-withdrawal policy (the 365-day minimum tenure is a configurable development default, DEC-041);
 - identifier formats for production (service numbers, vehicle registrations, asset tags, store codes): until set, production refuses those registrations (DEC-069);
 - retention periods (NFR-013) and the correspondence document-storage policy (DEC-068);

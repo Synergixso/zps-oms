@@ -8,7 +8,7 @@
 | Back office | Division Senior Staff Officer – Operations |
 | Organisational context | Provincial Division or Unit/Formation |
 | Category | BUSINESS |
-| Synthetic account(s) | `demo.cb.staffops` (Copperbelt Division); `demo.cen.staffops` (Central Division); `demo.lsk.staffops` (Lusaka Division) |
+| Synthetic account(s) | `demo.cb.staffops` (Copperbelt Division); `demo.cen.staffops` (Central Division); `demo.lsk.staffops` (Lusaka Division); `demo.mu.staff1` (Mobile Unit Division / SPOM, Kamfinsa) |
 
 **Purpose:** Divisional Operations administration: requirements, contributions, rosters, assignments, transfers and renewals.
 

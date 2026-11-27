@@ -79,6 +79,27 @@ if (liaCb) {
     check(`liaison id probe ${p}`, r.status === 404 && !/"dependencies"/.test(r.body), `${r.status}`);
   }
 } else check("liaison records seeded", false, "seed step 013 has not run");
+// 4c. Command and reporting: offices outside a directive's or report's chain get a neutral 404; technical administrators and
+// appointment-only accounts reach nothing outside their own command work.
+const [[cmdDir]] = await db.query("SELECT id FROM command_directives WHERE parent_id IS NULL ORDER BY created_at LIMIT 1");
+const [[cmdRpt]] = await db.query("SELECT id FROM status_reports WHERE reporter_position_id = 'pos_mu_area_a' ORDER BY created_at LIMIT 1");
+if (cmdDir && cmdRpt) {
+  for (const [who, uid] of [["Lusaka Divisional Commander", "u_lsk_cmd"], ["Kitwe Central Station Inspector", "u_kitc_ops"], ["Copperbelt technical administrator", "u_cb_tech"]]) {
+    const tok = await session(uid);
+    for (const p of [`/app/command/directives/${cmdDir.id}`, `/app/command/reports/${cmdRpt.id}`]) {
+      const r = await get(p, tok);
+      check(`${who} → ${p.replace(/(dir|rpt)_[0-9a-f]+/, "$1_[id]")}`, r.status === 404 && !/DIR-20|RPT-20/.test(r.body), `${r.status}`);
+    }
+  }
+  const cst = await session("u_mu_cst");
+  for (const p of ["/app/personnel", "/app/command/structure", "/app/admin/users"]) {
+    const r = await get(p, cst);
+    check(`appointment-only constable → ${p}`, r.status === 200 && /not authorised to view/i.test(r.body), `${r.status}`);
+  }
+  const tech = await session("u_cb_tech");
+  const r = await get("/app/command", tech);
+  check("technical administrator → /app/command (no office)", r.status === 200 && /do not hold a command office/i.test(r.body), `${r.status}`);
+} else check("command records seeded", false, "seed step 014 has not run");
 // 5. Setup is closed on a database with accounts; /modules redirects.
 const s = await get("/setup");
 check("/setup closed", s.status === 200 && /Setup has been completed/.test(s.body) && !/name="token"/.test(s.body), `${s.status}`);

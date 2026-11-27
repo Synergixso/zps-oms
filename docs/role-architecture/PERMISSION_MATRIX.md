@@ -105,6 +105,8 @@ Approval authority is never a role permission: it needs an active delegation (do
 | `liaison.reference.route` |  |  |  |  |  |  | N |
 | `liaison.status.view` |  |  |  |  |  |  | N |
 | `liaison.audit.view` |  |  |  |  |  |  | N |
+| `command.structure.view` |  | N | N | N | N |  |  |
+| `command.structure.manage` |  |  |  | N |  |  |  |
 | `contact.view` | N |  |  | N |  |  |  |
 | `contact.manage` | N |  |  | N |  |  |  |
 
@@ -181,6 +183,7 @@ R01 Superadmin · R02 Inspector General of Police (IG) · R03 Deputy Inspector G
 | `liaison.reference.route` |  |  |  |  |  |  |  |  |  |  |  | S |
 | `liaison.status.view` |  |  |  |  |  |  |  |  |  |  |  | S |
 | `liaison.audit.view` |  |  |  |  |  |  |  |  |  |  |  | S |
+| `command.structure.view` |  | S | S | S | S |  |  | S |  |  |  |  |
 
 R08 Divisional/Unit System Administrator (Tech) · R09 Formation Commanding Officer · R10 Deputy Division Commander · R11 Division Senior Staff Officer – Operations (Staff I) · R12 Deputy Division Staff Officer – Operations (Staff II) · R13 Company Commander · R14 Section Head · R15 Formation Operations Staff Administrator · R16 Divisional Quarter Masters Stores Officer · R17 Divisional Principal Armourer · R18 Divisional MTO Officer-in-Charge · R19 Division Police Intelligence Officer
 
@@ -237,6 +240,7 @@ R08 Divisional/Unit System Administrator (Tech) · R09 Formation Commanding Offi
 | `liaison.reference.route` |  |  |  |  |  |  |  |  |  |  | S |
 | `liaison.status.view` |  |  |  |  |  |  |  |  |  |  | S |
 | `liaison.audit.view` |  |  |  |  |  |  |  |  |  |  | S |
+| `command.structure.view` |  | S | S | S |  |  |  |  |  |  |  |
 
 R20 District System Administrator (Tech) · R21 Officer Commanding — District · R22 Deputy OC — District · R23 Operations Officer — District · R24 Deputy Operations Officer — District · R25 Stores Officer — District · R26 Police Station System Administrator · R27 Officer-in-Charge — Police Station GD · R28 Station Inspector — Police Station GD · R29 Police Station Administrator (Stores and Admin) · R30 District Police Intelligence Officer
 

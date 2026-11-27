@@ -48,6 +48,9 @@ const R = {
   // Liaison administration (roles 07, 19, 30, 31): a Copperbelt record routed to the Division, and a Lusaka draft.
   liaCb: await id("SELECT id FROM liaison_records WHERE external_reference='SYN-KCS-LIA-0001'"),
   liaLsk: await id("SELECT id FROM liaison_records WHERE external_reference='SYN-LSK-LIA-0005'"),
+  // Command and reporting: the IG's directive at the top of the seeded chain, and the Area Commander's parallel report.
+  dir: await id("SELECT id FROM command_directives WHERE parent_id IS NULL ORDER BY created_at LIMIT 1"),
+  rpt: await id("SELECT id FROM status_reports WHERE reporter_position_id='pos_mu_area_a' ORDER BY created_at LIMIT 1"),
 };
 
 const routes = [
@@ -72,6 +75,8 @@ const routes = [
   "/app/calendar", "/app/calendar/new", "/app/correspondence", "/app/correspondence/new",
   "/app/liaison", "/app/liaison/assigned", "/app/liaison/submissions", "/app/liaison/incoming", "/app/liaison/acknowledgements", "/app/liaison/reports",
   "/app/liaison/routing", "/app/liaison/history", "/app/liaison/new", `/app/liaison/records/${R.liaCb}`, `/app/liaison/records/${R.liaLsk}`,
+  "/app/command", "/app/command/directives", "/app/command/directives/issued", "/app/command/directives/new", `/app/command/directives/${R.dir}`,
+  "/app/command/reports", "/app/command/reports/submitted", "/app/command/reports/new", `/app/command/reports/${R.rpt}`, "/app/command/acting", "/app/command/conflicts", "/app/command/structure",
 ];
 
 const users = await all("SELECT u.id, u.display_name, (SELECT role_code FROM role_assignments a WHERE a.user_id=u.id AND a.revoked_at IS NULL ORDER BY a.id LIMIT 1) AS role FROM users u WHERE u.status='ACTIVE' ORDER BY u.id");

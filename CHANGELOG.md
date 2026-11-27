@@ -2,6 +2,18 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.11.0] — 2026-11-27 — Institutional command hierarchy, directives and status reporting
+### Added
+- **Development status report** (`COMPLETE_ZPS_OMS_DEVELOPMENT_STATUS_REPORT.md`, `UPDATED_IMPLEMENTATION_PERCENTAGES.md`), generated from a weighted requirement register (`scripts/status-register.mts`, `npm run docs:status`): baseline 64.8 % implemented / 64.0 % verified; current 89.6 % / 88.7 % (remaining work is mostly blocked by external dependencies).
+- **Command and Reporting** (DEC-074): command offices separate from ranks and roles; dated appointments; typed reporting relationships (primary command, primary reporting, parallel reporting, administrative coordination) with loop prevention; the IG as the highest authority with no superior; directives issued only downward to the office directly below, acknowledged, assigned onward level by level, progressed, completed and closed with consolidated status; status reports routed automatically to the designated superior and parallel recipients as **one report with one recipient record per office**, with acknowledgement, review, return, resubmission, forwarding and closure; acting appointments with delegated actions and expiry (DEC-077); conflicting tasking referred to the nearest common superior, never decided automatically; integration with manpower requests, assignments and transfers within the issuer's scope.
+- Mobile Unit structure (synthetic, DEC-075): Constable → Sergeant → Inspector → Section/Platoon Commander → Area Commander; the Area Commander's channel A (Kitwe District coordination and parallel reporting) and channel B (Staff II → Staff I → Divisional Commander → Commissioner → DIG Operations → IG).
+- Pages: `/app/command` (overview), directives received/issued/new/detail, reports received/submitted/new/detail, acting appointments, conflicts, structure; a command panel on the dashboard of every office holder; appointment-only dashboard for ranks without an application role (DEC-076).
+- Automation: `command.acknowledgement-reminders`, `command.report-reminders` (with escalation to the next superior), `command.acting-expiry`.
+- Migration 014; seed step 014 (development only): 28 offices, 29 relationships, five new synthetic accounts.
+- **DEC-076 governed** (owner direction): appointment-only command access for Sergeant and Constable offices only (explicit list, never derived from an undecided mapping); changed only on the platform console with a reason, and in production with a Service decision reference; audited before and after; *Users & access* lists appointment-only accounts with whether the policy gives them access; account pages show command offices; scoped technical administrators can support appointment-only accounts within their office's unit.
+- **DEC-075 advisory validation review** (`docs/command-architecture/DEC-075_VALIDATION_REVIEW.md`, not an institutional validation): Area Commander → Company Commander mapping withdrawn (migration 015); open questions listed for decision; sign-off sheet.
+- Tests: `command` (13, Tests A–J), `appointment-access` (6), Playwright `command.spec.ts` (5), 10 new HTTP security probes; `docs/command-architecture/` (8 documents) and `COMMAND_AND_REPORTING_TEST_RESULTS.md`.
+
 ## [0.10.0] — 2026-11-27 — Final system completion: 31-role catalogue and restricted liaison workspaces
 ### Added
 - **31-role catalogue in four levels** (Tier 1: 7, Tier 2: 12, Tier 3: 11, Tier 4: 1; DEC-072), numbered 1–31 in the directive's order. Codes unchanged; former roles 7–17 are now 8–18 and 18–27 are 20–29.

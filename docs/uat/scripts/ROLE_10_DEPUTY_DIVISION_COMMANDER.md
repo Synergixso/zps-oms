@@ -8,7 +8,7 @@
 | Back office | Deputy Division Commander Dashboard |
 | Organisational context | Provincial Division or Unit/Formation (deputy) |
 | Category | BUSINESS |
-| Synthetic account(s) | `demo.cb.approver` (Copperbelt Division); `demo.cb.reporting` (Copperbelt Division) |
+| Synthetic account(s) | `demo.cb.approver` (Copperbelt Division); `demo.cb.reporting` (Copperbelt Division); `demo.mu.deputy` (Mobile Unit Division / SPOM, Kamfinsa) |
 
 **Purpose:** Support to the commanding officer: performance, outstanding matters and Staff I/II workflows.
 

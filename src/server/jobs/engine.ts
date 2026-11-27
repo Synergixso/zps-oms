@@ -397,6 +397,82 @@ export const JOBS: JobDef[] = [
     },
   },
   {
+    name: "command.acknowledgement-reminders",
+    title: "Directive acknowledgement reminders and overdue escalation",
+    description: "Reminds the receiving office of a directive not acknowledged within command.ack_reminder_days, tells the issuing office when it is still unacknowledged after 2.5 times that, and reminds the receiving office of open directives past their due date. Changes no status and decides nothing.",
+    run: async (db) => {
+      const { holdersOf } = await import("../domain/command");
+      const days = Number((await one<{ value: string }>(db, "SELECT value FROM app_settings WHERE `key` = 'command.ack_reminder_days'"))?.value) || 2;
+      const now = Date.now();
+      const t = today();
+      let n = 0;
+      const open = await all<{ id: string; reference: string; subject: string; status: string; created_at: string; due_date: string | null; ack_required: number; recipient_position_id: string; issuer_position_id: string }>(db,
+        "SELECT id, reference, subject, status, created_at, due_date, ack_required, recipient_position_id, issuer_position_id FROM command_directives WHERE status IN ('ISSUED','ACKNOWLEDGED','IN_PROGRESS')");
+      for (const d of open) {
+        const age = (now - Date.parse(d.created_at)) / 86400000;
+        if (d.status === "ISSUED" && d.ack_required && age >= days) {
+          for (const u of await holdersOf(db, d.recipient_position_id, "ACKNOWLEDGE")) if (await notify(db, u, `Acknowledge directive ${d.reference}`, d.subject, `/app/command/directives/${d.id}`, { dedupeKey: `dir-ack:${d.id}:${t}:${u}` })) n++;
+          if (age >= days * 2.5) for (const u of await holdersOf(db, d.issuer_position_id)) if (await notify(db, u, `Not yet acknowledged: ${d.reference}`, `${d.subject} — still unacknowledged after ${Math.floor(age)} days.`, `/app/command/directives/${d.id}`, { dedupeKey: `dir-esc:${d.id}:${t}:${u}` })) n++;
+        }
+        if (d.due_date && d.due_date < t) for (const u of await holdersOf(db, d.recipient_position_id)) if (await notify(db, u, `Directive overdue: ${d.reference}`, `${d.subject} — due ${d.due_date}.`, `/app/command/directives/${d.id}`, { dedupeKey: `dir-due:${d.id}:${t}:${u}` })) n++;
+      }
+      return { processed: n };
+    },
+  },
+  {
+    name: "command.report-reminders",
+    title: "Pending report reminders and escalation",
+    description: "Reminds a recipient office of a submitted report it has not acknowledged or reviewed within command.report_reminder_days, escalates to that office's next superior after twice that, and reminds the reporting office of reports returned for correction. Reports are never re-routed or decided automatically.",
+    run: async (db) => {
+      const { holdersOf, commandChain } = await import("../domain/command");
+      const days = Number((await one<{ value: string }>(db, "SELECT value FROM app_settings WHERE `key` = 'command.report_reminder_days'"))?.value) || 3;
+      const now = Date.now();
+      const t = today();
+      let n = 0;
+      const waiting = await all<{ rid: string; report_id: string; reference: string; position_id: string; title: string; status: string; since: string }>(db,
+        `SELECT rc.id AS rid, r.id AS report_id, r.reference, rc.position_id, p.title, rc.status, COALESCE(rc.acknowledged_at, r.updated_at) AS since FROM report_recipients rc
+           JOIN status_reports r ON r.id = rc.report_id JOIN command_positions p ON p.id = rc.position_id WHERE r.status = 'SUBMITTED' AND rc.status IN ('PENDING','ACKNOWLEDGED')`);
+      for (const w of waiting) {
+        const age = (now - Date.parse(w.since)) / 86400000;
+        if (age < days) continue;
+        for (const u of await holdersOf(db, w.position_id, w.status === "PENDING" ? "ACKNOWLEDGE" : "REVIEW_REPORT")) {
+          if (await notify(db, u, `${w.status === "PENDING" ? "Acknowledge" : "Review"} report ${w.reference}`, `Waiting at ${w.title} for ${Math.floor(age)} days.`, `/app/command/reports/${w.report_id}`, { dedupeKey: `rpt-rem:${w.rid}:${t}:${u}` })) n++;
+        }
+        if (age >= days * 2) {
+          const up = (await commandChain(db, w.position_id))[0];
+          if (up) for (const u of await holdersOf(db, up)) if (await notify(db, u, `Escalated: report ${w.reference} waiting at ${w.title}`, `The report has waited ${Math.floor(age)} days. This is for awareness; the report stays with ${w.title}.`, `/app/command/reports/${w.report_id}`, { dedupeKey: `rpt-esc:${w.rid}:${t}:${u}` })) n++;
+        }
+      }
+      for (const r of await all<{ id: string; reference: string; reporter_position_id: string }>(db, "SELECT id, reference, reporter_position_id FROM status_reports WHERE status = 'RETURNED'")) {
+        for (const u of await holdersOf(db, r.reporter_position_id)) if (await notify(db, u, `Correct and resubmit report ${r.reference}`, "The report was returned for correction.", `/app/command/reports/${r.id}`, { dedupeKey: `rpt-ret-rem:${r.id}:${t}:${u}` })) n++;
+      }
+      return { processed: n };
+    },
+  },
+  {
+    name: "command.acting-expiry",
+    title: "Acting appointment expiry notices",
+    description: "Tells the acting officer, the substantive holder and the authorising officer two days before an acting appointment ends, and records in the audit trail when one has ended. Authority already lapses automatically at the end date; this job only informs.",
+    run: async (db) => {
+      const now = nowIso();
+      const soon = new Date(Date.now() + 2 * 86400000).toISOString();
+      let n = 0;
+      for (const a of await all<{ id: string; title: string; acting_user_id: string; original_user_id: string | null; authorised_by: string; valid_to: string }>(db,
+        "SELECT x.id, p.title, x.acting_user_id, x.original_user_id, x.authorised_by, x.valid_to FROM acting_appointments x JOIN command_positions p ON p.id = x.position_id WHERE x.revoked_at IS NULL AND x.valid_to > ? AND x.valid_to <= ?", now, soon)) {
+        for (const u of [a.acting_user_id, a.original_user_id, a.authorised_by].filter((x): x is string => !!x)) {
+          if (await notify(db, u, `Acting appointment ends soon: ${a.title}`, `Ends ${a.valid_to.slice(0, 10)}. Record a new acting appointment if it must continue.`, "/app/command/acting", { dedupeKey: `act-exp:${a.id}:${u}` })) n++;
+        }
+      }
+      for (const a of await all<{ id: string; position_id: string; acting_user_id: string }>(db,
+        `SELECT x.id, x.position_id, x.acting_user_id FROM acting_appointments x WHERE x.revoked_at IS NULL AND x.valid_to <= ?
+           AND NOT EXISTS (SELECT 1 FROM audit_events e WHERE e.action = 'command.acting.expired' AND e.entity_id = x.position_id AND e.details LIKE CONCAT('%', x.id, '%'))`, now)) {
+        await audit(db, { actorId: null, action: "command.acting.expired", category: "IAM", entityType: "command_position", entityId: a.position_id, details: { actingAppointment: a.id, acting: a.acting_user_id } });
+        n++;
+      }
+      return { processed: n };
+    },
+  },
+  {
     name: "system.housekeeping",
     title: "Session and log housekeeping",
     description: "Removes expired sessions and sign-in attempt records older than 90 days.",

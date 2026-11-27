@@ -97,6 +97,8 @@ Approval authority is never a role permission: it needs an active delegation (do
 | `liaison.reference.route` |  |  |  |  |  |  | N |  |  |  |  |  |  |  |  |  |  |  | S |  |  |  |  |  |  |  |  |  |  | S | U |
 | `liaison.status.view` |  |  |  |  |  |  | N |  |  |  |  |  |  |  |  |  |  |  | S |  |  |  |  |  |  |  |  |  |  | S | U |
 | `liaison.audit.view` |  |  |  |  |  |  | N |  |  |  |  |  |  |  |  |  |  |  | S |  |  |  |  |  |  |  |  |  |  | S | U |
+| `command.structure.view` |  | N | N | N | N |  |  |  | S | S | S | S |  |  | S |  |  |  |  |  | S | S | S |  |  |  |  |  |  |  |  |
+| `command.structure.manage` |  |  |  | N |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `contact.view` | N |  |  | N |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `contact.manage` | N |  |  | N |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 

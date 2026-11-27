@@ -1,6 +1,6 @@
 # Accessibility scan — v0.9.0 pages (axe-core, WCAG 2.0/2.1/2.2 A and AA)
 
-Generated 2026-11-27T13:31:48.509Z as role 10 (Division Staff Officer, Copperbelt). Synthetic data only.
+Generated 2026-11-27T20:28:25.160Z as role 10 (Division Staff Officer, Copperbelt). Synthetic data only.
 
 **Violations: 0**
 

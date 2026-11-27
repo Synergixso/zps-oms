@@ -1,6 +1,6 @@
 # Production Readiness Report
 
-Recorded 27 November 2026 for v0.9.1 (updated under the Master Final Engineering Directive). Evidence: `COMPLETE_WORKFLOW_TEST_RESULTS.md`, `CYBERSECURITY_VERIFICATION.md`, `BETA_TESTING_REPORT.md`, `docs/evidence/`.
+Recorded 27 November 2026; updated for v0.11.0 (31-role catalogue, restricted liaison workspaces, command hierarchy and reporting). Evidence: `END_TO_END_TEST_RESULTS.md`, `COMMAND_AND_REPORTING_TEST_RESULTS.md`, `COMPLETE_ZPS_OMS_DEVELOPMENT_STATUS_REPORT.md`, `COMPLETE_WORKFLOW_TEST_RESULTS.md` (v0.9.1), `CYBERSECURITY_VERIFICATION.md`, `BETA_TESTING_REPORT.md`, `docs/evidence/`.
 
 ## Status
 
@@ -22,13 +22,15 @@ The directive asks for *Production ready — quality assurance verified* once ev
 | Condition | Result | Evidence |
 |---|---|---|
 | All approved core modules implemented | Met: 17 of 17, including the §5.1 standards (pagination, sorting, loading and error states added in v0.9.1) | `ALL_17_MODULES_VERIFICATION.md` |
-| All 27 role workspaces functional | Met: 27 of 27 verified | `ALL_27_ROLES_VERIFICATION.md` (generated) |
+| All 31 role workspaces functional | Met: 31 of 31 role workspaces verified (route audit 0 server errors; 30/30 browser journeys; 189/189 unit tests) | `TIER_1…TIER_4_*_VERIFICATION.md` (generated) |
+| Command hierarchy and reporting (IG supreme; directives down; reports up; parallel reporting; acting authority; conflicts) | Met: Tests A–J pass; structure is synthetic and requires institutional validation | `COMMAND_AND_REPORTING_TEST_RESULTS.md`; DEC-075, DEC-076 |
+| Restricted liaison workspaces within the information boundary | Met | `INTELLIGENCE_LIAISON_SCOPE_AND_ACCESS_CONTROLS.md` |
 | All relevant screens work | Met: every route rendered, refused or hidden as expected for every account, 0 server errors | `docs/evidence/route-audit.md` |
 | Required workflows operate | Met: personnel, manpower, roster, assignment, tenure, renewal, transfer (KCM → Mopani), disposition, approvals, stores, fleet, assets, calendar, correspondence | domain tests; Playwright journeys |
-| MySQL persistence | Met: migrations 001–012, strict SQL mode, transactions for multi-record changes | `migrations` tests; `production-setup` test |
+| MySQL persistence | Met: migrations 001–015, strict SQL mode, transactions for multi-record changes | `migrations` tests; `production-setup` test |
 | Permissions work | Met | `PERMISSION_VERIFICATION_REPORT.md` |
 | Multi-tenant isolation | Met: cross-Province, District, Station and formation access refused or hidden | `access-control` tests; Playwright isolation journey; `npm run test:security` |
-| Administrative automations | Met: 16 jobs with execution records, retries and alerts | `automation-platform` tests; platform console |
+| Administrative automations | Met: 19 jobs with execution records, retries and alerts (three command reminder jobs added in v0.11.0) | `automation-platform` tests; platform console |
 | Report generation | Met: figures equal direct SQL; dashboard figures counted in SQL over the whole scope (v0.9.1); CSV, .xlsx, PDF, print | `reports`, `paging` tests; A4 print test |
 | Audit events recorded | Met: chain verified, 0 breaks; before/after values and delegation references on decisions; refused personnel reads audited (v0.9.1) | `npm run verify:audit`; `transactions` tests |
 | Public Modules page removed | Met: `/modules` → 308 → `/features` | `e2e/public-site.spec.ts` |

@@ -6,6 +6,7 @@ import { hasPermission, primaryAssignment, primaryRole } from "@/server/domain/p
 import { signOut, switchContext } from "@/server/actions/auth";
 import { NAV, NAV_ITEMS, type NavItem } from "@/lib/nav";
 import { workspaceFor } from "@/server/domain/workspaces";
+import { officesHeld } from "@/server/domain/command";
 import { Breadcrumbs, SideNav, UserMenu } from "@/components/shell";
 import { Crest } from "@/components/ui";
 import { Icon } from "@/components/icons";
@@ -25,7 +26,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const ws = workspaceFor(actor);
   const allowed = (i: NavItem) => i.any.length === 0 || i.any.some((p) => hasPermission(actor, p));
   const source = ws ? ws.nav.map((g) => ({ label: g.label, items: g.items.map((h) => (NAV_ITEMS[h] ? { ...NAV_ITEMS[h], label: ws.labels?.[h] ?? NAV_ITEMS[h].label } : undefined)).filter((i): i is NavItem => Boolean(i)) })) : NAV;
-  const groups = source.map((g) => ({ ...g, items: g.items.filter(allowed) })).filter((g) => g.items.length);
+  // Command and reporting follows appointments to offices, not roles: the section appears only for office holders.
+  const holdsOffice = (await officesHeld(getDb(), actor)).length > 0;
+  const commandGroup = NAV.find((g) => g.label === "Command and reporting")!;
+  const withCommand = [...source.filter((g) => g.label !== "Command and reporting"), ...(holdsOffice ? [commandGroup] : [])];
+  const groups = withCommand.map((g) => ({ ...g, items: g.items.filter(allowed) })).filter((g) => g.items.length);
   const role = primaryRole(actor);
   const pa = primaryAssignment(actor);
   const unread = Number((await one<{ c: number }>(getDb(), "SELECT COUNT(*) AS c FROM notifications WHERE user_id = ? AND read_at IS NULL", actor.userId))?.c ?? 0);

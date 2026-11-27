@@ -51,6 +51,21 @@ export const NAV: NavGroup[] = [
     ],
   },
   {
+    // Command and reporting (DEC-074). Shown only to users who hold a command office (appended by the layout);
+    // every page and domain function re-checks the office on the server.
+    label: "Command and reporting",
+    items: [
+      { href: "/app/command", label: "Command overview", icon: "starShield", any: [] },
+      { href: "/app/command/directives", label: "Directives received", icon: "inbox", any: [] },
+      { href: "/app/command/directives/issued", label: "Directives issued", icon: "send", any: [] },
+      { href: "/app/command/reports", label: "Reports received", icon: "clipboardCheck", any: [] },
+      { href: "/app/command/reports/submitted", label: "Reports submitted", icon: "fileEdit", any: [] },
+      { href: "/app/command/acting", label: "Acting appointments", icon: "userCircle", any: [] },
+      { href: "/app/command/conflicts", label: "Command conflicts", icon: "scale", any: [] },
+      { href: "/app/command/structure", label: "Command structure", icon: "sitemap", any: ["command.structure.view"] },
+    ],
+  },
+  {
     // Intelligence-liaison administration (roles 07, 19, 30, 31): metadata only (DEC-073).
     label: "Liaison administration",
     items: [

@@ -8,7 +8,7 @@
 | Back office | Deputy Division Staff Officer – Operations |
 | Organisational context | Provincial Division or Unit/Formation |
 | Category | BUSINESS |
-| Synthetic account(s) | `demo.cb.assignments` (Copperbelt Division); `demo.cb.originator` (Copperbelt Division); `demo.cb.personnel` (Copperbelt Division) |
+| Synthetic account(s) | `demo.cb.assignments` (Copperbelt Division); `demo.cb.originator` (Copperbelt Division); `demo.cb.personnel` (Copperbelt Division); `demo.mu.staff2` (Mobile Unit Division / SPOM, Kamfinsa) |
 
 **Purpose:** Preparation and verification support for Staff I: personnel information, draft lists and documentation.
 

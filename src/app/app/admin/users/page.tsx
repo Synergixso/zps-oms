@@ -5,6 +5,7 @@ import { pageAllowed } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
 import { hasPermission } from "@/server/domain/policy";
 import { listReassignments, pageUsers } from "@/server/domain/iam";
+import { appointmentAccessPolicy, listAppointmentOnlyAccounts, POSITION_TYPES } from "@/server/domain/command";
 import { provisionUserAction } from "@/server/actions/iam";
 import { AccessDenied, Badge, Card, Notice, PageHeader, Table, td, fmtDate, btnSecondary } from "@/components/ui";
 import { ActionForm, Submit, TextField } from "@/components/forms";
@@ -18,6 +19,8 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
   const list = await pageUsers(getDb(), actor, q?.slice(0, 40), { page: Number(page) || 1 });
   const users = list.rows;
   const reassign = await listReassignments(getDb(), actor);
+  const apptOnly = await listAppointmentOnlyAccounts(getDb(), actor);
+  const apptPolicy = await appointmentAccessPolicy(getDb());
   return (
     <>
       <PageHeader eyebrow="M02 · Identity and access" title="Users & access" description={hasPermission(actor, "user.provision") ? "Unique individual accounts only. No public self-registration. Access = role + organisational scope + validity window, recorded with a justification." : "Technical account support for users assigned within your organisational scope: temporary passwords, sign-in lockouts and sessions. Role and delegation changes are referred to Headquarters."} />
@@ -31,6 +34,19 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
                 <td className={`${td} font-mono text-xs`}>{r.role_code}</td>
                 <td className={`${td} text-ink-2`}>{r.org_name}</td>
                 <td className={`${td} text-muted`}>{fmtDate(r.flagged_at)}</td>
+              </tr>
+            ))}
+          </Table>
+        </Card>
+      )}
+      {apptOnly.length > 0 && (
+        <Card className="mb-4" title={`Appointment-only accounts (${apptOnly.length})`} subtitle={`Command offices without an application role (DEC-076). Policy: ${apptPolicy.enabled ? "on" : "off"} (${apptPolicy.source}); office types: ${apptPolicy.types.map((t) => POSITION_TYPES[t]?.label ?? t).join(", ")}`} bodyClass="p-0">
+          <Table head={["User", "Office", "Unit", "Since", "Command access"]} caption="Appointment-only accounts">
+            {apptOnly.map((r) => (
+              <tr key={`${r.user_id}-${r.position_id}`}>
+                <td className={td}><Link className="font-semibold text-zp-blue hover:underline" href={`/app/admin/users/${r.user_id}`}>{r.display_name}</Link> <span className="text-xs text-muted">{r.username}</span></td>
+                <td className={td}>{r.title}</td><td className={`${td} text-ink-2`}>{r.unit}</td><td className={`${td} text-muted`}>{fmtDate(r.since)}</td>
+                <td className={td}><Badge status={r.effective ? "ACTIVE" : "SUSPENDED"} label={r.effective ? "Own directives and reports only" : r.status !== "ACTIVE" ? "Account not active" : "No access (policy)"} /></td>
               </tr>
             ))}
           </Table>

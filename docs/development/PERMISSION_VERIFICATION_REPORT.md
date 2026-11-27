@@ -11,7 +11,7 @@
 
 ## Verification evidence
 
-- Route audit (`docs/evidence/route-audit.md`, 2026-11-27T06:32:14.065Z): 87 routes × 54 accounts; server errors: 0.
+- Route audit (`docs/evidence/route-audit.md`, 2026-11-27T22:08:36.360Z): 110 routes × 63 accounts; server errors: 0.
 - Domain tests (`npm test`): `access-control`, `auth-scope`, `three-tier-roles` (31-role matrix, technical separation, Armourer restriction, stores separation), `liaison` (liaison template, scope, channels, metadata-only boundary), `role-migration` (safe retirement and reassignment), `scheduling-correspondence` (cross-Division denial, technical roles refused, RESTRICTED visibility, separation of filing), `account-activity`, `workflows`, `decision-chains`.
 - Browser tests (`npm run test:e2e`): tenant isolation journey, context switching, CSP, public site, liaison journey for the four Police Intelligence Officer roles.
 
@@ -19,37 +19,37 @@
 
 | # | Role | Accounts | Rendered | Access denied (audited) | Out of scope (404) | Server errors |
 |--:|---|--:|--:|--:|--:|--:|
-| 01 | Superadmin | 2 | 42 | 86 | 46 | 0 |
-| 02 | Inspector General of Police (IG) | 2 | 52 | 84 | 38 | 0 |
-| 03 | Deputy Inspector General of Police - Operations (DIG Operations) | 1 | 61 | 22 | 4 | 0 |
-| 04 | Commissioner – Operations HQ | 2 | 140 | 34 | 0 | 0 |
-| 05 | Deputy Commissioner – Operations HQ | 3 | 135 | 78 | 48 | 0 |
-| 06 | System Administrator – HQ Tech | 1 | 17 | 47 | 23 | 0 |
-| 07 | National Police Intelligence Officer | 0 | — | — | — | — |
-| 08 | Divisional/Unit System Administrator (Tech) | 2 | 24 | 102 | 48 | 0 |
-| 09 | Formation Commanding Officer | 4 | 159 | 106 | 83 | 0 |
-| 10 | Deputy Division Commander | 2 | 86 | 58 | 30 | 0 |
-| 11 | Division Senior Staff Officer – Operations (Staff I) | 3 | 146 | 48 | 67 | 0 |
-| 12 | Deputy Division Staff Officer – Operations (Staff II) | 3 | 114 | 84 | 63 | 0 |
-| 13 | Company Commander | 2 | 46 | 70 | 58 | 0 |
-| 14 | Section Head | 7 | 106 | 294 | 209 | 0 |
-| 15 | Formation Operations Staff Administrator | 2 | 87 | 34 | 53 | 0 |
-| 16 | Divisional Quarter Masters Stores Officer | 2 | 39 | 100 | 35 | 0 |
-| 17 | Divisional Principal Armourer | 1 | 10 | 54 | 23 | 0 |
-| 18 | Divisional MTO Officer-in-Charge | 2 | 32 | 102 | 40 | 0 |
-| 19 | Division Police Intelligence Officer | 0 | — | — | — | — |
-| 20 | District System Administrator (Tech) | 1 | 12 | 51 | 24 | 0 |
-| 21 | Officer Commanding — District | 1 | 37 | 28 | 22 | 0 |
-| 22 | Deputy OC — District | 1 | 29 | 31 | 27 | 0 |
-| 23 | Operations Officer — District | 2 | 69 | 48 | 57 | 0 |
-| 24 | Deputy Operations Officer — District | 1 | 34 | 26 | 27 | 0 |
-| 25 | Stores Officer — District | 1 | 19 | 50 | 18 | 0 |
-| 26 | Police Station System Administrator | 1 | 12 | 51 | 24 | 0 |
-| 27 | Officer-in-Charge — Police Station GD | 1 | 35 | 28 | 24 | 0 |
-| 28 | Station Inspector — Police Station GD | 3 | 86 | 90 | 85 | 0 |
-| 29 | Police Station Administrator (Stores and Admin) | 1 | 26 | 43 | 18 | 0 |
-| 30 | District Police Intelligence Officer | 0 | — | — | — | — |
-| 31 | Police Intelligence Officer | 0 | — | — | — | — |
+| 01 | Superadmin | 2 | 60 | 110 | 50 | 0 |
+| 02 | Inspector General of Police (IG) | 2 | 73 | 106 | 41 | 0 |
+| 03 | Deputy Inspector General of Police - Operations (DIG Operations) | 1 | 72 | 33 | 5 | 0 |
+| 04 | Commissioner – Operations HQ | 2 | 160 | 56 | 4 | 0 |
+| 05 | Deputy Commissioner – Operations HQ | 3 | 165 | 111 | 54 | 0 |
+| 06 | System Administrator – HQ Tech | 1 | 26 | 59 | 25 | 0 |
+| 07 | National Police Intelligence Officer | 1 | 26 | 58 | 26 | 0 |
+| 08 | Divisional/Unit System Administrator (Tech) | 2 | 42 | 126 | 52 | 0 |
+| 09 | Formation Commanding Officer | 4 | 199 | 150 | 91 | 0 |
+| 10 | Deputy Division Commander | 3 | 149 | 120 | 61 | 0 |
+| 11 | Division Senior Staff Officer – Operations (Staff I) | 4 | 233 | 108 | 99 | 0 |
+| 12 | Deputy Division Staff Officer – Operations (Staff II) | 4 | 189 | 154 | 97 | 0 |
+| 13 | Company Commander | 2 | 65 | 94 | 61 | 0 |
+| 14 | Section Head | 7 | 169 | 378 | 223 | 0 |
+| 15 | Formation Operations Staff Administrator | 2 | 107 | 56 | 57 | 0 |
+| 16 | Divisional Quarter Masters Stores Officer | 2 | 57 | 124 | 39 | 0 |
+| 17 | Divisional Principal Armourer | 1 | 19 | 66 | 25 | 0 |
+| 18 | Divisional MTO Officer-in-Charge | 2 | 50 | 126 | 44 | 0 |
+| 19 | Division Police Intelligence Officer | 1 | 26 | 58 | 26 | 0 |
+| 20 | District System Administrator (Tech) | 1 | 21 | 63 | 26 | 0 |
+| 21 | Officer Commanding — District | 1 | 48 | 39 | 23 | 0 |
+| 22 | Deputy OC — District | 1 | 39 | 42 | 29 | 0 |
+| 23 | Operations Officer — District | 2 | 90 | 70 | 60 | 0 |
+| 24 | Deputy Operations Officer — District | 1 | 43 | 38 | 29 | 0 |
+| 25 | Stores Officer — District | 1 | 28 | 62 | 20 | 0 |
+| 26 | Police Station System Administrator | 1 | 21 | 63 | 26 | 0 |
+| 27 | Officer-in-Charge — Police Station GD | 1 | 44 | 40 | 26 | 0 |
+| 28 | Station Inspector — Police Station GD | 3 | 113 | 126 | 91 | 0 |
+| 29 | Police Station Administrator (Stores and Admin) | 1 | 35 | 55 | 20 | 0 |
+| 30 | District Police Intelligence Officer | 2 | 52 | 116 | 52 | 0 |
+| 31 | Police Intelligence Officer | 2 | 51 | 116 | 53 | 0 |
 
 ## Separation rules checked by tests
 
@@ -153,5 +153,7 @@
 | `liaison.reference.route` |  |  |  |  |  |  | N |  |  |  |  |  |  |  |  |  |  |  | S |  |  |  |  |  |  |  |  |  |  | S | U |
 | `liaison.status.view` |  |  |  |  |  |  | N |  |  |  |  |  |  |  |  |  |  |  | S |  |  |  |  |  |  |  |  |  |  | S | U |
 | `liaison.audit.view` |  |  |  |  |  |  | N |  |  |  |  |  |  |  |  |  |  |  | S |  |  |  |  |  |  |  |  |  |  | S | U |
+| `command.structure.view` |  | N | N | N | N |  |  |  | S | S | S | S |  |  | S |  |  |  |  |  | S | S | S |  |  |  |  |  |  |  |  |
+| `command.structure.manage` |  |  |  | N |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `contact.view` | N |  |  | N |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `contact.manage` | N |  |  | N |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |

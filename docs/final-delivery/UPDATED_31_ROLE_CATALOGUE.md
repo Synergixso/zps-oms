@@ -6,10 +6,10 @@ Active role profiles: **31** — Tier 1: 7 · Tier 2: 12 · Tier 3: 11 · Tier 4
 
 | Tier | Roles | Completed and Verified | Verification document |
 |---|--:|--:|---|
-| Tier 1 — National Headquarters | 7 | 6 | `TIER_1_DASHBOARD_VERIFICATION.md` |
-| Tier 2 — Provincial Divisions and Unit Formations | 12 | 11 | `TIER_2_DASHBOARD_VERIFICATION.md` |
-| Tier 3 — District Commands and Police Stations | 11 | 10 | `TIER_3_DASHBOARD_VERIFICATION.md` |
-| Tier 4 — Section / Police Station | 1 | 0 | `TIER_4_INTELLIGENCE_ROLE_VERIFICATION.md` |
+| Tier 1 — National Headquarters | 7 | 7 | `TIER_1_DASHBOARD_VERIFICATION.md` |
+| Tier 2 — Provincial Divisions and Unit Formations | 12 | 12 | `TIER_2_DASHBOARD_VERIFICATION.md` |
+| Tier 3 — District Commands and Police Stations | 11 | 11 | `TIER_3_DASHBOARD_VERIFICATION.md` |
+| Tier 4 — Section / Police Station | 1 | 1 | `TIER_4_INTELLIGENCE_ROLE_VERIFICATION.md` |
 
 ## Tier 1 — National Headquarters (7)
 

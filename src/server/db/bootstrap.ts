@@ -17,6 +17,7 @@ import { ROLES } from "../domain/catalogue";
 import { audit } from "../domain/audit";
 import { seedThreeTier } from "./seed-three-tier";
 import { seedLiaison } from "./seed-liaison";
+import { seedCommand } from "./seed-command";
 import { REPORTS } from "../domain/reports";
 import { assignMissingUserRefs } from "../domain/iam";
 
@@ -26,6 +27,7 @@ export const SEED_STEPS: Array<[name: string, fn: (db: DB) => Promise<void>]> = 
   ["003_three_tier_roles", seedThreeTier],
   ["012_calendar_correspondence", seedAdminRecords],
   ["013_liaison_roles", seedLiaison],
+  ["014_command_structure", seedCommand],
 ];
 
 /**

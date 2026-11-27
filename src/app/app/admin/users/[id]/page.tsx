@@ -5,6 +5,7 @@ import { all, getDb } from "@/server/db/connection";
 import { REQUEST_CATEGORIES, ROLES, ROLE_BY_CODE } from "@/server/domain/catalogue";
 import { hasPermission } from "@/server/domain/policy";
 import { userDetail, userInScope } from "@/server/domain/iam";
+import { appointmentsOfUser, COMMAND_ACTIONS } from "@/server/domain/command";
 import { userAccountActivity } from "@/server/domain/account-activity";
 import { AccountActivity } from "@/components/account-activity";
 import { assignRoleAction, grantDelegationAction, issueTemporaryPasswordAction, revokeAssignmentAction, revokeDelegationAction, setUserStatusAction, unlockAccountAction } from "@/server/actions/iam";
@@ -57,6 +58,7 @@ export default async function UserDetail({ params }: { params: Promise<{ id: str
               ))}
             </Table>
           </Card>
+          <CommandOffices userId={id} viewer={actor} />
           <Card title="Delegations of approval authority" subtitle="Approval requires a delegation AND an active business role at the same organisation" bodyClass="p-0">
             <Table head={["Domain", "Organisation", "Category", "Valid to", "Approval ref", "State", ""]} empty="No delegations — this user cannot approve.">
               {delegations.map((d) => (
@@ -140,5 +142,25 @@ export default async function UserDetail({ params }: { params: Promise<{ id: str
         <AccountActivity sessions={activity.sessions} history={activity.history} canEnd={support && !self} back="admin" userId={user.id} />
       </div>
     </>
+  );
+}
+
+/** Command offices and acting appointments of this account (separate from application roles, DEC-074 / DEC-076). */
+async function CommandOffices({ userId, viewer }: { userId: string; viewer: Awaited<ReturnType<typeof requireActor>> }) {
+  const rows = await appointmentsOfUser(getDb(), viewer, userId);
+  if (!rows.length) return null;
+  return (
+    <Card title="Command offices" subtitle="Appointments and acting appointments in the command structure; they are not application roles" bodyClass="p-0">
+      <Table head={["Kind", "Office", "Unit", "From", "To", "Reference", "Delegated actions"]} caption="Command offices">
+        {rows.map((r, i) => (
+          <tr key={i}>
+            <td className={td}>{r.kind}</td><td className={td}>{r.title}</td><td className={`${td} text-ink-2`}>{r.unit}</td>
+            <td className={`${td} text-muted`}>{fmtDate(r.valid_from)}</td><td className={`${td} text-muted`}>{r.ended_at ? `ended ${fmtDate(r.ended_at)}` : r.valid_to ? fmtDate(r.valid_to) : "open"}</td>
+            <td className={`${td} font-mono text-xs`}>{r.reference}</td>
+            <td className={`${td} text-ink-2`}>{r.actions ? r.actions.split(",").map((a) => COMMAND_ACTIONS[a as keyof typeof COMMAND_ACTIONS] ?? a).join("; ") : r.kind === "Appointment" ? "all (substantive)" : "—"}</td>
+          </tr>
+        ))}
+      </Table>
+    </Card>
   );
 }
