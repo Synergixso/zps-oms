@@ -1,7 +1,7 @@
 /**
- * Central role → back-office (workspace) configuration for the 27-role catalogue.
+ * Central role → back-office (workspace) configuration for the 31-role catalogue.
  *
- * One architecture, 27 configurations: each role gets its own back-office name, navigation (sections,
+ * One architecture, 31 configurations: each role gets its own back-office name, navigation (sections,
  * labels and order), headline figures and quick actions. This is PRESENTATION only — every page and
  * domain function re-checks permission and scope on the server; a link shown here grants nothing, and
  * links are additionally filtered by the actor's permissions before they are rendered.

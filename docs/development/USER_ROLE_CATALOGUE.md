@@ -1,4 +1,4 @@
-# User Role Catalogue (27 roles, three tiers)
+# User Role Catalogue (31 roles, four role-scope levels)
 
 > Generated from `src/server/domain/catalogue.ts` and `src/server/domain/workspace-config.ts` — the configuration the server enforces. Do not edit by hand; run `npm run docs:permissions`.
 
@@ -58,9 +58,17 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** Institutionally scoped technical administration at Headquarters: health, database, jobs, backups, authentication monitoring and account support. No personnel access, approvals or tenant provisioning.
 - **Permissions (11):** `org.view` (N), `user.view` (N), `user.suspend` (N), `grant.revoke` (N), `delegation.revoke` (N), `accessreview.manage` (N), `user.support` (N), `security.view` (N), `platform.view` (N), `platform.operate` (N), `health.view` (N)
 
+### Role 07 — National Police Intelligence Officer
+
+- **Code:** `NATIONAL_INTEL_OFFICER` · **Tier:** 1 · **Category:** FUNCTIONAL
+- **Back office:** National Police Intelligence Officer Dashboard
+- **Organisational context:** National Headquarters (intelligence liaison administration) — assignable at: service hq
+- **Purpose:** Authorised national-level intelligence liaison administration within the permitted ZPS-OMS information boundary. Administrative metadata only (references, units, dates, status and routing). No intelligence content, sources, informants, surveillance, targets, collection or tasking exist in ZPS-OMS, and no access to personnel, manpower, roster or assignment registers.
+- **Permissions (7):** `liaison.metadata.view` (N), `liaison.metadata.create` (N), `liaison.metadata.update_own` (N), `liaison.submission.acknowledge` (N), `liaison.reference.route` (N), `liaison.status.view` (N), `liaison.audit.view` (N)
+
 ## Tier 2 — Provincial Divisions and Unit Formations
 
-### Role 07 — Divisional/Unit System Administrator (Tech)
+### Role 08 — Divisional/Unit System Administrator (Tech)
 
 - **Code:** `UNIT_TECH_ADMIN` · **Tier:** 2 · **Category:** TECHNICAL
 - **Back office:** Division and Unit Technical Administration
@@ -68,7 +76,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** Technical accounts and access support within the assigned Division or Formation; refers higher-level issues to HQ Tech. No personnel, assignment or approval authority.
 - **Permissions (4):** `org.view` (N), `user.view` (S), `user.support` (S), `health.view` (S)
 
-### Role 08 — Formation Commanding Officer
+### Role 09 — Formation Commanding Officer
 
 - **Code:** `FORMATION_COMMANDING_OFFICER` · **Tier:** 2 · **Category:** BUSINESS
 - **Back office:** Formation Command Headquarters
@@ -76,7 +84,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** Oversight of the assigned Division or Formation and everything under it. Approves only within configured delegations; no access to unrelated formations or Provinces.
 - **Permissions (23):** `dashboard.division.view` (U), `dashboard.formation.view` (U), `org.view` (N), `request.view` (U), `request.assign` (U), `request.close` (U), `request.reopen` (U), `fleet.view` (U), `maintenance.view` (U), `asset.view` (S), `report.view` (S), `report.export` (S), `personnel.view` (S), `manpower.view` (S), `roster.view` (S), `roster.review` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S)
 
-### Role 09 — Deputy Division Commander
+### Role 10 — Deputy Division Commander
 
 - **Code:** `DEPUTY_DIVISION_COMMANDER` · **Tier:** 2 · **Category:** BUSINESS
 - **Back office:** Deputy Division Commander Dashboard
@@ -84,7 +92,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** Supports the commanding officer: monitors performance, reviews outstanding matters and Staff I/II workflows; approves only where separately delegated.
 - **Permissions (17):** `dashboard.division.view` (U), `org.view` (N), `request.view` (U), `report.view` (S), `report.export` (S), `personnel.view` (S), `personnel.export` (S), `manpower.view` (S), `roster.view` (S), `roster.review` (S), `roster.export` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S)
 
-### Role 10 — Division Senior Staff Officer – Operations (Staff I)
+### Role 11 — Division Senior Staff Officer – Operations (Staff I)
 
 - **Code:** `DIVISION_STAFF_I` · **Tier:** 2 · **Category:** BUSINESS
 - **Back office:** Division Senior Staff Officer – Operations
@@ -92,7 +100,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** Coordinates Divisional Operations administration: manpower requirements, contributions, rosters, assignments, transfers, tenure and renewals; supervises Staff II. No approval outside delegations.
 - **Permissions (40):** `dashboard.division.view` (U), `org.view` (N), `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U), `request.progress` (U), `fleet.view` (U), `maintenance.view` (U), `maintenance.create` (U), `asset.view` (U), `report.view` (S), `report.export` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `personnel.export` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `roster.export` (S), `area.view` (S), `area.manage` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.renew` (S), `assignment.receive` (S), `disposition.change` (S), `stores.requisition` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S), `correspondence.manage` (S)
 
-### Role 11 — Deputy Division Staff Officer – Operations (Staff II)
+### Role 12 — Deputy Division Staff Officer – Operations (Staff II)
 
 - **Code:** `DIVISION_STAFF_II` · **Tier:** 2 · **Category:** BUSINESS
 - **Back office:** Deputy Division Staff Officer – Operations
@@ -100,7 +108,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** Assists Staff I: prepares personnel information, compiles draft lists, verifies submissions, prepares transfer and renewal documentation. No Staff I approval authority.
 - **Permissions (21):** `dashboard.division.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.create` (U), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.renew` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S)
 
-### Role 12 — Company Commander
+### Role 13 — Company Commander
 
 - **Code:** `COMPANY_COMMANDER` · **Tier:** 2 · **Category:** BUSINESS
 - **Back office:** Company Command Administration
@@ -108,7 +116,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** Company administration: personnel register, contributions and submissions for the company and its platoons and sections. No access to other companies.
 - **Permissions (11):** `dashboard.unit.view` (U), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `assignment.view` (S), `schedule.view` (S), `correspondence.view` (S)
 
-### Role 13 — Section Head
+### Role 14 — Section Head
 
 - **Code:** `SECTION_HEAD` · **Tier:** 2 · **Category:** BUSINESS
 - **Back office:** Section Administration Dashboard
@@ -116,7 +124,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** Section administrative records: selects personnel from the registry, prepares and verifies manpower contributions, tracks requests.
 - **Permissions (8):** `dashboard.unit.view` (U), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `schedule.view` (S)
 
-### Role 14 — Formation Operations Staff Administrator
+### Role 15 — Formation Operations Staff Administrator
 
 - **Code:** `FORMATION_OPS_STAFF_ADMIN` · **Tier:** 2 · **Category:** BUSINESS
 - **Back office:** Formation Operations Staff Administration
@@ -124,7 +132,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** Formation-level Operations administration: contributions, rosters, assignment documentation and subordinate submissions. No commanding-officer approval authority.
 - **Permissions (32):** `dashboard.formation.view` (U), `org.view` (N), `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U), `request.progress` (U), `fleet.view` (U), `maintenance.view` (U), `maintenance.create` (U), `asset.view` (U), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `roster.export` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `stores.requisition` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S)
 
-### Role 15 — Divisional Quarter Masters Stores Officer
+### Role 16 — Divisional Quarter Masters Stores Officer
 
 - **Code:** `QM_STORES_OFFICER` · **Tier:** 2 · **Category:** FUNCTIONAL
 - **Back office:** Divisional Quarter Masters and Stores Administration
@@ -132,7 +140,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** General stores and non-sensitive assets: receipts, issue and return, requisitions, custody and reconciliation. Firearms, ammunition and sensitive equipment are excluded.
 - **Permissions (10):** `asset.view` (S), `asset.register` (S), `asset.custody` (S), `asset.inspect` (S), `asset.dispose` (S), `report.view` (U), `report.export` (U), `stores.view` (S), `stores.manage` (S), `schedule.view` (S)
 
-### Role 16 — Divisional Principal Armourer
+### Role 17 — Divisional Principal Armourer
 
 - **Code:** `PRINCIPAL_ARMOURER` · **Tier:** 2 · **Category:** FUNCTIONAL
 - **Back office:** Divisional Armourer Administration
@@ -140,7 +148,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** Role-specific workspace for explicitly approved NON-SENSITIVE administrative functions only (administrative requests, tasks, notifications). No firearms, ammunition or armoury records exist in ZPS-OMS.
 - **Permissions (5):** `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U)
 
-### Role 17 — Divisional MTO Officer-in-Charge
+### Role 18 — Divisional MTO Officer-in-Charge
 
 - **Code:** `MTO_OIC` · **Tier:** 2 · **Category:** FUNCTIONAL
 - **Back office:** Divisional Motor Transport Administration
@@ -148,9 +156,17 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** General fleet administration: vehicle register, documentation, maintenance, workshop referrals and service history. No GPS, movement or deployment information.
 - **Permissions (10):** `fleet.view` (U), `fleet.manage` (U), `maintenance.view` (U), `maintenance.create` (U), `maintenance.process` (U), `maintenance.verify` (U), `service.record` (U), `report.view` (U), `report.export` (U), `schedule.view` (S)
 
+### Role 19 — Division Police Intelligence Officer
+
+- **Code:** `DIVISION_INTEL_OFFICER` · **Tier:** 2 · **Category:** FUNCTIONAL
+- **Back office:** Division Police Intelligence Officer Dashboard
+- **Organisational context:** Assigned Provincial Division or Unit/Formation only — assignable at: provincial division, formation
+- **Purpose:** Division-level intelligence liaison administration, restricted to the assigned Province or Unit/Formation; no cross-divisional access. Administrative metadata only (references, units, dates, status and routing). No intelligence content, sources, informants, surveillance, targets, collection or tasking exist in ZPS-OMS, and no access to personnel, manpower, roster or assignment registers.
+- **Permissions (7):** `liaison.metadata.view` (S), `liaison.metadata.create` (S), `liaison.metadata.update_own` (S), `liaison.submission.acknowledge` (S), `liaison.reference.route` (S), `liaison.status.view` (S), `liaison.audit.view` (S)
+
 ## Tier 3 — District Commands and Police Stations
 
-### Role 18 — District System Administrator (Tech)
+### Role 20 — District System Administrator (Tech)
 
 - **Code:** `DISTRICT_TECH_ADMIN` · **Tier:** 3 · **Category:** TECHNICAL
 - **Back office:** District Technical Administration
@@ -158,7 +174,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** Permitted technical functions and account support within the assigned District. No personnel-record or assignment access.
 - **Permissions (4):** `org.view` (N), `user.view` (S), `user.support` (S), `health.view` (S)
 
-### Role 19 — Officer Commanding — District
+### Role 21 — Officer Commanding — District
 
 - **Code:** `OC_DISTRICT` · **Tier:** 3 · **Category:** BUSINESS
 - **Back office:** District Command Dashboard
@@ -166,7 +182,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** District oversight: stations and posts, personnel, contributions, assignments and stores. Approves only within configured delegations; no access to other Districts.
 - **Permissions (16):** `dashboard.district.view` (U), `org.view` (N), `asset.view` (S), `report.view` (S), `personnel.view` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S)
 
-### Role 20 — Deputy OC — District
+### Role 22 — Deputy OC — District
 
 - **Code:** `DEPUTY_OC_DISTRICT` · **Tier:** 3 · **Category:** BUSINESS
 - **Back office:** Deputy District Commander Dashboard
@@ -174,7 +190,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** Assists the District Commander; reviews subordinate submissions and processes delegated matters. Does not inherit the OC's approvals.
 - **Permissions (13):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S)
 
-### Role 21 — Operations Officer — District
+### Role 23 — Operations Officer — District
 
 - **Code:** `OPS_OFFICER_DISTRICT` · **Tier:** 3 · **Category:** BUSINESS
 - **Back office:** District Operations Officer Workspace
@@ -182,7 +198,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** District Operations administration: manpower requests, station contributions, district lists, assignment records and reviews. No tactical deployment, patrol scheduling or tracking.
 - **Permissions (25):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.receive` (S), `disposition.change` (S), `stores.requisition` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S), `correspondence.manage` (S)
 
-### Role 22 — Deputy Operations Officer — District
+### Role 24 — Deputy Operations Officer — District
 
 - **Code:** `DEPUTY_OPS_OFFICER_DISTRICT` · **Tier:** 3 · **Category:** BUSINESS
 - **Back office:** Deputy District Operations Workspace
@@ -190,7 +206,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** Assists the Operations Officer: prepares submissions, verifies contributions, maintains workflow records. No Operations Officer approval authority.
 - **Permissions (19):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.export` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S)
 
-### Role 23 — Stores Officer — District
+### Role 25 — Stores Officer — District
 
 - **Code:** `STORES_OFFICER_DISTRICT` · **Tier:** 3 · **Category:** FUNCTIONAL
 - **Back office:** District Stores Administration
@@ -198,7 +214,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** General stores records, requisitions, receipts and issues, and non-sensitive asset custody for the District. Sensitive equipment is excluded.
 - **Permissions (8):** `asset.view` (S), `asset.register` (S), `asset.custody` (S), `asset.inspect` (S), `report.view` (U), `stores.view` (S), `stores.manage` (S), `schedule.view` (S)
 
-### Role 24 — Police Station System Administrator
+### Role 26 — Police Station System Administrator
 
 - **Code:** `STATION_TECH_ADMIN` · **Tier:** 3 · **Category:** TECHNICAL
 - **Back office:** Police Station Technical Administration
@@ -206,7 +222,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** Permitted technical functions and local account support for the assigned Station. No personnel management or assignment decisions.
 - **Permissions (4):** `org.view` (N), `user.view` (S), `user.support` (S), `health.view` (S)
 
-### Role 25 — Officer-in-Charge — Police Station GD
+### Role 27 — Officer-in-Charge — Police Station GD
 
 - **Code:** `OIC_STATION_GD` · **Tier:** 3 · **Category:** BUSINESS
 - **Back office:** Police Station General Duties Administration
@@ -214,7 +230,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** Station-level general duties administrative oversight: personnel, contributions, submissions; approves specifically delegated matters.
 - **Permissions (16):** `dashboard.station.view` (U), `org.view` (N), `asset.view` (S), `report.view` (S), `personnel.view` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S)
 
-### Role 26 — Station Inspector — Police Station GD
+### Role 28 — Station Inspector — Police Station GD
 
 - **Code:** `STATION_INSPECTOR_GD` · **Tier:** 3 · **Category:** BUSINESS
 - **Back office:** Station Inspector Operations Administration
@@ -222,13 +238,31 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Purpose:** Supports Station administration: personnel register, contributions and submissions; delegated supervisory functions only. Does not inherit OIC approvals.
 - **Permissions (14):** `dashboard.station.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `assignment.view` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S)
 
-### Role 27 — Police Station Administrator (Stores and Admin)
+### Role 29 — Police Station Administrator (Stores and Admin)
 
 - **Code:** `STATION_ADMIN_STORES` · **Tier:** 3 · **Category:** FUNCTIONAL
 - **Back office:** Police Station Stores and Administration
 - **Organisational context:** Police Station — assignable at: station, post
 - **Purpose:** Station administrative records, general stores and non-sensitive assets: issue and return, requisitions, reconciliation. No sensitive equipment, firearms or ammunition.
 - **Permissions (17):** `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U), `asset.view` (S), `asset.register` (S), `asset.custody` (S), `asset.inspect` (S), `report.view` (U), `stores.view` (S), `stores.manage` (S), `stores.requisition` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S)
+
+### Role 30 — District Police Intelligence Officer
+
+- **Code:** `DISTRICT_INTEL_OFFICER` · **Tier:** 3 · **Category:** FUNCTIONAL
+- **Back office:** District Police Intelligence Officer Dashboard
+- **Organisational context:** Assigned District Command only — assignable at: district
+- **Purpose:** District-level restricted intelligence liaison administration for the assigned District; no other District, Province or national records. Administrative metadata only (references, units, dates, status and routing). No intelligence content, sources, informants, surveillance, targets, collection or tasking exist in ZPS-OMS, and no access to personnel, manpower, roster or assignment registers.
+- **Permissions (7):** `liaison.metadata.view` (S), `liaison.metadata.create` (S), `liaison.metadata.update_own` (S), `liaison.submission.acknowledge` (S), `liaison.reference.route` (S), `liaison.status.view` (S), `liaison.audit.view` (S)
+
+## Tier 4 — Section / Police Station
+
+### Role 31 — Police Intelligence Officer
+
+- **Code:** `INTEL_OFFICER` · **Tier:** 4 · **Category:** FUNCTIONAL
+- **Back office:** Police Intelligence Officer Dashboard
+- **Organisational context:** Assigned Section or Police Station only — assignable at: section, station
+- **Purpose:** Restricted local intelligence liaison administration for the assigned Section or Police Station only (one role profile; scope follows the assignment). No access to the parent District or Division. Administrative metadata only (references, units, dates, status and routing). No intelligence content, sources, informants, surveillance, targets, collection or tasking exist in ZPS-OMS, and no access to personnel, manpower, roster or assignment registers.
+- **Permissions (7):** `liaison.metadata.view` (U), `liaison.metadata.create` (U), `liaison.metadata.update_own` (U), `liaison.submission.acknowledge` (U), `liaison.reference.route` (U), `liaison.status.view` (U), `liaison.audit.view` (U)
 
 ## Retired roles
 

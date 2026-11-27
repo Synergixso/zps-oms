@@ -2,11 +2,11 @@
 
 > Generated from `src/server/domain/catalogue.ts` and `src/server/domain/workspace-config.ts` — the configuration the server enforces. Do not edit by hand; run `npm run docs:permissions`.
 
-Eleven roles held at a Provincial Division or Unit Formation (Company Commander at a company; Section Head at a section, platoon, detachment or department). SUBTREE coverage reaches every subordinate unit and never a sibling Division or Formation. Role 16 (Principal Armourer) is a non-sensitive administrative workspace only.
+Twelve roles held at a Provincial Division or Unit Formation (Company Commander at a company; Section Head at a section, platoon, detachment or department). SUBTREE coverage reaches every subordinate unit and never a sibling Division or Formation. Role 17 (Principal Armourer) is a non-sensitive administrative workspace only. Role 19 (Division Police Intelligence Officer) is a restricted liaison workspace for the assigned Division or Formation.
 
 Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPMENT_STATUS.md` and `docs/role-architecture/ROLE_TEST_RESULTS.md`.
 
-### Role 07 — Divisional/Unit System Administrator (Tech)
+### Role 08 — Divisional/Unit System Administrator (Tech)
 
 - **Code:** `UNIT_TECH_ADMIN` · **Tier:** 2 · **Category:** TECHNICAL
 - **Back office:** Division and Unit Technical Administration
@@ -19,7 +19,7 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Working panels:** dashboard kind `TECH_LOCAL`
 - **Permissions (4):** `org.view` (N), `user.view` (S), `user.support` (S), `health.view` (S)
 
-### Role 08 — Formation Commanding Officer
+### Role 09 — Formation Commanding Officer
 
 - **Code:** `FORMATION_COMMANDING_OFFICER` · **Tier:** 2 · **Category:** BUSINESS
 - **Back office:** Formation Command Headquarters
@@ -32,7 +32,7 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Working panels:** dashboard kind `FORMATION_COMMAND`
 - **Permissions (23):** `dashboard.division.view` (U), `dashboard.formation.view` (U), `org.view` (N), `request.view` (U), `request.assign` (U), `request.close` (U), `request.reopen` (U), `fleet.view` (U), `maintenance.view` (U), `asset.view` (S), `report.view` (S), `report.export` (S), `personnel.view` (S), `manpower.view` (S), `roster.view` (S), `roster.review` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S)
 
-### Role 09 — Deputy Division Commander
+### Role 10 — Deputy Division Commander
 
 - **Code:** `DEPUTY_DIVISION_COMMANDER` · **Tier:** 2 · **Category:** BUSINESS
 - **Back office:** Deputy Division Commander Dashboard
@@ -45,7 +45,7 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Working panels:** dashboard kind `DIVISION_COMMAND`
 - **Permissions (17):** `dashboard.division.view` (U), `org.view` (N), `request.view` (U), `report.view` (S), `report.export` (S), `personnel.view` (S), `personnel.export` (S), `manpower.view` (S), `roster.view` (S), `roster.review` (S), `roster.export` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S)
 
-### Role 10 — Division Senior Staff Officer – Operations (Staff I)
+### Role 11 — Division Senior Staff Officer – Operations (Staff I)
 
 - **Code:** `DIVISION_STAFF_I` · **Tier:** 2 · **Category:** BUSINESS
 - **Back office:** Division Senior Staff Officer – Operations
@@ -58,7 +58,7 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Working panels:** dashboard kind `DIVISION_STAFF_OPS`
 - **Permissions (40):** `dashboard.division.view` (U), `org.view` (N), `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U), `request.progress` (U), `fleet.view` (U), `maintenance.view` (U), `maintenance.create` (U), `asset.view` (U), `report.view` (S), `report.export` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `personnel.export` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `roster.export` (S), `area.view` (S), `area.manage` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.renew` (S), `assignment.receive` (S), `disposition.change` (S), `stores.requisition` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S), `correspondence.manage` (S)
 
-### Role 11 — Deputy Division Staff Officer – Operations (Staff II)
+### Role 12 — Deputy Division Staff Officer – Operations (Staff II)
 
 - **Code:** `DIVISION_STAFF_II` · **Tier:** 2 · **Category:** BUSINESS
 - **Back office:** Deputy Division Staff Officer – Operations
@@ -71,7 +71,7 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Working panels:** dashboard kind `ASSIGNMENT_ADMIN`
 - **Permissions (21):** `dashboard.division.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.create` (U), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.renew` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S)
 
-### Role 12 — Company Commander
+### Role 13 — Company Commander
 
 - **Code:** `COMPANY_COMMANDER` · **Tier:** 2 · **Category:** BUSINESS
 - **Back office:** Company Command Administration
@@ -84,7 +84,7 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Working panels:** dashboard kind `UNIT_COMMAND`
 - **Permissions (11):** `dashboard.unit.view` (U), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `assignment.view` (S), `schedule.view` (S), `correspondence.view` (S)
 
-### Role 13 — Section Head
+### Role 14 — Section Head
 
 - **Code:** `SECTION_HEAD` · **Tier:** 2 · **Category:** BUSINESS
 - **Back office:** Section Administration Dashboard
@@ -97,7 +97,7 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Working panels:** dashboard kind `UNIT_COMMAND`
 - **Permissions (8):** `dashboard.unit.view` (U), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `schedule.view` (S)
 
-### Role 14 — Formation Operations Staff Administrator
+### Role 15 — Formation Operations Staff Administrator
 
 - **Code:** `FORMATION_OPS_STAFF_ADMIN` · **Tier:** 2 · **Category:** BUSINESS
 - **Back office:** Formation Operations Staff Administration
@@ -110,7 +110,7 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Working panels:** dashboard kind `FORMATION_ADMIN`
 - **Permissions (32):** `dashboard.formation.view` (U), `org.view` (N), `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U), `request.progress` (U), `fleet.view` (U), `maintenance.view` (U), `maintenance.create` (U), `asset.view` (U), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `roster.export` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `stores.requisition` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S)
 
-### Role 15 — Divisional Quarter Masters Stores Officer
+### Role 16 — Divisional Quarter Masters Stores Officer
 
 - **Code:** `QM_STORES_OFFICER` · **Tier:** 2 · **Category:** FUNCTIONAL
 - **Back office:** Divisional Quarter Masters and Stores Administration
@@ -123,7 +123,7 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Working panels:** dashboard kind `STORES`
 - **Permissions (10):** `asset.view` (S), `asset.register` (S), `asset.custody` (S), `asset.inspect` (S), `asset.dispose` (S), `report.view` (U), `report.export` (U), `stores.view` (S), `stores.manage` (S), `schedule.view` (S)
 
-### Role 16 — Divisional Principal Armourer
+### Role 17 — Divisional Principal Armourer
 
 - **Code:** `PRINCIPAL_ARMOURER` · **Tier:** 2 · **Category:** FUNCTIONAL
 - **Back office:** Divisional Armourer Administration
@@ -136,7 +136,7 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Working panels:** dashboard kind `MY_WORKSPACE`
 - **Permissions (5):** `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U)
 
-### Role 17 — Divisional MTO Officer-in-Charge
+### Role 18 — Divisional MTO Officer-in-Charge
 
 - **Code:** `MTO_OIC` · **Tier:** 2 · **Category:** FUNCTIONAL
 - **Back office:** Divisional Motor Transport Administration
@@ -148,4 +148,17 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Quick actions:** Vehicle register, Maintenance requests, Open reports
 - **Working panels:** dashboard kind `FLEET`
 - **Permissions (10):** `fleet.view` (U), `fleet.manage` (U), `maintenance.view` (U), `maintenance.create` (U), `maintenance.process` (U), `maintenance.verify` (U), `service.record` (U), `report.view` (U), `report.export` (U), `schedule.view` (S)
+
+### Role 19 — Division Police Intelligence Officer
+
+- **Code:** `DIVISION_INTEL_OFFICER` · **Tier:** 2 · **Category:** FUNCTIONAL
+- **Back office:** Division Police Intelligence Officer Dashboard
+- **Organisational context:** Assigned Provincial Division or Unit/Formation only — assignable at: provincial division, formation
+- **Purpose:** Division-level intelligence liaison administration, restricted to the assigned Province or Unit/Formation; no cross-divisional access. Administrative metadata only (references, units, dates, status and routing). No intelligence content, sources, informants, surveillance, targets, collection or tasking exist in ZPS-OMS, and no access to personnel, manpower, roster or assignment registers.
+- **Workspace purpose line:** Division-level intelligence liaison administration within your Province or Unit/Formation. Metadata only; no cross-divisional access.
+- **Navigation:** Overview (`/app`, `/app/tasks`) · Liaison administration (`/app/liaison/assigned`, `/app/liaison`, `/app/liaison/submissions`, `/app/liaison/incoming`, `/app/liaison/acknowledgements`, `/app/liaison/history`) · Account (`/app/notifications`, `/app/profile`)
+- **Headline figures:** `liaisonAssigned`, `liaisonIncoming`, `liaisonToAcknowledge`, `liaisonAwaiting`, `liaisonReports`, `unread`
+- **Quick actions:** Record a liaison reference, Receiving and review queue, Outstanding acknowledgements, Liaison history
+- **Working panels:** dashboard kind `LIAISON`
+- **Permissions (7):** `liaison.metadata.view` (S), `liaison.metadata.create` (S), `liaison.metadata.update_own` (S), `liaison.submission.acknowledge` (S), `liaison.reference.route` (S), `liaison.status.view` (S), `liaison.audit.view` (S)
 

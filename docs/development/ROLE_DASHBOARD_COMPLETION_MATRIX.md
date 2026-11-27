@@ -12,29 +12,33 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 | 04 | Commissioner – Operations HQ | 1 | Commissioner Operations Headquarters Dashboard | 22 | 6 | 4 | 2 | 140 / 34 / 0 | 0 | Completed and Verified |
 | 05 | Deputy Commissioner – Operations HQ | 1 | Deputy Commissioner Operations HQ Dashboard | 14 | 6 | 4 | 3 | 135 / 78 / 48 | 0 | Completed and Verified |
 | 06 | System Administrator – HQ Tech | 1 | Headquarters Technical Administration Dashboard | 8 | 6 | 3 | 1 | 17 / 47 / 23 | 0 | Completed and Verified |
-| 07 | Divisional/Unit System Administrator (Tech) | 2 | Division and Unit Technical Administration | 5 | 4 | 1 | 2 | 24 / 102 / 48 | 0 | Completed and Verified |
-| 08 | Formation Commanding Officer | 2 | Formation Command Headquarters | 19 | 6 | 3 | 4 | 159 / 106 / 83 | 0 | Completed and Verified |
-| 09 | Deputy Division Commander | 2 | Deputy Division Commander Dashboard | 15 | 6 | 3 | 2 | 86 / 58 / 30 | 0 | Completed and Verified |
-| 10 | Division Senior Staff Officer – Operations (Staff I) | 2 | Division Senior Staff Officer – Operations | 19 | 6 | 4 | 3 | 146 / 48 / 67 | 0 | Completed and Verified |
-| 11 | Deputy Division Staff Officer – Operations (Staff II) | 2 | Deputy Division Staff Officer – Operations | 13 | 6 | 3 | 3 | 114 / 84 / 63 | 0 | Completed and Verified |
-| 12 | Company Commander | 2 | Company Command Administration | 11 | 6 | 2 | 2 | 46 / 70 / 58 | 0 | Completed and Verified |
-| 13 | Section Head | 2 | Section Administration Dashboard | 8 | 5 | 2 | 7 | 106 / 294 / 209 | 0 | Completed and Verified |
-| 14 | Formation Operations Staff Administrator | 2 | Formation Operations Staff Administration | 19 | 6 | 4 | 2 | 87 / 34 / 53 | 0 | Completed and Verified |
-| 15 | Divisional Quarter Masters Stores Officer | 2 | Divisional Quarter Masters and Stores Administration | 7 | 6 | 3 | 2 | 39 / 100 / 35 | 0 | Completed and Verified |
-| 16 | Divisional Principal Armourer | 2 | Divisional Armourer Administration | 4 | 3 | 1 | 1 | 10 / 54 / 23 | 0 | Completed and Verified |
-| 17 | Divisional MTO Officer-in-Charge | 2 | Divisional Motor Transport Administration | 6 | 6 | 3 | 2 | 32 / 102 / 40 | 0 | Completed and Verified |
-| 18 | District System Administrator (Tech) | 3 | District Technical Administration | 5 | 4 | 1 | 1 | 12 / 51 / 24 | 0 | Completed and Verified |
-| 19 | Officer Commanding — District | 3 | District Command Dashboard | 17 | 6 | 3 | 1 | 37 / 28 / 22 | 0 | Completed and Verified |
-| 20 | Deputy OC — District | 3 | Deputy District Commander Dashboard | 14 | 6 | 2 | 1 | 29 / 31 / 27 | 0 | Completed and Verified |
-| 21 | Operations Officer — District | 3 | District Operations Officer Workspace | 15 | 6 | 3 | 2 | 69 / 48 / 57 | 0 | Completed and Verified |
-| 22 | Deputy Operations Officer — District | 3 | Deputy District Operations Workspace | 13 | 6 | 2 | 1 | 34 / 26 / 27 | 0 | Completed and Verified |
-| 23 | Stores Officer — District | 3 | District Stores Administration | 7 | 6 | 2 | 1 | 19 / 50 / 18 | 0 | Completed and Verified |
-| 24 | Police Station System Administrator | 3 | Police Station Technical Administration | 5 | 4 | 1 | 1 | 12 / 51 / 24 | 0 | Completed and Verified |
-| 25 | Officer-in-Charge — Police Station GD | 3 | Police Station General Duties Administration | 15 | 6 | 3 | 1 | 35 / 28 / 24 | 0 | Completed and Verified |
-| 26 | Station Inspector — Police Station GD | 3 | Station Inspector Operations Administration | 12 | 6 | 2 | 3 | 86 / 90 / 85 | 0 | Completed and Verified |
-| 27 | Police Station Administrator (Stores and Admin) | 3 | Police Station Stores and Administration | 10 | 6 | 3 | 1 | 26 / 43 / 18 | 0 | Completed and Verified |
+| 07 | National Police Intelligence Officer | 1 | National Police Intelligence Officer Dashboard | 12 | 6 | 4 | 0 | — | — | Implemented (no audit evidence) |
+| 08 | Divisional/Unit System Administrator (Tech) | 2 | Division and Unit Technical Administration | 5 | 4 | 1 | 2 | 24 / 102 / 48 | 0 | Completed and Verified |
+| 09 | Formation Commanding Officer | 2 | Formation Command Headquarters | 19 | 6 | 3 | 4 | 159 / 106 / 83 | 0 | Completed and Verified |
+| 10 | Deputy Division Commander | 2 | Deputy Division Commander Dashboard | 15 | 6 | 3 | 2 | 86 / 58 / 30 | 0 | Completed and Verified |
+| 11 | Division Senior Staff Officer – Operations (Staff I) | 2 | Division Senior Staff Officer – Operations | 19 | 6 | 4 | 3 | 146 / 48 / 67 | 0 | Completed and Verified |
+| 12 | Deputy Division Staff Officer – Operations (Staff II) | 2 | Deputy Division Staff Officer – Operations | 13 | 6 | 3 | 3 | 114 / 84 / 63 | 0 | Completed and Verified |
+| 13 | Company Commander | 2 | Company Command Administration | 11 | 6 | 2 | 2 | 46 / 70 / 58 | 0 | Completed and Verified |
+| 14 | Section Head | 2 | Section Administration Dashboard | 8 | 5 | 2 | 7 | 106 / 294 / 209 | 0 | Completed and Verified |
+| 15 | Formation Operations Staff Administrator | 2 | Formation Operations Staff Administration | 19 | 6 | 4 | 2 | 87 / 34 / 53 | 0 | Completed and Verified |
+| 16 | Divisional Quarter Masters Stores Officer | 2 | Divisional Quarter Masters and Stores Administration | 7 | 6 | 3 | 2 | 39 / 100 / 35 | 0 | Completed and Verified |
+| 17 | Divisional Principal Armourer | 2 | Divisional Armourer Administration | 4 | 3 | 1 | 1 | 10 / 54 / 23 | 0 | Completed and Verified |
+| 18 | Divisional MTO Officer-in-Charge | 2 | Divisional Motor Transport Administration | 6 | 6 | 3 | 2 | 32 / 102 / 40 | 0 | Completed and Verified |
+| 19 | Division Police Intelligence Officer | 2 | Division Police Intelligence Officer Dashboard | 10 | 6 | 4 | 0 | — | — | Implemented (no audit evidence) |
+| 20 | District System Administrator (Tech) | 3 | District Technical Administration | 5 | 4 | 1 | 1 | 12 / 51 / 24 | 0 | Completed and Verified |
+| 21 | Officer Commanding — District | 3 | District Command Dashboard | 17 | 6 | 3 | 1 | 37 / 28 / 22 | 0 | Completed and Verified |
+| 22 | Deputy OC — District | 3 | Deputy District Commander Dashboard | 14 | 6 | 2 | 1 | 29 / 31 / 27 | 0 | Completed and Verified |
+| 23 | Operations Officer — District | 3 | District Operations Officer Workspace | 15 | 6 | 3 | 2 | 69 / 48 / 57 | 0 | Completed and Verified |
+| 24 | Deputy Operations Officer — District | 3 | Deputy District Operations Workspace | 13 | 6 | 2 | 1 | 34 / 26 / 27 | 0 | Completed and Verified |
+| 25 | Stores Officer — District | 3 | District Stores Administration | 7 | 6 | 2 | 1 | 19 / 50 / 18 | 0 | Completed and Verified |
+| 26 | Police Station System Administrator | 3 | Police Station Technical Administration | 5 | 4 | 1 | 1 | 12 / 51 / 24 | 0 | Completed and Verified |
+| 27 | Officer-in-Charge — Police Station GD | 3 | Police Station General Duties Administration | 15 | 6 | 3 | 1 | 35 / 28 / 24 | 0 | Completed and Verified |
+| 28 | Station Inspector — Police Station GD | 3 | Station Inspector Operations Administration | 12 | 6 | 2 | 3 | 86 / 90 / 85 | 0 | Completed and Verified |
+| 29 | Police Station Administrator (Stores and Admin) | 3 | Police Station Stores and Administration | 10 | 6 | 3 | 1 | 26 / 43 / 18 | 0 | Completed and Verified |
+| 30 | District Police Intelligence Officer | 3 | District Police Intelligence Officer Dashboard | 9 | 6 | 3 | 0 | — | — | Implemented (no audit evidence) |
+| 31 | Police Intelligence Officer | 4 | Police Intelligence Officer Dashboard | 8 | 6 | 2 | 0 | — | — | Implemented (no audit evidence) |
 
-**27 of 27 role workspaces: Completed and Verified.**
+**27 of 31 role workspaces: Completed and Verified.**
 
 ## Tier 1 — National Headquarters
 
@@ -119,9 +123,20 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** usersActive, sessions, locked, failedLogins24h, denied24h, jobFailures
 - **Quick actions:** Account support, Security events, System health
 
+### 07 · National Police Intelligence Officer
+
+- **Back office:** National Police Intelligence Officer Dashboard (restricted liaison role: administrative metadata only, no personnel or operational registers)
+- **Purpose:** National intelligence liaison administration: administrative references, submissions, routing and acknowledgements. Metadata only.
+- **Organisational context:** National Headquarters (intelligence liaison administration); assignable to service hq
+- **Overview:** National Intelligence Liaison Dashboard, My tasks
+- **Liaison administration:** Assigned Administrative References, Liaison Activity Register, Administrative Submission Register, Report Reference Tracking, Organisational Routing, Submission Status, Administrative Review Queue, Audit History
+- **Account:** Notifications, My Profile
+- **Dashboard figures:** liaisonAssigned, liaisonIncoming, liaisonToAcknowledge, liaisonAwaiting, liaisonReports, unread
+- **Quick actions:** Record a liaison reference, Receiving and review queue, Outstanding acknowledgements, Liaison history
+
 ## Tier 2 — Provincial Divisions and Unit Formations
 
-### 07 · Divisional/Unit System Administrator (Tech)
+### 08 · Divisional/Unit System Administrator (Tech)
 
 - **Back office:** Division and Unit Technical Administration (technical role: no business approvals or personnel records)
 - **Purpose:** Technical account support within your Division or Formation. Higher-level issues go to HQ Tech.
@@ -132,7 +147,7 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** usersActive, locked, failedLogins24h, myTasks
 - **Quick actions:** Account support
 
-### 08 · Formation Commanding Officer
+### 09 · Formation Commanding Officer
 
 - **Back office:** Formation Command Headquarters (business role)
 - **Purpose:** Command oversight of your Division or Formation and everything under it.
@@ -146,7 +161,7 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** orgUnits, personnel, activeAssignments, contributionsDue, storesAwaitingDecision, pendingDecisions
 - **Quick actions:** Review approvals, Open reports, Stores and stock
 
-### 09 · Deputy Division Commander
+### 10 · Deputy Division Commander
 
 - **Back office:** Deputy Division Commander Dashboard (business role)
 - **Purpose:** Support to the commanding officer: performance, outstanding matters and Staff I/II workflows.
@@ -160,7 +175,7 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** orgUnits, personnel, activeAssignments, openManpower, reviewsDue, pendingDecisions
 - **Quick actions:** Review approvals, Open reports, Transfers
 
-### 10 · Division Senior Staff Officer – Operations (Staff I)
+### 11 · Division Senior Staff Officer – Operations (Staff I)
 
 - **Back office:** Division Senior Staff Officer – Operations (business role)
 - **Purpose:** Divisional Operations administration: requirements, contributions, rosters, assignments, transfers and renewals.
@@ -174,7 +189,7 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** openManpower, contributionsToReview, rostersApproved, activeAssignments, reviewsDue, pendingDecisions
 - **Quick actions:** New manpower request, Register personnel, New stores requisition, Open reports
 
-### 11 · Deputy Division Staff Officer – Operations (Staff II)
+### 12 · Deputy Division Staff Officer – Operations (Staff II)
 
 - **Back office:** Deputy Division Staff Officer – Operations (business role)
 - **Purpose:** Preparation and verification support for Staff I: personnel information, draft lists and documentation.
@@ -186,7 +201,7 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** personnel, unverified, contributionsDue, activeAssignments, transfersOpen, myTasks
 - **Quick actions:** Register personnel, New manpower request, Prepare contribution
 
-### 12 · Company Commander
+### 13 · Company Commander
 
 - **Back office:** Company Command Administration (business role)
 - **Purpose:** Company administration: personnel register, contributions and submissions for your company.
@@ -198,7 +213,7 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** personnel, available, activeAssignments, contributionsDue, pendingDecisions, myTasks
 - **Quick actions:** Prepare contribution, Register personnel
 
-### 13 · Section Head
+### 14 · Section Head
 
 - **Back office:** Section Administration Dashboard (business role)
 - **Purpose:** Section administrative records: personnel selection and manpower contributions.
@@ -209,7 +224,7 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** personnel, available, contributionsDue, myTasks, unread
 - **Quick actions:** Prepare contribution, Register personnel
 
-### 14 · Formation Operations Staff Administrator
+### 15 · Formation Operations Staff Administrator
 
 - **Back office:** Formation Operations Staff Administration (business role)
 - **Purpose:** Formation-level Operations administration and subordinate submissions.
@@ -223,9 +238,9 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** openManpower, contributionsDue, personnel, activeAssignments, pendingDecisions, myTasks
 - **Quick actions:** New manpower request, Register personnel, New administrative request, New stores requisition
 
-### 15 · Divisional Quarter Masters Stores Officer
+### 16 · Divisional Quarter Masters Stores Officer
 
-- **Back office:** Divisional Quarter Masters and Stores Administration (business role)
+- **Back office:** Divisional Quarter Masters and Stores Administration (functional role)
 - **Purpose:** Divisional general stores and non-sensitive assets: stock, requisitions, custody and reconciliation.
 - **Organisational context:** Provincial Division or Unit/Formation stores; assignable to provincial division, formation
 - **Overview:** Dashboard, My tasks
@@ -236,9 +251,9 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** storesItems, storesLow, storesToIssue, assets, notInspected, reconciliationsOpen
 - **Quick actions:** Stores and stock, Requisitions to issue, Asset reconciliation
 
-### 16 · Divisional Principal Armourer
+### 17 · Divisional Principal Armourer
 
-- **Back office:** Divisional Armourer Administration (business role)
+- **Back office:** Divisional Armourer Administration (functional role)
 - **Purpose:** Approved non-sensitive administrative functions only. No firearms, ammunition or armoury records exist in ZPS-OMS.
 - **Organisational context:** Provincial Division or Unit/Formation; assignable to provincial division, formation
 - **Overview:** Dashboard, My tasks, Approvals & queues
@@ -246,9 +261,9 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** myRequests, myTasks, unread
 - **Quick actions:** New administrative request
 
-### 17 · Divisional MTO Officer-in-Charge
+### 18 · Divisional MTO Officer-in-Charge
 
-- **Back office:** Divisional Motor Transport Administration (business role)
+- **Back office:** Divisional Motor Transport Administration (functional role)
 - **Purpose:** Divisional motor transport administration: vehicle register, documentation, maintenance and service history.
 - **Organisational context:** Provincial Division or Unit/Formation transport; assignable to provincial division, formation
 - **Overview:** Dashboard, My tasks
@@ -258,9 +273,20 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** vehicles, maintenanceOpen, serviceDue, pendingDecisions, myTasks, unread
 - **Quick actions:** Vehicle register, Maintenance requests, Open reports
 
+### 19 · Division Police Intelligence Officer
+
+- **Back office:** Division Police Intelligence Officer Dashboard (restricted liaison role: administrative metadata only, no personnel or operational registers)
+- **Purpose:** Division-level intelligence liaison administration within your Province or Unit/Formation. Metadata only; no cross-divisional access.
+- **Organisational context:** Assigned Provincial Division or Unit/Formation only; assignable to provincial division, formation
+- **Overview:** Division Intelligence Liaison Dashboard, My tasks
+- **Liaison administration:** Assigned References, Division Liaison Register, Administrative Submission Status, Receiving and Routing Register, Administrative Review, History
+- **Account:** Notifications, My profile
+- **Dashboard figures:** liaisonAssigned, liaisonIncoming, liaisonToAcknowledge, liaisonAwaiting, liaisonReports, unread
+- **Quick actions:** Record a liaison reference, Receiving and review queue, Outstanding acknowledgements, Liaison history
+
 ## Tier 3 — District Commands and Police Stations
 
-### 18 · District System Administrator (Tech)
+### 20 · District System Administrator (Tech)
 
 - **Back office:** District Technical Administration (technical role: no business approvals or personnel records)
 - **Purpose:** Technical account support within your District.
@@ -271,7 +297,7 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** usersActive, locked, failedLogins24h, myTasks
 - **Quick actions:** Account support
 
-### 19 · Officer Commanding — District
+### 21 · Officer Commanding — District
 
 - **Back office:** District Command Dashboard (business role)
 - **Purpose:** District oversight: stations and posts, personnel, contributions, assignments and stores.
@@ -285,7 +311,7 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** orgUnits, personnel, activeAssignments, contributionsDue, storesAwaitingDecision, pendingDecisions
 - **Quick actions:** Review approvals, Stores and stock, Open reports
 
-### 20 · Deputy OC — District
+### 22 · Deputy OC — District
 
 - **Back office:** Deputy District Commander Dashboard (business role)
 - **Purpose:** Assists the District Commander; reviews subordinate submissions.
@@ -298,7 +324,7 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** orgUnits, personnel, activeAssignments, contributionsDue, pendingDecisions, myTasks
 - **Quick actions:** Review approvals, Prepare contribution
 
-### 21 · Operations Officer — District
+### 23 · Operations Officer — District
 
 - **Back office:** District Operations Officer Workspace (business role)
 - **Purpose:** District Operations administration: requests, station contributions, district lists and assignment records.
@@ -312,7 +338,7 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** openManpower, contributionsToReview, contributionsDue, activeAssignments, transfersOpen, pendingDecisions
 - **Quick actions:** New manpower request, Register personnel, New stores requisition
 
-### 22 · Deputy Operations Officer — District
+### 24 · Deputy Operations Officer — District
 
 - **Back office:** Deputy District Operations Workspace (business role)
 - **Purpose:** Preparation and verification of district submissions and workflow records.
@@ -324,9 +350,9 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** personnel, unverified, contributionsDue, activeAssignments, myTasks, unread
 - **Quick actions:** Register personnel, Prepare contribution
 
-### 23 · Stores Officer — District
+### 25 · Stores Officer — District
 
-- **Back office:** District Stores Administration (business role)
+- **Back office:** District Stores Administration (functional role)
 - **Purpose:** District general stores: stock, receipts and issues, requisitions and non-sensitive custody.
 - **Organisational context:** District Command stores; assignable to district
 - **Overview:** Dashboard, My tasks
@@ -337,7 +363,7 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** storesItems, storesLow, storesToIssue, storesAwaitingDecision, assets, myTasks
 - **Quick actions:** Stores and stock, Requisitions to issue
 
-### 24 · Police Station System Administrator
+### 26 · Police Station System Administrator
 
 - **Back office:** Police Station Technical Administration (technical role: no business approvals or personnel records)
 - **Purpose:** Technical account support for your Police Station.
@@ -348,7 +374,7 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** usersActive, locked, failedLogins24h, myTasks
 - **Quick actions:** Account support
 
-### 25 · Officer-in-Charge — Police Station GD
+### 27 · Officer-in-Charge — Police Station GD
 
 - **Back office:** Police Station General Duties Administration (business role)
 - **Purpose:** Station general duties administrative oversight: personnel, contributions and submissions.
@@ -362,7 +388,7 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** personnel, available, activeAssignments, contributionsDue, storesAwaitingDecision, pendingDecisions
 - **Quick actions:** Review approvals, Prepare contribution, Stores and stock
 
-### 26 · Station Inspector — Police Station GD
+### 28 · Station Inspector — Police Station GD
 
 - **Back office:** Station Inspector Operations Administration (business role)
 - **Purpose:** Station administration support: personnel register, contributions and submissions.
@@ -375,9 +401,9 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Dashboard figures:** personnel, available, unverified, contributionsDue, myTasks, unread
 - **Quick actions:** Register personnel, Prepare contribution
 
-### 27 · Police Station Administrator (Stores and Admin)
+### 29 · Police Station Administrator (Stores and Admin)
 
-- **Back office:** Police Station Stores and Administration (business role)
+- **Back office:** Police Station Stores and Administration (functional role)
 - **Purpose:** Station administrative records, general stores and non-sensitive assets.
 - **Organisational context:** Police Station; assignable to station, post
 - **Overview:** Dashboard, My tasks, Approvals & queues
@@ -387,4 +413,28 @@ Route-audit evidence: `docs/evidence/route-audit.md`, generated 2026-11-27T06:32
 - **Administrative records:** Administrative calendar, Correspondence
 - **Dashboard figures:** storesItems, storesLow, myRequisitions, assets, myRequests, myTasks
 - **Quick actions:** New stores requisition, Stores and stock, New administrative request
+
+### 30 · District Police Intelligence Officer
+
+- **Back office:** District Police Intelligence Officer Dashboard (restricted liaison role: administrative metadata only, no personnel or operational registers)
+- **Purpose:** District-level intelligence liaison administration for your District only. Metadata only.
+- **Organisational context:** Assigned District Command only; assignable to district
+- **Overview:** District Intelligence Liaison Dashboard, My tasks
+- **Liaison administration:** Assigned References, District Liaison Register, Administrative Submissions, Routing and Acknowledgements, Administrative History
+- **Account:** Notifications, My profile
+- **Dashboard figures:** liaisonAssigned, liaisonIncoming, liaisonToAcknowledge, liaisonAwaiting, liaisonReports, unread
+- **Quick actions:** Record a liaison reference, Outstanding acknowledgements, Liaison history
+
+## Tier 4 — Section / Police Station
+
+### 31 · Police Intelligence Officer
+
+- **Back office:** Police Intelligence Officer Dashboard (restricted liaison role: administrative metadata only, no personnel or operational registers)
+- **Purpose:** Local intelligence liaison administration for your Section or Police Station only. Metadata only.
+- **Organisational context:** Assigned Section or Police Station only; assignable to section, station
+- **Overview:** Police Intelligence Officer Dashboard, My tasks
+- **Liaison administration:** Assigned References, Local Liaison Register, Submission Status, Administrative Acknowledgements
+- **Account:** Notifications, My Profile
+- **Dashboard figures:** liaisonAssigned, liaisonIncoming, liaisonToAcknowledge, liaisonAwaiting, myTasks, unread
+- **Quick actions:** Record a liaison reference, Outstanding acknowledgements
 

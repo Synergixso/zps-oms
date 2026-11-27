@@ -1,8 +1,8 @@
 /**
  * Generates, from the catalogue and workspace configuration the server enforces:
  *   docs/generated/PERMISSION_MATRIX.md                         (permission × role grid)
- *   docs/development/USER_ROLE_CATALOGUE.md                     (the 27 roles with scoped permissions)
- *   docs/role-architecture/ROLE_CATALOGUE.md                    (27 roles by tier)
+ *   docs/development/USER_ROLE_CATALOGUE.md                     (the 31 roles with scoped permissions)
+ *   docs/role-architecture/ROLE_CATALOGUE.md                    (31 roles by tier)
  *   docs/role-architecture/PERMISSION_MATRIX.md                 (functional mapping + grid by tier)
  *   docs/role-architecture/DASHBOARD_CONFIGURATION.md           (back office, navigation, figures, quick actions)
  *   docs/role-architecture/TIER_1/2/3_*_IMPLEMENTATION.md       (per-role implementation detail)
@@ -20,7 +20,7 @@ const ws = (r: RoleDef) => WORKSPACE_CONFIG.find((w) => w.role === r.code)!;
 const legend = "Legend: **U** = assigned unit only · **S** = assigned unit and every subordinate unit · **N** = national (only when the assignment is held at Service HQ; otherwise treated as S) · blank = denied.";
 const approval = "Approval authority is never a role permission: it needs an active delegation (domain ADMIN_REQUEST, MAINTENANCE, ORG_CHANGE, MANPOWER, ASSIGNMENT or STORES) at the record's unit or an ancestor **and** a BUSINESS-category role at that delegating unit (`policy.approvalUnitFor` / `policy.canApprove`). Rank never confers authority. Technical, functional and audit roles never approve.";
 const head = (title: string) => [`# ${title}`, "", "> Generated from `src/server/domain/catalogue.ts` and `src/server/domain/workspace-config.ts` — the configuration the server enforces. Do not edit by hand; run `npm run docs:permissions`.", ""];
-const TIERS: Array<[1 | 2 | 3, string]> = [[1, "Tier 1 — National Headquarters"], [2, "Tier 2 — Provincial Divisions and Unit Formations"], [3, "Tier 3 — District Commands and Police Stations"]];
+const TIERS: Array<[1 | 2 | 3 | 4, string]> = [[1, "Tier 1 — National Headquarters"], [2, "Tier 2 — Provincial Divisions and Unit Formations"], [3, "Tier 3 — District Commands and Police Stations"], [4, "Tier 4 — Section / Police Station"]];
 const write = (file: string, lines: string[]) => { fs.mkdirSync(file.slice(0, file.lastIndexOf("/")), { recursive: true }); fs.writeFileSync(file, lines.join("\n") + "\n"); };
 
 function grid(roles: RoleDef[]) {
@@ -50,11 +50,11 @@ function roleBlock(r: RoleDef, full: boolean) {
 }
 
 // docs/generated/PERMISSION_MATRIX.md
-write("docs/generated/PERMISSION_MATRIX.md", [...head("Generated permission matrix (27 roles)"), legend, "", approval, "", ...grid(ROLES), "",
+write("docs/generated/PERMISSION_MATRIX.md", [...head(`Generated permission matrix (${ROLES.length} roles)`), legend, "", approval, "", ...grid(ROLES), "",
   "Role numbers: " + ROLES.map((r) => `R${nn(r.no)} ${r.name}`).join(" · ")]);
 
 // docs/development/USER_ROLE_CATALOGUE.md
-const cat = [...head("User Role Catalogue (27 roles, three tiers)"),
+const cat = [...head(`User Role Catalogue (${ROLES.length} roles, four role-scope levels)`),
   "Every role has a unique code and number, a tier, an official back-office name, the organisation unit types it may be assigned at, and scoped action permissions. A user may hold several roles, each at its own unit and validity period, and switches between them (one active context per session).", "",
   legend, "", approval, ""];
 for (const [t, title] of TIERS) { cat.push(`## ${title}`, ""); for (const r of ROLES.filter((x) => x.tier === t)) cat.push(...roleBlock(r, false)); }
@@ -62,7 +62,7 @@ cat.push("## Retired roles", "", `The previous 41-role catalogue is retired (sta
 write("docs/development/USER_ROLE_CATALOGUE.md", cat);
 
 // docs/role-architecture/ROLE_CATALOGUE.md
-const rc = [...head("Role Catalogue — Three-Tier 27-Role Configuration"),
+const rc = [...head(`Role Catalogue — ${ROLES.length}-Role Configuration (four role-scope levels)`),
   "This is the only active role configuration (DEC-049). Roles are not added, removed or renamed without project-owner approval.", "",
   "| No. | Tier | Role | Code | Category | Back office | Assignable at |", "|--:|:-:|---|---|---|---|---|"];
 for (const r of ROLES) rc.push(`| ${nn(r.no)} | ${r.tier} | ${r.name} | \`${r.code}\` | ${r.category} | ${r.backOffice} | ${units(r)} |`);
@@ -93,23 +93,24 @@ const FUNCTIONAL: Array<[string, string]> = [
   ["Audit oversight", "`audit.view` / `audit.export`"],
   ["Workflow configuration", "`workflow.view` / `workflow.configure`"],
 ];
-const pm = [...head("Permission Matrix — 27 Roles"), legend, "", approval, "", "## Directive functions mapped to enforced permissions", "",
+const pm = [...head(`Permission Matrix — ${ROLES.length} Roles`), legend, "", approval, "", "## Directive functions mapped to enforced permissions", "",
   "| Function in the directive | Enforced permission(s) |", "|---|---|", ...FUNCTIONAL.map(([a, b]) => `| ${a} | ${b} |`), ""];
 for (const [t, title] of TIERS) pm.push(`## ${title}`, "", ...grid(ROLES.filter((r) => r.tier === t)), "", ROLES.filter((r) => r.tier === t).map((r) => `R${nn(r.no)} ${r.name}`).join(" · "), "");
 write("docs/role-architecture/PERMISSION_MATRIX.md", pm);
 
 // docs/role-architecture/DASHBOARD_CONFIGURATION.md
 const dc = [...head("Dashboard and Workspace Configuration"),
-  "One architecture, 27 configurations. `src/server/domain/workspace-config.ts` holds, per role: back-office name, purpose line, navigation sections (order and labels), headline figures (live, scoped — `overview.ts`) and quick actions. The layout renders the navigation of the **active context** and filters every entry by permission; pages and domain functions re-check on the server.", "",
+  `One architecture, ${ROLES.length} configurations. ` + "`src/server/domain/workspace-config.ts` holds, per role: back-office name, purpose line, navigation sections (order and labels), headline figures (live, scoped — `overview.ts`) and quick actions. The layout renders the navigation of the **active context** and filters every entry by permission; pages and domain functions re-check on the server.", "",
   "| No. | Back office | Navigation sections | Headline figures | Quick actions | Working panels |", "|--:|---|---|---|---|---|"];
 for (const r of ROLES) { const w = ws(r); dc.push(`| ${nn(r.no)} | ${r.backOffice} | ${w.nav.map((g) => g.label).join(" · ")} | ${w.kpis.join(", ")} | ${w.quick.map((q) => q.label).join(", ")} | \`${r.dashboard}\` |`); }
 write("docs/role-architecture/DASHBOARD_CONFIGURATION.md", dc);
 
 // Tier implementation documents
 const TIER_FILES: Record<number, [string, string, string]> = {
-  1: ["TIER_1_HEADQUARTERS_IMPLEMENTATION.md", "Tier 1 Implementation — National Headquarters", "Six roles held at Service Headquarters. NATIONAL coverage applies only to assignments at HQ. Superadmin and HQ Tech are TECHNICAL (no personnel records, no approvals); the Inspector General sees national summaries and audit evidence, not individual records; DIG Operations, the Commissioner and the Deputy Commissioner work the national Operations processes and decide only within delegations."],
-  2: ["TIER_2_DIVISION_AND_FORMATION_IMPLEMENTATION.md", "Tier 2 Implementation — Provincial Divisions and Unit Formations", "Eleven roles held at a Provincial Division or Unit Formation (Company Commander at a company; Section Head at a section, platoon, detachment or department). SUBTREE coverage reaches every subordinate unit and never a sibling Division or Formation. Role 16 (Principal Armourer) is a non-sensitive administrative workspace only."],
-  3: ["TIER_3_DISTRICT_AND_STATION_IMPLEMENTATION.md", "Tier 3 Implementation — District Commands and Police Stations", "Ten roles held at a District Command or a Police Station (station roles may also be assigned at a Police Post). Scope never extends to another District or Station. The station and district stores roles keep general consumables only."],
+  1: ["TIER_1_HEADQUARTERS_IMPLEMENTATION.md", "Tier 1 Implementation — National Headquarters", "Seven roles held at Service Headquarters. NATIONAL coverage applies only to assignments at HQ. Superadmin and HQ Tech are TECHNICAL (no personnel records, no approvals); the Inspector General sees national summaries and audit evidence, not individual records; DIG Operations, the Commissioner and the Deputy Commissioner work the national Operations processes and decide only within delegations. The National Police Intelligence Officer (07) works in the restricted liaison workspace: administrative metadata only, no personnel records."],
+  2: ["TIER_2_DIVISION_AND_FORMATION_IMPLEMENTATION.md", "Tier 2 Implementation — Provincial Divisions and Unit Formations", "Twelve roles held at a Provincial Division or Unit Formation (Company Commander at a company; Section Head at a section, platoon, detachment or department). SUBTREE coverage reaches every subordinate unit and never a sibling Division or Formation. Role 17 (Principal Armourer) is a non-sensitive administrative workspace only. Role 19 (Division Police Intelligence Officer) is a restricted liaison workspace for the assigned Division or Formation."],
+  3: ["TIER_3_DISTRICT_AND_STATION_IMPLEMENTATION.md", "Tier 3 Implementation — District Commands and Police Stations", "Eleven roles held at a District Command or a Police Station (station roles may also be assigned at a Police Post). Scope never extends to another District or Station. The station and district stores roles keep general consumables only. Role 30 (District Police Intelligence Officer) is a restricted liaison workspace for the assigned District."],
+  4: ["TIER_4_SECTION_AND_STATION_IMPLEMENTATION.md", "Tier 4 Implementation — Section / Police Station", "One canonical role profile, the Police Intelligence Officer (31), assignable at a Section or a Police Station. UNIT coverage: the assigned office only, never the parent District or Division. Restricted liaison workspace: administrative metadata only (DEC-073)."],
 };
 for (const [t] of TIERS) {
   const [file, title, intro] = TIER_FILES[t];

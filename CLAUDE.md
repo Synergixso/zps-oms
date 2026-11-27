@@ -1,10 +1,11 @@
 # ZPS-OMS — Claude Code project instructions
 
-Zambia Police Service Operations Management System — Operations personnel, manpower and administration management platform, developed by Synergix Solutions. **Local development uses synthetic data only.** The controlling requirements are the owner's Master Development Directive (26 Nov 2026) as reconciled in `docs/PHASE3_AUDIT_AND_ARCHITECTURE.md`; decisions are in `docs/DECISION_REGISTER.md` (DEC-028 … DEC-037 supersede earlier scope rules).
+Zambia Police Service Operations Management System — Operations personnel, manpower and administration management platform, developed by Synergix Solutions. **Local development uses synthetic data only.** The controlling requirements are the owner's Master Development Directive (26 Nov 2026) as reconciled in `docs/PHASE3_AUDIT_AND_ARCHITECTURE.md`; decisions are in `docs/DECISION_REGISTER.md` (DEC-028 … DEC-037 supersede earlier scope rules; DEC-072/073 set the 31-role catalogue and the liaison boundary).
 
 ## Non-negotiables
 - **Scope:** national HQ, ten Provincial Divisions, District Commands, Police Stations, Police Posts, Divisions/Formations and their Departments, Companies, Detachments, Platoons and Sections. Personnel registry, manpower requests, rosters, duty-area assignments, transfers, disposition, tenure and renewals are in scope.
-- **Still excluded:** GPS / live location, patrol routes, tactical deployment or positions, dispatch, command and control, intelligence/informants, investigations, firearms/ammunition, sensitive operational equipment. An assignment is an administrative duty-area record, never a location.
+- **Still excluded:** GPS / live location, patrol routes, tactical deployment or positions, dispatch, command and control, intelligence content/informants/sources/surveillance/collection/tasking, investigations, firearms/ammunition, sensitive operational equipment. An assignment is an administrative duty-area record, never a location.
+- **Roles:** exactly 31 role profiles in four levels (DEC-072). Roles 07, 19, 30, 31 (Police Intelligence Officers) hold only `liaison.*`: administrative METADATA (reference numbers, offices, dates, status, routing), no free-text content field, no access to personnel or operational registers (DEC-073). Never add a content, note or attachment field to liaison records.
 - **Synthetic data only** in development (`demo.` usernames, "Demo" names, `SYN-` references, synthetic service numbers). Never real personnel, service numbers or rosters.
 - **ZMW 0:** free dependencies only; no paid services, APIs or hosting.
 - **Crest:** `public/brand/zambia-police-service-crest.png` byte-identical to `assets/…`; render only via `<Crest>`. Band order green/white/blue.

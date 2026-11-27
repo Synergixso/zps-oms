@@ -1,6 +1,6 @@
 /**
  * Automated accessibility scan (NFR-006, WCAG 2.2 AA) with axe-core.
- * Public pages and the sign-in page, then the dashboard and Help page of one account per role (27 roles).
+ * Public pages and the sign-in page, then the dashboard and Help page of one account per role (31 roles).
  * Writes docs/evidence/accessibility.md and fails on any violation. Synthetic data only.
  */
 import fs from "node:fs";
@@ -45,7 +45,7 @@ test("WCAG 2.2 AA: public pages, sign-in, and every role's dashboard and Help pa
       WHERE a.role_code = r.code AND a.revoked_at IS NULL AND u.status = 'ACTIVE' ORDER BY u.username LIMIT 1) AS username
     FROM roles r WHERE r.status = 'ACTIVE' ORDER BY r.role_no`)) as unknown as [Array<{ role_no: number; code: string; username: string }>];
   await db.end();
-  expect(rows).toHaveLength(27);
+  expect(rows).toHaveLength(31);
   for (const r of rows) {
     await login(page, r.username);
     await scan(page, "/app", `${String(r.role_no).padStart(2, "0")} ${r.code}`);
@@ -56,7 +56,7 @@ test("WCAG 2.2 AA: public pages, sign-in, and every role's dashboard and Help pa
   // Evidence report: one row per rule, with where it occurred.
   const byRule = new Map<string, Finding[]>();
   for (const f of findings) byRule.set(f.id, [...(byRule.get(f.id) ?? []), f]);
-  const md = ["# Accessibility scan (axe-core, WCAG 2.0/2.1/2.2 A and AA)", "", `Generated ${new Date().toISOString()} · ${scanned} page views scanned (7 public pages; dashboard and Help page for one account per role, 27 roles). Synthetic data only.`, "",
+  const md = ["# Accessibility scan (axe-core, WCAG 2.0/2.1/2.2 A and AA)", "", `Generated ${new Date().toISOString()} · ${scanned} page views scanned (7 public pages; dashboard and Help page for one account per role, 31 roles). Synthetic data only.`, "",
     `**Violations: ${findings.length}**`, ""];
   if (byRule.size) {
     md.push("| Rule | Impact | Description | Occurrences | Example page / role | Example element |", "|---|---|---|--:|---|---|");

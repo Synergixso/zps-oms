@@ -1,5 +1,5 @@
 /**
- * Working panels for the stores roles (15, 23, 27) and the scoped technical administrators (07, 18, 24).
+ * Working panels for the stores roles (16, 25, 29) and the scoped technical administrators (08, 20, 26).
  * Every figure is read through a scoped domain function or a query bounded by the actor's scope.
  */
 import Link from "next/link";

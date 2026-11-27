@@ -1,5 +1,5 @@
 /**
- * Three-tier 27-role directive: catalogue matrix, separation rules, context switching,
+ * Role catalogue (31 roles, four role-scope levels; 27-role three-tier base plus four liaison roles): catalogue matrix, separation rules, context switching,
  * scoped technical administration and general stores (synthetic data only).
  */
 import { describe, expect, it } from "vitest";
@@ -18,11 +18,21 @@ import { actor, withDb } from "./helpers";
 
 const PERSONNEL_PERMS: Permission[] = ["personnel.view", "personnel.register", "personnel.edit", "personnel.verify", "assignment.view", "assignment.propose", "manpower.view", "roster.view"];
 
-describe("27-role catalogue matrix", () => {
+describe("31-role catalogue matrix", () => {
+  it("exactly 31 roles: 7 + 12 + 11 + 1 across four levels, numbered 1–31 in order, unique codes and back offices", () => {
+    expect(ROLES).toHaveLength(31);
+    expect([1, 2, 3, 4].map((t) => ROLES.filter((r) => r.tier === t).length)).toEqual([7, 12, 11, 1]);
+    expect(ROLES.map((r) => r.no)).toEqual(Array.from({ length: 31 }, (_, i) => i + 1));
+    expect(new Set(ROLES.map((r) => r.code)).size).toBe(31);
+    expect(new Set(ROLES.map((r) => r.backOffice)).size).toBe(31);
+    expect(ROLES.filter((r) => r.tier === 4).map((r) => r.code)).toEqual(["INTEL_OFFICER"]);
+    expect([7, 19, 30, 31].map((n) => ROLES.find((r) => r.no === n)!.code)).toEqual(["NATIONAL_INTEL_OFFICER", "DIVISION_INTEL_OFFICER", "DISTRICT_INTEL_OFFICER", "INTEL_OFFICER"]);
+    expect(ROLE_BY_CODE.DIG_OPERATIONS.name).toBe("Deputy Inspector General of Police - Operations (DIG Operations)");
+  });
+
   it("every role has a tier, back office, workspace and valid navigation", () => {
-    expect(ROLES).toHaveLength(27);
     for (const r of ROLES) {
-      expect([1, 2, 3]).toContain(r.tier);
+      expect([1, 2, 3, 4]).toContain(r.tier);
       expect(r.backOffice.length).toBeGreaterThan(5);
       expect(r.assignableTo.length).toBeGreaterThan(0);
       const ws = WORKSPACES[r.code];
@@ -53,20 +63,20 @@ describe("27-role catalogue matrix", () => {
     expect([...ADMIN_RECORDS_ROLES].sort()).toEqual(holders);
   });
 
-  it("Principal Armourer (16) exists with non-sensitive administrative functions only", () => {
+  it("Principal Armourer (17) exists with non-sensitive administrative functions only", () => {
     const r = ROLE_BY_CODE.PRINCIPAL_ARMOURER;
-    expect(r.no).toBe(16);
+    expect(r.no).toBe(17);
     expect(Object.keys(r.permissions).every((p) => p.startsWith("request."))).toBe(true);
     for (const t of ["firearm", "ammunition", "armoury", "weapon"]) expect(PROHIBITED_TERMS).toContain(t);
   });
 
   it("stores functions sit with the stores roles; approval needs a business role", () => {
-    expect(ROLES.filter((r) => r.permissions["stores.manage"]).map((r) => r.no)).toEqual([15, 23, 27]);
+    expect(ROLES.filter((r) => r.permissions["stores.manage"]).map((r) => r.no)).toEqual([16, 25, 29]);
     for (const r of ROLES.filter((x) => x.permissions["stores.approve"])) expect(r.category).toBe("BUSINESS");
   });
 });
 
-describe("synthetic accounts for all 27 roles", () => {
+describe("synthetic accounts for all 31 roles", () => {
   it("every role has at least one active synthetic account whose workspace matches", () => withDb(async (db) => {
     const rows = await all<{ user_id: string; role_code: string }>(db,
       "SELECT a.user_id, a.role_code FROM role_assignments a JOIN users u ON u.id = a.user_id WHERE a.revoked_at IS NULL AND u.synthetic = 1 AND u.status = 'ACTIVE'");

@@ -94,7 +94,7 @@ describe("TS-06 Asset Custodian cannot access fleet administration", () => {
   }));
 });
 
-describe("TS-07 Inspector General oversight is read-only (27-role catalogue)", () => {
+describe("TS-07 Inspector General oversight is read-only (31-role catalogue)", () => {
   it("sees audit evidence and summaries, never individual request records, and every write path is refused", () => withDb(async (db) => {
     const au = await actor(db, "u_audit");
     expect((await one<{ c: number }>(db, "SELECT COUNT(*) c FROM audit_events"))!.c).toBeGreaterThan(0);

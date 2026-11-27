@@ -13,8 +13,10 @@ import { seedPhase3 } from "./seed-phase3";
 import { seedAdminRecords } from "./seed-admin-records";
 import { seedReferenceBaseline } from "./seed-baseline";
 import { isProduction } from "../lib/environment";
-import { RETIRED_ROLE_CODES, ROLE_BY_CODE, ROLES, type RoleCode } from "../domain/catalogue";
+import { ROLES } from "../domain/catalogue";
+import { audit } from "../domain/audit";
 import { seedThreeTier } from "./seed-three-tier";
+import { seedLiaison } from "./seed-liaison";
 import { REPORTS } from "../domain/reports";
 import { assignMissingUserRefs } from "../domain/iam";
 
@@ -23,18 +25,26 @@ export const SEED_STEPS: Array<[name: string, fn: (db: DB) => Promise<void>]> = 
   ["002_personnel_manpower", seedPhase3],
   ["003_three_tier_roles", seedThreeTier],
   ["012_calendar_correspondence", seedAdminRecords],
+  ["013_liaison_roles", seedLiaison],
 ];
 
-/** Upserts every catalogue role and rewrites its informational permission rows. */
+/**
+ * Synchronises the role catalogue with the enforced code catalogue (31 roles, DEC-072) — the safe role migration:
+ *  1. every catalogue role is upserted ACTIVE with its permission rows rewritten;
+ *  2. every OTHER role definition in the database (the superseded 41-role catalogue, or anything left by an earlier
+ *     implementation) is RETIRED: its permission rows are removed and it disappears from assignment options;
+ *  3. each still-active assignment of a retired role is revoked (the row is kept as history) and recorded in
+ *     role_reassignments for AUTHORISED reassignment. No replacement role is granted: access stays denied until an
+ *     administrator grants an approved role and scope (iam.grantRole resolves the flag);
+ *  4. a retired role row that nothing references (no assignment, no reassignment record) is physically deleted;
+ *     referenced rows are kept so audit and referential integrity are never compromised.
+ * Runs in one transaction; it is idempotent. Returns what it changed (for the migration report and tests).
+ */
 export async function syncCatalogue(db: DB) {
   const now = new Date().toISOString();
+  const report = { retired: [] as string[], flagged: [] as Array<{ userId: string; roleCode: string; assignmentId: string }>, deleted: [] as string[] };
   await tx(db, async (db) => {
-    // The superseded 41-role catalogue: retained for assignment history, never active (DEC-049).
-    for (const code of RETIRED_ROLE_CODES) {
-      if (ROLE_BY_CODE[code as RoleCode]) continue;
-      await run(db, "UPDATE roles SET status = 'RETIRED', tier = NULL, role_no = NULL, updated_at = ? WHERE code = ? AND status <> 'RETIRED'", now, code);
-      await run(db, "DELETE FROM role_permissions WHERE role_code = ?", code);
-    }
+    const active = new Set<string>(ROLES.map((r) => r.code));
     for (const r of ROLES) {
       await run(db, `INSERT INTO roles (code, name, description, category, requires_expiry, tier, role_no, status, back_office, updated_at) VALUES (?,?,?,?,?,?,?, 'ACTIVE', ?, ?)
                      ON DUPLICATE KEY UPDATE name = VALUES(name), description = VALUES(description), category = VALUES(category), requires_expiry = VALUES(requires_expiry),
@@ -43,12 +53,37 @@ export async function syncCatalogue(db: DB) {
       await run(db, "DELETE FROM role_permissions WHERE role_code = ?", r.code);
       for (const [perm, cov] of Object.entries(r.permissions)) await run(db, "INSERT INTO role_permissions (role_code, permission, coverage) VALUES (?,?,?)", r.code, perm, cov);
     }
+    const others = (await all<{ code: string; status: string }>(db, "SELECT code, status FROM roles")).filter((x) => !active.has(x.code));
+    for (const { code, status } of others) {
+      if (status !== "RETIRED") {
+        await run(db, "UPDATE roles SET status = 'RETIRED', tier = NULL, role_no = NULL, updated_at = ? WHERE code = ?", now, code);
+        report.retired.push(code);
+      }
+      await run(db, "DELETE FROM role_permissions WHERE role_code = ?", code);
+      const live = await all<{ id: string; user_id: string; org_unit_id: string }>(db, "SELECT id, user_id, org_unit_id FROM role_assignments WHERE role_code = ? AND revoked_at IS NULL", code);
+      for (const a of live) {
+        const reason = `Role ${code} is not in the authorised 31-role catalogue. Reassignment to an approved role and scope requires authorisation.`;
+        await run(db, "UPDATE role_assignments SET revoked_at = ?, revoke_reason = ? WHERE id = ? AND revoked_at IS NULL", now, reason, a.id);
+        await run(db, `INSERT IGNORE INTO role_reassignments (id, user_id, role_code, org_unit_id, assignment_id, reason, flagged_at) VALUES (?,?,?,?,?,?,?)`,
+          `rra_${a.id}`.slice(0, 40), a.user_id, code, a.org_unit_id, a.id, reason, now);
+        report.flagged.push({ userId: a.user_id, roleCode: code, assignmentId: a.id });
+      }
+      const refs = await one<{ c: number }>(db, `SELECT (SELECT COUNT(*) FROM role_assignments WHERE role_code = ?) + (SELECT COUNT(*) FROM role_reassignments WHERE role_code = ?) AS c`, code, code);
+      if (Number(refs?.c ?? 0) === 0) {
+        await run(db, "DELETE FROM roles WHERE code = ?", code);
+        report.deleted.push(code);
+      }
+    }
+    if (report.retired.length || report.flagged.length || report.deleted.length) {
+      await audit(db, { actorId: null, action: "role.catalogue.sync", category: "CONFIG", details: { activeRoles: ROLES.length, retired: report.retired, flaggedAssignments: report.flagged.length, deletedUnreferenced: report.deleted } });
+    }
     // Report definitions are code-defined too (exports reference them).
     for (const r of REPORTS) {
       await run(db, `INSERT INTO report_definitions (code, name, description, permission, fields, owner_note) VALUES (?,?,?, 'report.view', ?, 'Report owner to be nominated by the Service (DEC-012).')
                      ON DUPLICATE KEY UPDATE name = VALUES(name), description = VALUES(description), fields = VALUES(fields)`, r.code, r.name, r.description, JSON.stringify(r.fields));
     }
   });
+  return report;
 }
 
 /** Runs missing synthetic seed steps. Returns the names applied. */

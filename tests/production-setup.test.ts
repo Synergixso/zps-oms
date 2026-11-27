@@ -32,7 +32,7 @@ describe("production environment start-up (DEC-069)", () => {
       expect(await n("SELECT COUNT(*) AS n FROM vehicles")).toBe(0);
       expect((await all<{ id: string }>(pool, "SELECT id FROM org_units")).map((r) => r.id)).toEqual(["org_hq"]);
       expect(await n("SELECT COUNT(*) AS n FROM report_definitions")).toBeGreaterThan(5);
-      expect(await n("SELECT COUNT(*) AS n FROM roles WHERE status = 'ACTIVE'")).toBe(27);
+      expect(await n("SELECT COUNT(*) AS n FROM roles WHERE status = 'ACTIVE'")).toBe(31);
 
       // Setup needs a configured token, the right token, and a production-format username.
       expect(await setupState(pool)).toBe("NO_TOKEN");

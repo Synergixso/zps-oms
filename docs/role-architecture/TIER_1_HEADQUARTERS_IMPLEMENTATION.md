@@ -2,7 +2,7 @@
 
 > Generated from `src/server/domain/catalogue.ts` and `src/server/domain/workspace-config.ts` — the configuration the server enforces. Do not edit by hand; run `npm run docs:permissions`.
 
-Six roles held at Service Headquarters. NATIONAL coverage applies only to assignments at HQ. Superadmin and HQ Tech are TECHNICAL (no personnel records, no approvals); the Inspector General sees national summaries and audit evidence, not individual records; DIG Operations, the Commissioner and the Deputy Commissioner work the national Operations processes and decide only within delegations.
+Seven roles held at Service Headquarters. NATIONAL coverage applies only to assignments at HQ. Superadmin and HQ Tech are TECHNICAL (no personnel records, no approvals); the Inspector General sees national summaries and audit evidence, not individual records; DIG Operations, the Commissioner and the Deputy Commissioner work the national Operations processes and decide only within delegations. The National Police Intelligence Officer (07) works in the restricted liaison workspace: administrative metadata only, no personnel records.
 
 Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPMENT_STATUS.md` and `docs/role-architecture/ROLE_TEST_RESULTS.md`.
 
@@ -83,4 +83,17 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Quick actions:** Account support, Security events, System health
 - **Working panels:** dashboard kind `SECURITY`
 - **Permissions (11):** `org.view` (N), `user.view` (N), `user.suspend` (N), `grant.revoke` (N), `delegation.revoke` (N), `accessreview.manage` (N), `user.support` (N), `security.view` (N), `platform.view` (N), `platform.operate` (N), `health.view` (N)
+
+### Role 07 — National Police Intelligence Officer
+
+- **Code:** `NATIONAL_INTEL_OFFICER` · **Tier:** 1 · **Category:** FUNCTIONAL
+- **Back office:** National Police Intelligence Officer Dashboard
+- **Organisational context:** National Headquarters (intelligence liaison administration) — assignable at: service hq
+- **Purpose:** Authorised national-level intelligence liaison administration within the permitted ZPS-OMS information boundary. Administrative metadata only (references, units, dates, status and routing). No intelligence content, sources, informants, surveillance, targets, collection or tasking exist in ZPS-OMS, and no access to personnel, manpower, roster or assignment registers.
+- **Workspace purpose line:** National intelligence liaison administration: administrative references, submissions, routing and acknowledgements. Metadata only.
+- **Navigation:** Overview (`/app`, `/app/tasks`) · Liaison administration (`/app/liaison/assigned`, `/app/liaison`, `/app/liaison/submissions`, `/app/liaison/reports`, `/app/liaison/routing`, `/app/liaison/acknowledgements`, `/app/liaison/incoming`, `/app/liaison/history`) · Account (`/app/notifications`, `/app/profile`)
+- **Headline figures:** `liaisonAssigned`, `liaisonIncoming`, `liaisonToAcknowledge`, `liaisonAwaiting`, `liaisonReports`, `unread`
+- **Quick actions:** Record a liaison reference, Receiving and review queue, Outstanding acknowledgements, Liaison history
+- **Working panels:** dashboard kind `LIAISON`
+- **Permissions (7):** `liaison.metadata.view` (N), `liaison.metadata.create` (N), `liaison.metadata.update_own` (N), `liaison.submission.acknowledge` (N), `liaison.reference.route` (N), `liaison.status.view` (N), `liaison.audit.view` (N)
 

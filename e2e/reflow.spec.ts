@@ -83,41 +83,58 @@ async function login(page: Page, username: string) {
 
 test.describe.configure({ mode: "serial" });
 
-test("Reflow at 320 px, 200 % zoom and tablet widths: public pages and every role's back-office pages", async ({ page }) => {
-  test.setTimeout(1_800_000);
+// Shared across the tests below (serial, one worker): each distinct page is checked once, as the first role whose
+// navigation reaches it. The public pages run first, then one test per tier so no single test runs for long.
+const seen = new Set<string>();
+let pages = 0;
+let roleCount = 0;
+
+async function rolesOfTier(tier: number) {
+  const db = await mysql.createConnection({ uri: e2eDatabaseUrl() });
+  const [rows] = (await db.query(`SELECT r.role_no, r.code, (SELECT u.username FROM role_assignments a JOIN users u ON u.id = a.user_id
+      WHERE a.role_code = r.code AND a.revoked_at IS NULL AND u.status = 'ACTIVE' ORDER BY u.username LIMIT 1) AS username
+    FROM roles r WHERE r.status = 'ACTIVE' AND r.tier = ? ORDER BY r.role_no`, [tier])) as unknown as [Array<{ role_no: number; code: string; username: string }>];
+  await db.end();
+  return rows;
+}
+
+test("Reflow: public pages", async ({ page }) => {
+  test.setTimeout(300_000);
   for (const path of ["/", "/about", "/features", "/technical-team", "/how-it-works", "/contact", "/login"]) {
     await visit(page, path);
     await check(page, path, "public");
   }
-  const db = await mysql.createConnection({ uri: e2eDatabaseUrl() });
-  const [rows] = (await db.query(`SELECT r.role_no, r.code, (SELECT u.username FROM role_assignments a JOIN users u ON u.id = a.user_id
-      WHERE a.role_code = r.code AND a.revoked_at IS NULL AND u.status = 'ACTIVE' ORDER BY u.username LIMIT 1) AS username
-    FROM roles r WHERE r.status = 'ACTIVE' ORDER BY r.role_no`)) as unknown as [Array<{ role_no: number; code: string; username: string }>];
-  await db.end();
-  expect(rows).toHaveLength(27);
+});
 
-  // Each distinct back-office page is checked once, as the first role whose navigation reaches it.
-  const seen = new Set<string>();
-  let pages = 0;
-  for (const r of rows) {
-    const who = `${String(r.role_no).padStart(2, "0")} ${r.code}`;
-    await login(page, r.username);
-    const links = await page.$$eval("a[href^='/app']", (as) => as.map((a) => (a as HTMLAnchorElement).getAttribute("href") ?? ""));
-    const paths = ["/app", "/app/help", ...links].map((h) => h.split("#")[0]).filter((h) => h && !h.includes("?"));
-    for (const path of paths) {
-      // One page per route shape: record ids are covered by their list page's route.
-      const shape = path.replace(/\/[0-9a-f-]{8,}(?=\/|$)/gi, "/[id]");
-      if (seen.has(shape)) continue;
-      seen.add(shape);
-      const status = path === page.url().replace(/^https?:\/\/[^/]+/, "") ? 200 : await visit(page, path);
-      if (status !== 200) continue;
-      await check(page, path, who);
-      pages++;
+for (const [tier, expected] of [[1, 7], [2, 12], [3, 11], [4, 1]] as const) {
+  test(`Reflow: back-office pages reached by the Tier ${tier} roles`, async ({ page }) => {
+    test.setTimeout(900_000);
+    const rows = await rolesOfTier(tier);
+    expect(rows).toHaveLength(expected);
+    roleCount += rows.length;
+    for (const r of rows) {
+      const who = `${String(r.role_no).padStart(2, "0")} ${r.code}`;
+      expect(r.username, who).toBeTruthy();
+      await login(page, r.username);
+      const links = await page.$$eval("a[href^='/app']", (as) => as.map((a) => (a as HTMLAnchorElement).getAttribute("href") ?? ""));
+      const paths = ["/app", "/app/help", ...links].map((h) => h.split("#")[0]).filter((h) => h && !h.includes("?"));
+      for (const path of paths) {
+        // One page per route shape: record ids are covered by their list page's route.
+        const shape = path.replace(/\/(?:[0-9a-f-]{8,}|[a-z]{3}_[0-9a-z]{8,})(?=\/|$)/gi, "/[id]");
+        if (seen.has(shape)) continue;
+        seen.add(shape);
+        const status = path === page.url().replace(/^https?:\/\/[^/]+/, "") ? 200 : await visit(page, path);
+        if (status !== 200) continue;
+        await check(page, path, who);
+        pages++;
+      }
     }
-  }
+  });
+}
 
+test("Reflow: evidence and result", async () => {
   const md = ["# Reflow, zoom and tablet check (WCAG 2.2 SC 1.4.10 and 1.4.4)", "",
-    `Generated ${new Date().toISOString()} · 7 public pages and ${pages} distinct back-office pages (reached from the navigation of one account per role, 27 roles), each at 320 CSS px (400 % zoom), 640 CSS px (200 % zoom), 768 px (tablet portrait) and 1024 px (tablet landscape, sidebar shown): ${checks} checks. Synthetic data only.`, "",
+    `Generated ${new Date().toISOString()} · 7 public pages and ${pages} distinct back-office pages (reached from the navigation of one account per role, ${roleCount} roles in four tiers), each at 320 CSS px (400 % zoom), 640 CSS px (200 % zoom), 768 px (tablet portrait) and 1024 px (tablet landscape, sidebar shown): ${checks} checks. Synthetic data only.`, "",
     "Pass condition: the page does not scroll sideways. Wide data tables scroll inside their own focusable region, which SC 1.4.10 permits.", "",
     `**Overflowing pages: ${findings.length}**`, ""];
   if (findings.length) {
@@ -126,5 +143,6 @@ test("Reflow at 320 px, 200 % zoom and tablet widths: public pages and every rol
   } else md.push("No page scrolls sideways at any width.");
   fs.mkdirSync("docs/evidence", { recursive: true });
   fs.writeFileSync("docs/evidence/reflow.md", md.join("\n") + "\n");
+  expect(roleCount).toBe(31);
   expect(findings, JSON.stringify(findings.slice(0, 10), null, 1)).toEqual([]);
 });

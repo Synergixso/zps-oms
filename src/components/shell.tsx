@@ -11,6 +11,7 @@ function isActive(path: string, href: string) {
   if (href === "/app/fleet") return path === "/app/fleet" || /^\/app\/fleet\/(?!maintenance)/.test(path);
   if (href === "/app/manpower") return path === "/app/manpower" || /^\/app\/manpower\/(?!contributions)/.test(path);
   if (href === "/app/audit") return path === "/app/audit";
+  if (href === "/app/liaison") return path === "/app/liaison" || path.startsWith("/app/liaison/records");
   if (href === "/app/stores") return path === "/app/stores" || /^\/app\/stores\/(?!requisitions)/.test(path);
   if (href === "/app/org") return path === "/app/org" || /^\/app\/org\/(?!changes|tenants)/.test(path);
   return path === href || path.startsWith(href + "/");
@@ -153,6 +154,12 @@ const LABELS: Record<string, string> = {
   reports: "Reports", org: "Organisation", changes: "Structure changes", tenants: "Tenants", admin: "Administration", users: "Users", roles: "Roles", reviews: "Access reviews",
   audit: "Audit", history: "Record history", security: "Security", workflows: "Workflows", platform: "Platform", notifications: "Notifications", tasks: "My tasks",
   stores: "Stores", requisitions: "Requisitions", profile: "My profile", help: "Help", messages: "Contact messages", search: "Search", new: "New", review: "Review", print: "Print", calendar: "Administrative calendar", correspondence: "Correspondence", setup: "Setup",
+  liaison: "Liaison register",
+};
+/** Labels under /app/liaison (the "records" segment has no page of its own and is not shown). */
+const LIAISON_LABELS: Record<string, string> = {
+  assigned: "Assigned references", submissions: "Submission status", incoming: "Receiving and review queue", acknowledgements: "Acknowledgements",
+  reports: "Report references", routing: "Organisational routing", history: "History", new: "New reference",
 };
 
 /** Breadcrumbs derived from the path (record ids are shown as “Record”). */
@@ -160,7 +167,9 @@ export function Breadcrumbs() {
   const path = usePathname();
   const parts = path.split("/").filter(Boolean);
   if (parts.length <= 1) return null;
-  const crumbs = parts.map((p, i) => ({ href: "/" + parts.slice(0, i + 1).join("/"), label: LABELS[p] ?? (/^[A-Z_]+$/.test(p) ? p.replace(/_/g, " ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase()) : "Record") }));
+  const crumbs = parts
+    .map((p, i) => ({ p, i, href: "/" + parts.slice(0, i + 1).join("/"), label: (parts[1] === "liaison" && i === 2 ? LIAISON_LABELS[p] : undefined) ?? LABELS[p] ?? (/^[A-Z_]+$/.test(p) ? p.replace(/_/g, " ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase()) : "Record") }))
+    .filter((c) => !(parts[1] === "liaison" && c.i === 2 && c.p === "records"));
   return (
     <nav aria-label="Breadcrumb" className="no-print mb-3 text-[12.5px] text-muted">
       <ol className="flex flex-wrap items-center gap-1">

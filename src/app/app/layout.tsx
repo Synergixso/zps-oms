@@ -24,7 +24,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const env = await environmentNotice(getDb());
   const ws = workspaceFor(actor);
   const allowed = (i: NavItem) => i.any.length === 0 || i.any.some((p) => hasPermission(actor, p));
-  const source = ws ? ws.nav.map((g) => ({ label: g.label, items: g.items.map((h) => NAV_ITEMS[h]).filter(Boolean) })) : NAV;
+  const source = ws ? ws.nav.map((g) => ({ label: g.label, items: g.items.map((h) => (NAV_ITEMS[h] ? { ...NAV_ITEMS[h], label: ws.labels?.[h] ?? NAV_ITEMS[h].label } : undefined)).filter((i): i is NavItem => Boolean(i)) })) : NAV;
   const groups = source.map((g) => ({ ...g, items: g.items.filter(allowed) })).filter((g) => g.items.length);
   const role = primaryRole(actor);
   const pa = primaryAssignment(actor);

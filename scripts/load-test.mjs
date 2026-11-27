@@ -36,7 +36,7 @@ if (!/\/zps_oms_[a-z0-9_]+$/.test(process.env.DATABASE_URL ?? "")) throw new Err
 if (!/^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(base)) throw new Error("The load test only runs against a local server.");
 const db = await mysql.createConnection({ uri: process.env.DATABASE_URL });
 
-// One active account per role (27), so the mix exercises every workspace and scope.
+// One active account per role (31), so the mix exercises every workspace and scope.
 const [accounts] = await db.query(`SELECT r.role_no, (SELECT u.id FROM role_assignments a JOIN users u ON u.id = a.user_id
     WHERE a.role_code = r.code AND a.revoked_at IS NULL AND u.status = 'ACTIVE' ORDER BY u.username LIMIT 1) AS user_id
   FROM roles r WHERE r.status = 'ACTIVE' ORDER BY r.role_no`);

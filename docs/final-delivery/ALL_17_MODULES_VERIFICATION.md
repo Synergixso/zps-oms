@@ -1,6 +1,6 @@
 # All 17 Modules — Verification
 
-Recorded 27 November 2026 for v0.9.1. Each module is checked against the directive's §5.1 implementation standards. Detail of what each module does is in `docs/development/FULL_MODULE_COMPLETION_MATRIX.md`; test evidence is in `COMPLETE_WORKFLOW_TEST_RESULTS.md`.
+Recorded 27 November 2026 for v0.9.1; updated for v0.10.0 (31 role dashboards). Each module is checked against the directive's §5.1 implementation standards. Detail of what each module does is in `docs/development/FULL_MODULE_COMPLETION_MATRIX.md`; test evidence is in `COMPLETE_WORKFLOW_TEST_RESULTS.md`.
 
 ## Standards common to every module
 
@@ -36,7 +36,7 @@ Legend: ✓ implemented and verified · — not applicable to the module · fixe
 | 09 | Approvals, workflows and requests | approvals, requests, request, workflows | ✓ | ✓ | ✓ selectable (v0.9.1) | ✓ (v0.9.1) | ✓ | ✓ configurable chains, delegation, deadlines, escalation | ✓ | `workflow.overdue-approvals` | `workflows`, `decision-chains`, `paging` | route audit | Completed and Verified |
 | 10 | Fleet and transport | register, vehicle, maintenance | ✓ | ✓ | fixed order (fleet ref / updated) | ✓ (v0.9.1) | ✓ | ✓ maintenance workflow | ✓ | `fleet.maintenance-reminders` | `workflows`, `access-control` | route audit | Completed and Verified |
 | 11 | Assets and stores | assets, asset, reconciliation, stores, requisitions | ✓ | ✓ | fixed order (tag / code / newest) | ✓ (v0.9.1) | ✓ | ✓ custody, requisition approval, issue | ✓ | `asset.custody-reminders`, `stores.reorder-and-requisitions` | `extensions`, `three-tier-roles` (stores) | route audit | Completed and Verified |
-| 12 | Dashboards and reports | 27 dashboards, reports, report, deliveries | — | ✓ | ✓ report sort | ✓ report rows | ✓ saved views, schedules | — | ✓ CSV, .xlsx, PDF, print | `reports.scheduled-delivery` | `reports` (figures equal SQL), `report-schedules` | accessibility, phone review | Completed and Verified |
+| 12 | Dashboards and reports | 31 dashboards, reports, report, deliveries | — | ✓ | ✓ report sort | ✓ report rows | ✓ saved views, schedules | — | ✓ CSV, .xlsx, PDF, print | `reports.scheduled-delivery` | `reports` (figures equal SQL), `report-schedules` | accessibility, phone review | Completed and Verified |
 | 13 | Notifications and tasks | notifications, tasks | — | ✓ | fixed order (newest / due) | ✓ notifications | ✓ preferences, read/unread | — | — | all reminder jobs | `notifications`, `automation-platform` | route audit | Completed and Verified |
 | 14 | Audit and compliance | audit explorer, history, security events, export | ✓ | ✓ | fixed order (newest) | ✓ (v0.9.1; previously latest 200) | — (append-only) | — | ✓ evidence export | — | `audit-chain`, `paging` | route audit | Completed and Verified |
 | 15 | Platform administration | platform, health API, setup | — | — | — | — | ✓ settings, backups, drills, maintenance mode | — | — | `system.*` jobs | `automation-platform`, `release`, `production-setup` | route audit | Completed and Verified |

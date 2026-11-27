@@ -1,8 +1,14 @@
 /**
- * Action-level permission catalogue and the THREE-TIER 27-ROLE catalogue (owner directive, DEC-049).
+ * Action-level permission catalogue and the FOUR-LEVEL 31-ROLE catalogue (owner directive 27 Nov 2026, DEC-072;
+ * extends the 27-role catalogue of DEC-049 with four Police Intelligence Officer liaison roles).
  *
- * The 27 roles are the only ACTIVE role configuration. The previous 41 roles are RETIRED: kept in the
- * database for assignment history, never granting any permission (deny by default).
+ * The 31 roles are the only ACTIVE role configuration. Any other role definition (including the superseded
+ * 41-role catalogue) is RETIRED by bootstrap.syncCatalogue: no permission, removed from assignment options,
+ * active assignments revoked and flagged for authorised reassignment, history kept.
+ *
+ * The four liaison roles hold the restricted liaison.* namespace only: administrative metadata (references,
+ * units, dates, status, routing). It grants no access to intelligence content, which ZPS-OMS cannot store, and
+ * none to personnel, manpower, roster or assignment registers (DEC-073).
  * Permissions are never inferred from rank; approval authority additionally requires a recorded
  * delegation and a BUSINESS role at the delegating unit (policy.approvalUnitFor).
  *
@@ -111,6 +117,14 @@ export const PERMISSIONS = {
   "correspondence.view": "View the administrative correspondence register (RESTRICTED records need correspondence.manage)",
   "correspondence.register": "Register incoming and outgoing correspondence and attach screened PDF documents",
   "correspondence.manage": "Assign, file and manage correspondence, including RESTRICTED records",
+  // Intelligence-liaison ADMINISTRATION (roles 07, 19, 30, 31; DEC-073). Metadata only: no content exists to view.
+  "liaison.metadata.view": "View liaison administrative metadata (references, units, dates, status) within scope",
+  "liaison.metadata.create": "Record a liaison administrative reference for own organisation unit",
+  "liaison.metadata.update_own": "Correct the metadata of a draft liaison record for which the user is responsible",
+  "liaison.submission.acknowledge": "Record receipt and acknowledgement of liaison submissions routed to a unit in scope",
+  "liaison.reference.route": "Submit and route liaison references through approved organisational channels",
+  "liaison.status.view": "View liaison submission and acknowledgement status and summaries within scope",
+  "liaison.audit.view": "View the liaison administrative transaction history within scope",
   // Public Contact page inbox
   "contact.view": "View messages submitted through the public Contact page",
   "contact.manage": "Mark public contact messages as handled",
@@ -122,29 +136,39 @@ export type Coverage = "UNIT" | "SUBTREE" | "NATIONAL";
 export const UNIT_TYPES = ["SERVICE_HQ", "HQ_OFFICE", "PROVINCIAL_DIVISION", "DISTRICT", "STATION", "POST", "FORMATION", "DEPARTMENT", "COMPANY", "DETACHMENT", "PLATOON", "SECTION"] as const;
 export type UnitType = (typeof UNIT_TYPES)[number];
 
-/** The authoritative three-tier catalogue (27 roles, owner directive). Codes are stable identifiers. */
+/** The authoritative four-level catalogue (31 roles, owner directive 27 Nov 2026). Codes are stable identifiers. */
 export type RoleCode =
-  // Tier 1 — National Headquarters
-  | "SUPERADMIN" | "INSPECTOR_GENERAL" | "DIG_OPERATIONS" | "COMMISSIONER_OPS_HQ" | "DEPUTY_COMMISSIONER_OPS_HQ" | "HQ_TECH_ADMIN"
-  // Tier 2 — Provincial Divisions and Unit Formations
+  // Tier 1 — National Headquarters (7)
+  | "SUPERADMIN" | "INSPECTOR_GENERAL" | "DIG_OPERATIONS" | "COMMISSIONER_OPS_HQ" | "DEPUTY_COMMISSIONER_OPS_HQ" | "HQ_TECH_ADMIN" | "NATIONAL_INTEL_OFFICER"
+  // Tier 2 — Provincial Divisions and Unit Formations (12)
   | "UNIT_TECH_ADMIN" | "FORMATION_COMMANDING_OFFICER" | "DEPUTY_DIVISION_COMMANDER" | "DIVISION_STAFF_I" | "DIVISION_STAFF_II" | "COMPANY_COMMANDER"
-  | "SECTION_HEAD" | "FORMATION_OPS_STAFF_ADMIN" | "QM_STORES_OFFICER" | "PRINCIPAL_ARMOURER" | "MTO_OIC"
-  // Tier 3 — District Commands and Police Stations
+  | "SECTION_HEAD" | "FORMATION_OPS_STAFF_ADMIN" | "QM_STORES_OFFICER" | "PRINCIPAL_ARMOURER" | "MTO_OIC" | "DIVISION_INTEL_OFFICER"
+  // Tier 3 — District Commands and Police Stations (11)
   | "DISTRICT_TECH_ADMIN" | "OC_DISTRICT" | "DEPUTY_OC_DISTRICT" | "OPS_OFFICER_DISTRICT" | "DEPUTY_OPS_OFFICER_DISTRICT" | "STORES_OFFICER_DISTRICT"
-  | "STATION_TECH_ADMIN" | "OIC_STATION_GD" | "STATION_INSPECTOR_GD" | "STATION_ADMIN_STORES";
+  | "STATION_TECH_ADMIN" | "OIC_STATION_GD" | "STATION_INSPECTOR_GD" | "STATION_ADMIN_STORES" | "DISTRICT_INTEL_OFFICER"
+  // Tier 4 — Section / Police Station (1)
+  | "INTEL_OFFICER";
 
 /** Reusable working-panel sets shown below each role's command overview. */
 export type DashboardKind =
   | "NATIONAL_EXECUTIVE" | "NATIONAL_COORDINATION" | "OPS_STAFF_WORKSPACE" | "PERSONNEL_ADMIN" | "ASSIGNMENT_ADMIN" | "DIVISION_COMMAND" | "DIVISION_STAFF_OPS"
   | "DISTRICT_COMMAND" | "STATION" | "FORMATION_COMMAND" | "FORMATION_ADMIN" | "UNIT_COMMAND" | "FLEET" | "ASSETS" | "AUDIT" | "PLATFORM" | "SECURITY"
-  | "ORG_REGISTRY" | "MANAGEMENT" | "MY_WORKSPACE" | "TECH_LOCAL" | "STORES";
+  | "ORG_REGISTRY" | "MANAGEMENT" | "MY_WORKSPACE" | "TECH_LOCAL" | "STORES" | "LIAISON";
 
-export type Tier = 1 | 2 | 3;
-export type RoleLevel = "NATIONAL" | "DIVISION_FORMATION" | "DISTRICT_STATION";
+export type Tier = 1 | 2 | 3 | 4;
+export type RoleLevel = "NATIONAL" | "DIVISION_FORMATION" | "DISTRICT_STATION" | "SECTION_STATION";
+
+/** Official tier names (directive Part 4). */
+export const TIER_NAMES: Record<Tier, string> = {
+  1: "National Headquarters",
+  2: "Provincial Divisions and Unit Formations",
+  3: "District Commands and Police Stations",
+  4: "Section / Police Station",
+};
 
 export interface RoleDef {
   code: RoleCode;
-  /** Directive catalogue number (1–27). */
+  /** Directive catalogue number (1–31). */
   no: number;
   tier: Tier;
   level: RoleLevel;
@@ -178,7 +202,13 @@ const P = {
   requests: (c: Coverage) => ({ "request.view": c, "request.create": c, "request.edit": c, "request.submit": c, "request.cancel": c }) as const,
   storesOps: (c: Coverage) => ({ "stores.view": c, "stores.manage": c, "asset.view": c, "asset.register": c, "asset.custody": c, "asset.inspect": c }) as const,
   localTech: (c: Coverage) => ({ "user.view": c, "user.support": c, "health.view": c }) as const,
+  /** The complete restricted liaison template at one coverage. Nothing outside liaison.* is ever added to it. */
+  liaison: (c: Coverage) => ({
+    "liaison.metadata.view": c, "liaison.metadata.create": c, "liaison.metadata.update_own": c, "liaison.submission.acknowledge": c,
+    "liaison.reference.route": c, "liaison.status.view": c, "liaison.audit.view": c,
+  }) as const,
 };
+const LIAISON_BOUNDARY = "Administrative metadata only (references, units, dates, status and routing). No intelligence content, sources, informants, surveillance, targets, collection or tasking exist in ZPS-OMS, and no access to personnel, manpower, roster or assignment registers.";
 
 export const ROLES: RoleDef[] = [
   // ── TIER 1 — NATIONAL HEADQUARTERS ───────────────────────────────────────
@@ -249,16 +279,23 @@ export const ROLES: RoleDef[] = [
       "grant.revoke": N, "delegation.revoke": N, "accessreview.manage": N, "org.view": N,
     },
   },
+  {
+    code: "NATIONAL_INTEL_OFFICER", no: 7, tier: 1, level: "NATIONAL",
+    name: "National Police Intelligence Officer", backOffice: "National Police Intelligence Officer Dashboard", context: "National Headquarters (intelligence liaison administration)",
+    category: "FUNCTIONAL", dashboard: "LIAISON", dashboardTitle: "National Police Intelligence Officer Dashboard",
+    description: `Authorised national-level intelligence liaison administration within the permitted ZPS-OMS information boundary. ${LIAISON_BOUNDARY}`,
+    assignableTo: HQ, permissions: { ...P.liaison(N) },
+  },
   // ── TIER 2 — PROVINCIAL DIVISIONS AND UNIT FORMATIONS ────────────────────
   {
-    code: "UNIT_TECH_ADMIN", no: 7, tier: 2, level: "DIVISION_FORMATION",
+    code: "UNIT_TECH_ADMIN", no: 8, tier: 2, level: "DIVISION_FORMATION",
     name: "Divisional/Unit System Administrator (Tech)", backOffice: "Division and Unit Technical Administration", context: "Assigned Provincial Division or Unit/Formation only",
     category: "TECHNICAL", dashboard: "TECH_LOCAL", dashboardTitle: "Division and Unit Technical Administration",
     description: "Technical accounts and access support within the assigned Division or Formation; refers higher-level issues to HQ Tech. No personnel, assignment or approval authority.",
     assignableTo: DIV_OR_FORMATION, permissions: { ...P.localTech(S), "org.view": N },
   },
   {
-    code: "FORMATION_COMMANDING_OFFICER", no: 8, tier: 2, level: "DIVISION_FORMATION",
+    code: "FORMATION_COMMANDING_OFFICER", no: 9, tier: 2, level: "DIVISION_FORMATION",
     name: "Formation Commanding Officer", backOffice: "Formation Command Headquarters", context: "Provincial Division or Unit/Formation (commanding officer)",
     category: "BUSINESS", dashboard: "FORMATION_COMMAND", dashboardTitle: "Formation Command Headquarters",
     description: "Oversight of the assigned Division or Formation and everything under it. Approves only within configured delegations; no access to unrelated formations or Provinces.",
@@ -270,7 +307,7 @@ export const ROLES: RoleDef[] = [
     },
   },
   {
-    code: "DEPUTY_DIVISION_COMMANDER", no: 9, tier: 2, level: "DIVISION_FORMATION",
+    code: "DEPUTY_DIVISION_COMMANDER", no: 10, tier: 2, level: "DIVISION_FORMATION",
     name: "Deputy Division Commander", backOffice: "Deputy Division Commander Dashboard", context: "Provincial Division or Unit/Formation (deputy)",
     category: "BUSINESS", dashboard: "DIVISION_COMMAND", dashboardTitle: "Deputy Division Commander Dashboard",
     description: "Supports the commanding officer: monitors performance, reviews outstanding matters and Staff I/II workflows; approves only where separately delegated.",
@@ -278,7 +315,7 @@ export const ROLES: RoleDef[] = [
     permissions: { "schedule.view": S, "correspondence.view": S, "correspondence.manage": S, "dashboard.division.view": U, "org.view": N, "request.view": U, "report.view": S, "report.export": S, ...P.oversight(S), "roster.review": S, "roster.export": S, "personnel.export": S, "stores.view": S },
   },
   {
-    code: "DIVISION_STAFF_I", no: 10, tier: 2, level: "DIVISION_FORMATION",
+    code: "DIVISION_STAFF_I", no: 11, tier: 2, level: "DIVISION_FORMATION",
     name: "Division Senior Staff Officer – Operations (Staff I)", backOffice: "Division Senior Staff Officer – Operations", context: "Provincial Division or Unit/Formation",
     category: "BUSINESS", dashboard: "DIVISION_STAFF_OPS", dashboardTitle: "Division Senior Staff Officer – Operations",
     description: "Coordinates Divisional Operations administration: manpower requirements, contributions, rosters, assignments, transfers, tenure and renewals; supervises Staff II. No approval outside delegations.",
@@ -291,7 +328,7 @@ export const ROLES: RoleDef[] = [
     },
   },
   {
-    code: "DIVISION_STAFF_II", no: 11, tier: 2, level: "DIVISION_FORMATION",
+    code: "DIVISION_STAFF_II", no: 12, tier: 2, level: "DIVISION_FORMATION",
     name: "Deputy Division Staff Officer – Operations (Staff II)", backOffice: "Deputy Division Staff Officer – Operations", context: "Provincial Division or Unit/Formation",
     category: "BUSINESS", dashboard: "ASSIGNMENT_ADMIN", dashboardTitle: "Deputy Division Staff Officer – Operations",
     description: "Assists Staff I: prepares personnel information, compiles draft lists, verifies submissions, prepares transfer and renewal documentation. No Staff I approval authority.",
@@ -302,7 +339,7 @@ export const ROLES: RoleDef[] = [
     },
   },
   {
-    code: "COMPANY_COMMANDER", no: 12, tier: 2, level: "DIVISION_FORMATION",
+    code: "COMPANY_COMMANDER", no: 13, tier: 2, level: "DIVISION_FORMATION",
     name: "Company Commander", backOffice: "Company Command Administration", context: "Company within a Unit/Formation",
     category: "BUSINESS", dashboard: "UNIT_COMMAND", dashboardTitle: "Company Command Administration",
     description: "Company administration: personnel register, contributions and submissions for the company and its platoons and sections. No access to other companies.",
@@ -310,7 +347,7 @@ export const ROLES: RoleDef[] = [
     permissions: { "schedule.view": S, "correspondence.view": S, "dashboard.unit.view": U, ...P.contributor(S), ...P.personnelAdmin(S), "assignment.view": S, "report.view": S },
   },
   {
-    code: "SECTION_HEAD", no: 13, tier: 2, level: "DIVISION_FORMATION",
+    code: "SECTION_HEAD", no: 14, tier: 2, level: "DIVISION_FORMATION",
     name: "Section Head", backOffice: "Section Administration Dashboard", context: "Section (or department, detachment or platoon where configured)",
     category: "BUSINESS", dashboard: "UNIT_COMMAND", dashboardTitle: "Section Administration Dashboard",
     description: "Section administrative records: selects personnel from the registry, prepares and verifies manpower contributions, tracks requests.",
@@ -318,7 +355,7 @@ export const ROLES: RoleDef[] = [
     permissions: { "schedule.view": S, "dashboard.unit.view": U, ...P.contributor(S), ...P.personnelAdmin(S) },
   },
   {
-    code: "FORMATION_OPS_STAFF_ADMIN", no: 14, tier: 2, level: "DIVISION_FORMATION",
+    code: "FORMATION_OPS_STAFF_ADMIN", no: 15, tier: 2, level: "DIVISION_FORMATION",
     name: "Formation Operations Staff Administrator", backOffice: "Formation Operations Staff Administration", context: "Unit/Formation",
     category: "BUSINESS", dashboard: "FORMATION_ADMIN", dashboardTitle: "Formation Operations Staff Administration",
     description: "Formation-level Operations administration: contributions, rosters, assignment documentation and subordinate submissions. No commanding-officer approval authority.",
@@ -330,7 +367,7 @@ export const ROLES: RoleDef[] = [
     },
   },
   {
-    code: "QM_STORES_OFFICER", no: 15, tier: 2, level: "DIVISION_FORMATION",
+    code: "QM_STORES_OFFICER", no: 16, tier: 2, level: "DIVISION_FORMATION",
     name: "Divisional Quarter Masters Stores Officer", backOffice: "Divisional Quarter Masters and Stores Administration", context: "Provincial Division or Unit/Formation stores",
     category: "FUNCTIONAL", dashboard: "STORES", dashboardTitle: "Divisional Quarter Masters and Stores Administration",
     description: "General stores and non-sensitive assets: receipts, issue and return, requisitions, custody and reconciliation. Firearms, ammunition and sensitive equipment are excluded.",
@@ -338,7 +375,7 @@ export const ROLES: RoleDef[] = [
     permissions: { "schedule.view": S, ...P.storesOps(S), "asset.dispose": S, "report.view": U, "report.export": U },
   },
   {
-    code: "PRINCIPAL_ARMOURER", no: 16, tier: 2, level: "DIVISION_FORMATION",
+    code: "PRINCIPAL_ARMOURER", no: 17, tier: 2, level: "DIVISION_FORMATION",
     name: "Divisional Principal Armourer", backOffice: "Divisional Armourer Administration", context: "Provincial Division or Unit/Formation",
     category: "FUNCTIONAL", dashboard: "MY_WORKSPACE", dashboardTitle: "Divisional Armourer Administration",
     description: "Role-specific workspace for explicitly approved NON-SENSITIVE administrative functions only (administrative requests, tasks, notifications). No firearms, ammunition or armoury records exist in ZPS-OMS.",
@@ -346,23 +383,30 @@ export const ROLES: RoleDef[] = [
     permissions: { ...P.requests(U) },
   },
   {
-    code: "MTO_OIC", no: 17, tier: 2, level: "DIVISION_FORMATION",
+    code: "MTO_OIC", no: 18, tier: 2, level: "DIVISION_FORMATION",
     name: "Divisional MTO Officer-in-Charge", backOffice: "Divisional Motor Transport Administration", context: "Provincial Division or Unit/Formation transport",
     category: "FUNCTIONAL", dashboard: "FLEET", dashboardTitle: "Divisional Motor Transport Administration",
     description: "General fleet administration: vehicle register, documentation, maintenance, workshop referrals and service history. No GPS, movement or deployment information.",
     assignableTo: DIV_OR_FORMATION,
     permissions: { "schedule.view": S, "fleet.view": U, "fleet.manage": U, "maintenance.view": U, "maintenance.create": U, "maintenance.process": U, "maintenance.verify": U, "service.record": U, "report.view": U, "report.export": U },
   },
+  {
+    code: "DIVISION_INTEL_OFFICER", no: 19, tier: 2, level: "DIVISION_FORMATION",
+    name: "Division Police Intelligence Officer", backOffice: "Division Police Intelligence Officer Dashboard", context: "Assigned Provincial Division or Unit/Formation only",
+    category: "FUNCTIONAL", dashboard: "LIAISON", dashboardTitle: "Division Police Intelligence Officer Dashboard",
+    description: `Division-level intelligence liaison administration, restricted to the assigned Province or Unit/Formation; no cross-divisional access. ${LIAISON_BOUNDARY}`,
+    assignableTo: DIV_OR_FORMATION, permissions: { ...P.liaison(S) },
+  },
   // ── TIER 3 — DISTRICT COMMANDS AND POLICE STATIONS ───────────────────────
   {
-    code: "DISTRICT_TECH_ADMIN", no: 18, tier: 3, level: "DISTRICT_STATION",
+    code: "DISTRICT_TECH_ADMIN", no: 20, tier: 3, level: "DISTRICT_STATION",
     name: "District System Administrator (Tech)", backOffice: "District Technical Administration", context: "Assigned District Command only",
     category: "TECHNICAL", dashboard: "TECH_LOCAL", dashboardTitle: "District Technical Administration",
     description: "Permitted technical functions and account support within the assigned District. No personnel-record or assignment access.",
     assignableTo: ["DISTRICT"], permissions: { ...P.localTech(S), "org.view": N },
   },
   {
-    code: "OC_DISTRICT", no: 19, tier: 3, level: "DISTRICT_STATION",
+    code: "OC_DISTRICT", no: 21, tier: 3, level: "DISTRICT_STATION",
     name: "Officer Commanding — District", backOffice: "District Command Dashboard", context: "District Command",
     category: "BUSINESS", dashboard: "DISTRICT_COMMAND", dashboardTitle: "District Command Dashboard",
     description: "District oversight: stations and posts, personnel, contributions, assignments and stores. Approves only within configured delegations; no access to other Districts.",
@@ -370,7 +414,7 @@ export const ROLES: RoleDef[] = [
     permissions: { "schedule.view": S, "correspondence.view": S, "correspondence.manage": S, "dashboard.district.view": U, "org.view": N, ...P.oversight(S), ...P.contributor(S), "personnel.verify": S, "report.view": S, "stores.view": S, "stores.approve": S, "asset.view": S },
   },
   {
-    code: "DEPUTY_OC_DISTRICT", no: 20, tier: 3, level: "DISTRICT_STATION",
+    code: "DEPUTY_OC_DISTRICT", no: 22, tier: 3, level: "DISTRICT_STATION",
     name: "Deputy OC — District", backOffice: "Deputy District Commander Dashboard", context: "District Command",
     category: "BUSINESS", dashboard: "DISTRICT_COMMAND", dashboardTitle: "Deputy District Commander Dashboard",
     description: "Assists the District Commander; reviews subordinate submissions and processes delegated matters. Does not inherit the OC's approvals.",
@@ -378,7 +422,7 @@ export const ROLES: RoleDef[] = [
     permissions: { "schedule.view": S, "correspondence.view": S, "correspondence.manage": S, "dashboard.district.view": U, "org.view": N, ...P.oversight(S), ...P.contributor(S), "assignment.propose": S, "report.view": S },
   },
   {
-    code: "OPS_OFFICER_DISTRICT", no: 21, tier: 3, level: "DISTRICT_STATION",
+    code: "OPS_OFFICER_DISTRICT", no: 23, tier: 3, level: "DISTRICT_STATION",
     name: "Operations Officer — District", backOffice: "District Operations Officer Workspace", context: "District Command",
     category: "BUSINESS", dashboard: "DISTRICT_COMMAND", dashboardTitle: "District Operations Officer Workspace",
     description: "District Operations administration: manpower requests, station contributions, district lists, assignment records and reviews. No tactical deployment, patrol scheduling or tracking.",
@@ -389,7 +433,7 @@ export const ROLES: RoleDef[] = [
     },
   },
   {
-    code: "DEPUTY_OPS_OFFICER_DISTRICT", no: 22, tier: 3, level: "DISTRICT_STATION",
+    code: "DEPUTY_OPS_OFFICER_DISTRICT", no: 24, tier: 3, level: "DISTRICT_STATION",
     name: "Deputy Operations Officer — District", backOffice: "Deputy District Operations Workspace", context: "District Command",
     category: "BUSINESS", dashboard: "PERSONNEL_ADMIN", dashboardTitle: "Deputy District Operations Workspace",
     description: "Assists the Operations Officer: prepares submissions, verifies contributions, maintains workflow records. No Operations Officer approval authority.",
@@ -397,21 +441,21 @@ export const ROLES: RoleDef[] = [
     permissions: { "schedule.view": S, "schedule.manage": S, "correspondence.view": S, "correspondence.register": S, "dashboard.district.view": U, "org.view": N, ...P.personnelAdmin(S), "personnel.export": S, ...P.contributor(S), "roster.build": S, "area.view": S, "assignment.view": S, "assignment.propose": S, "assignment.transfer": S, "report.view": S },
   },
   {
-    code: "STORES_OFFICER_DISTRICT", no: 23, tier: 3, level: "DISTRICT_STATION",
+    code: "STORES_OFFICER_DISTRICT", no: 25, tier: 3, level: "DISTRICT_STATION",
     name: "Stores Officer — District", backOffice: "District Stores Administration", context: "District Command stores",
     category: "FUNCTIONAL", dashboard: "STORES", dashboardTitle: "District Stores Administration",
     description: "General stores records, requisitions, receipts and issues, and non-sensitive asset custody for the District. Sensitive equipment is excluded.",
     assignableTo: ["DISTRICT"], permissions: { "schedule.view": S, ...P.storesOps(S), "report.view": U },
   },
   {
-    code: "STATION_TECH_ADMIN", no: 24, tier: 3, level: "DISTRICT_STATION",
+    code: "STATION_TECH_ADMIN", no: 26, tier: 3, level: "DISTRICT_STATION",
     name: "Police Station System Administrator", backOffice: "Police Station Technical Administration", context: "Assigned Police Station only",
     category: "TECHNICAL", dashboard: "TECH_LOCAL", dashboardTitle: "Police Station Technical Administration",
     description: "Permitted technical functions and local account support for the assigned Station. No personnel management or assignment decisions.",
     assignableTo: STATION_OR_POST, permissions: { ...P.localTech(S), "org.view": N },
   },
   {
-    code: "OIC_STATION_GD", no: 25, tier: 3, level: "DISTRICT_STATION",
+    code: "OIC_STATION_GD", no: 27, tier: 3, level: "DISTRICT_STATION",
     name: "Officer-in-Charge — Police Station GD", backOffice: "Police Station General Duties Administration", context: "Police Station (and its posts)",
     category: "BUSINESS", dashboard: "STATION", dashboardTitle: "Police Station General Duties Administration",
     description: "Station-level general duties administrative oversight: personnel, contributions, submissions; approves specifically delegated matters.",
@@ -419,7 +463,7 @@ export const ROLES: RoleDef[] = [
     permissions: { "schedule.view": S, "correspondence.view": S, "correspondence.manage": S, "dashboard.station.view": U, "org.view": N, ...P.oversight(S), ...P.contributor(S), "personnel.verify": S, "report.view": S, "stores.view": S, "stores.approve": S, "asset.view": S },
   },
   {
-    code: "STATION_INSPECTOR_GD", no: 26, tier: 3, level: "DISTRICT_STATION",
+    code: "STATION_INSPECTOR_GD", no: 28, tier: 3, level: "DISTRICT_STATION",
     name: "Station Inspector — Police Station GD", backOffice: "Station Inspector Operations Administration", context: "Police Station or Police Post",
     category: "BUSINESS", dashboard: "STATION", dashboardTitle: "Station Inspector Operations Administration",
     description: "Supports Station administration: personnel register, contributions and submissions; delegated supervisory functions only. Does not inherit OIC approvals.",
@@ -427,11 +471,26 @@ export const ROLES: RoleDef[] = [
     permissions: { "schedule.view": S, "schedule.manage": S, "correspondence.view": S, "correspondence.register": S, "dashboard.station.view": U, "org.view": N, ...P.personnelAdmin(S), ...P.contributor(S), "assignment.view": S, "report.view": S },
   },
   {
-    code: "STATION_ADMIN_STORES", no: 27, tier: 3, level: "DISTRICT_STATION",
+    code: "STATION_ADMIN_STORES", no: 29, tier: 3, level: "DISTRICT_STATION",
     name: "Police Station Administrator (Stores and Admin)", backOffice: "Police Station Stores and Administration", context: "Police Station",
     category: "FUNCTIONAL", dashboard: "STORES", dashboardTitle: "Police Station Stores and Administration",
     description: "Station administrative records, general stores and non-sensitive assets: issue and return, requisitions, reconciliation. No sensitive equipment, firearms or ammunition.",
     assignableTo: STATION_OR_POST, permissions: { "schedule.view": S, "schedule.manage": S, "correspondence.view": S, "correspondence.register": S, ...P.storesOps(S), "stores.requisition": S, ...P.requests(U), "report.view": U },
+  },
+  {
+    code: "DISTRICT_INTEL_OFFICER", no: 30, tier: 3, level: "DISTRICT_STATION",
+    name: "District Police Intelligence Officer", backOffice: "District Police Intelligence Officer Dashboard", context: "Assigned District Command only",
+    category: "FUNCTIONAL", dashboard: "LIAISON", dashboardTitle: "District Police Intelligence Officer Dashboard",
+    description: `District-level restricted intelligence liaison administration for the assigned District; no other District, Province or national records. ${LIAISON_BOUNDARY}`,
+    assignableTo: ["DISTRICT"], permissions: { ...P.liaison(S) },
+  },
+  // ── TIER 4 — SECTION / POLICE STATION ────────────────────────────────────
+  {
+    code: "INTEL_OFFICER", no: 31, tier: 4, level: "SECTION_STATION",
+    name: "Police Intelligence Officer", backOffice: "Police Intelligence Officer Dashboard", context: "Assigned Section or Police Station only",
+    category: "FUNCTIONAL", dashboard: "LIAISON", dashboardTitle: "Police Intelligence Officer Dashboard",
+    description: `Restricted local intelligence liaison administration for the assigned Section or Police Station only (one role profile; scope follows the assignment). No access to the parent District or Division. ${LIAISON_BOUNDARY}`,
+    assignableTo: ["SECTION", "STATION"], permissions: { ...P.liaison(U) },
   },
 ];
 
@@ -443,6 +502,7 @@ export const DASHBOARD_PRECEDENCE: RoleCode[] = [
   "FORMATION_COMMANDING_OFFICER", "DEPUTY_DIVISION_COMMANDER", "DIVISION_STAFF_I", "DIVISION_STAFF_II", "FORMATION_OPS_STAFF_ADMIN", "COMPANY_COMMANDER", "SECTION_HEAD",
   "OC_DISTRICT", "DEPUTY_OC_DISTRICT", "OPS_OFFICER_DISTRICT", "DEPUTY_OPS_OFFICER_DISTRICT", "OIC_STATION_GD", "STATION_INSPECTOR_GD",
   "QM_STORES_OFFICER", "STORES_OFFICER_DISTRICT", "STATION_ADMIN_STORES", "MTO_OIC", "PRINCIPAL_ARMOURER",
+  "NATIONAL_INTEL_OFFICER", "DIVISION_INTEL_OFFICER", "DISTRICT_INTEL_OFFICER", "INTEL_OFFICER",
   "SUPERADMIN", "HQ_TECH_ADMIN", "UNIT_TECH_ADMIN", "DISTRICT_TECH_ADMIN", "STATION_TECH_ADMIN",
 ];
 
@@ -470,7 +530,7 @@ export const ASSET_CATEGORIES = [
 /** Terms that must never appear as categories or free-text-driven classes. */
 export const PROHIBITED_TERMS = [
   "firearm", "rifle", "pistol", "ammunition", "armoury", "armory", "weapon", "grenade",
-  "radio", "body armour", "body armor", "tactical", "surveillance", "informant", "patrol", "gps",
+  "radio", "body armour", "body armor", "tactical", "surveillance", "informant", "informer", "covert", "patrol", "gps",
 ];
 
 export const SERVICE_TYPES = ["Routine service", "Brake and tyre check", "Electrical fault", "Body repair", "Engine repair", "Licence/inspection renewal"] as const;

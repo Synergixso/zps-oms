@@ -51,6 +51,7 @@ const KPI_SETS: Partial<Record<DashboardKind, string[]>> = {
   ORG_REGISTRY: ["tenants", "divisions", "orgUnits", "orgChangesPending", "myTasks", "unread"],
   MANAGEMENT: ["personnel", "activeAssignments", "openManpower", "rostersApproved", "myTasks", "unread"],
   MY_WORKSPACE: ["myRequests", "myTasks", "unread", "pendingDecisions"],
+  LIAISON: ["liaisonAssigned", "liaisonIncoming", "liaisonToAcknowledge", "liaisonAwaiting", "liaisonReports", "unread"],
 };
 
 async function pendingDecisions(db: DB, actor: Actor): Promise<number> {
@@ -196,6 +197,21 @@ async function kpi(db: DB, actor: Actor, key: string): Promise<Kpi | null> {
     }
     case "myRequisitions":
       return hasPermission(actor, "stores.requisition") ? { key, label: "My open requisitions", value: await count(db, "SELECT COUNT(*) AS c FROM store_requisitions WHERE requested_by = ? AND status IN ('DRAFT','SUBMITTED','APPROVED')", actor.userId), hint: "Draft, submitted or approved", href: "/app/stores/requisitions?mine=1", icon: "clipboardCheck", tone: "blue" } : null;
+    // Intelligence-liaison administration (metadata counts only, liaison scope).
+    case "liaisonAssigned":
+      return hasPermission(actor, "liaison.metadata.view") ? { key, label: "Assigned references", value: await (await import("./liaison")).countLiaison(db, actor, { view: "assigned" }), hint: "You are the responsible officer", href: "/app/liaison/assigned", icon: "userCircle", tone: "blue" } : null;
+    case "liaisonIncoming":
+      return hasPermission(actor, "liaison.submission.acknowledge") ? { key, label: "Awaiting receipt", value: await (await import("./liaison")).countLiaison(db, actor, { view: "incoming", status: "SUBMITTED" }), hint: "Routed to offices in your scope", href: "/app/liaison/acknowledgements", icon: "inbox", tone: "orange" } : null;
+    case "liaisonToAcknowledge":
+      return hasPermission(actor, "liaison.submission.acknowledge") ? { key, label: "To acknowledge", value: await (await import("./liaison")).countLiaison(db, actor, { view: "incoming", status: "RECEIVED" }), hint: "Received, acknowledgement outstanding", href: "/app/liaison/acknowledgements", icon: "checkCircle", tone: "teal" } : null;
+    case "liaisonAwaiting": {
+      if (!hasPermission(actor, "liaison.status.view")) return null;
+      const L = await import("./liaison");
+      const v = await L.countLiaison(db, actor, { view: "submissions", status: "SUBMITTED" }) + await L.countLiaison(db, actor, { view: "submissions", status: "RECEIVED" });
+      return { key, label: "Awaiting acknowledgement elsewhere", value: v, hint: "Submitted from your scope", href: "/app/liaison/submissions", icon: "send", tone: "violet" };
+    }
+    case "liaisonReports":
+      return hasPermission(actor, "liaison.metadata.view") ? { key, label: "Report references", value: await (await import("./liaison")).countLiaison(db, actor, { view: "reports" }), hint: "Reference numbers tracked", href: "/app/liaison/reports", icon: "docSearch", tone: "indigo" } : null;
     case "jobFailures":
       return hasPermission(actor, "platform.view") ? { key, label: "Automation failures (24 h)", value: await count(db, "SELECT COUNT(*) AS c FROM job_runs WHERE status = 'FAILED' AND started_at > ?", new Date(Date.now() - 86400000).toISOString()), hint: "Scheduled jobs", href: "/app/platform", icon: "server", tone: "teal" } : null;
     case "orgChangesPending":
@@ -242,6 +258,8 @@ export async function activityTrends(db: DB, actor: Actor) {
     out.push({ label: "Transfers completed", value: await count(db, `SELECT COUNT(*) AS c FROM assignment_transfers WHERE status = 'COMPLETED' AND accepted_at > ? AND ${a.sql.replace("responsible_unit_id", "receiving_unit_id")}`, since, ...a.params), href: "/app/transfers?status=COMPLETED" });
     out.push({ label: "Renewals approved", value: await count(db, `SELECT COUNT(*) AS c FROM assignment_renewals rn JOIN personnel_assignments x ON x.id = rn.assignment_id WHERE rn.decision = 'RENEWED' AND rn.decided_at > ? AND ${a.sql.replace("responsible_unit_id", "x.responsible_unit_id")}`, since, ...a.params), href: "/app/assignments" });
   }
+  // Liaison roles see liaison routing activity only (metadata counts in their scope).
+  if (!out.length && hasPermission(actor, "liaison.audit.view")) out.push(...await (await import("./liaison")).liaisonActivity(db, actor, since));
   // Technical roles see technical activity only (no business records).
   if (!out.length && hasPermission(actor, "platform.view")) {
     out.push({ label: "Automation runs", value: await count(db, "SELECT COUNT(*) AS c FROM job_runs WHERE started_at > ?", since), href: "/app/platform" });

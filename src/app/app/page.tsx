@@ -15,6 +15,7 @@ import { Badge, Bar, ButtonLink, Card, SectionHeader, Stat, Table, td, fmtDate, 
 import { PersonnelDashboard } from "./dashboards";
 import { CommandOverview } from "./overview";
 import { StoresPanels, TechLocalPanels } from "./role-panels";
+import { LiaisonPanels } from "./liaison-panels";
 
 export const metadata = { title: "Dashboard" };
 
@@ -57,6 +58,8 @@ function detail(actor: Actor, kind: NonNullable<ReturnType<typeof dashboardKind>
       return <AssetDash actor={actor} />;
     case "STORES":
       return <StoresPanels actor={actor} />;
+    case "LIAISON":
+      return <LiaisonPanels actor={actor} />;
     case "AUDIT":
       return <AuditDash actor={actor} />;
     case "SECURITY":

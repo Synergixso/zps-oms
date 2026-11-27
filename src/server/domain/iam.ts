@@ -18,7 +18,7 @@ import { type Actor, HQ_ID, requirePermission, scopeFor } from "./policy";
 import type { Permission } from "./catalogue";
 
 /**
- * Scoped technical administration (27-role directive, roles 06/07/18/24).
+ * Scoped technical administration (31-role catalogue, roles 06/08/20/26).
  * A user is within an administrator's scope for `perm` when:
  *  - mode "any": at least one of the user's active assignments lies inside the scope (viewing);
  *  - mode "all": EVERY active assignment lies inside it, and (for non-national administrators) the user holds
@@ -156,6 +156,20 @@ export const assignSchema = z.object({
   justification: z.string().trim().min(10, "Record the approval reference / justification (at least 10 characters)."),
 });
 
+/** Grants recorded as privileged in the audit trail: platform/security technical roles and the liaison roles. */
+const PRIVILEGED_ROLES: RoleCode[] = ["SUPERADMIN", "HQ_TECH_ADMIN", "NATIONAL_INTEL_OFFICER", "DIVISION_INTEL_OFFICER", "DISTRICT_INTEL_OFFICER", "INTEL_OFFICER"];
+
+export interface ReassignmentRow { id: string; user_id: string; display_name: string; username: string; role_code: string; org_unit_id: string; org_name: string; reason: string; flagged_at: string }
+
+/** Accounts whose role left the authorised catalogue and await an authorised reassignment (open flags only), within user.view scope. */
+export async function listReassignments(db: DB, actor: Actor): Promise<ReassignmentRow[]> {
+  await requirePermission(db, actor, "user.view");
+  const s = scopeFor(actor, "user.view");
+  const rows = await all<ReassignmentRow>(db, `SELECT r.id, r.user_id, u.display_name, u.username, r.role_code, r.org_unit_id, o.name AS org_name, r.reason, r.flagged_at
+     FROM role_reassignments r JOIN users u ON u.id = r.user_id JOIN org_units o ON o.id = r.org_unit_id WHERE r.resolved_at IS NULL ORDER BY r.flagged_at DESC LIMIT 500`);
+  return s.national ? rows : rows.filter((r) => s.units.includes(r.org_unit_id));
+}
+
 export async function assignRole(db: DB, actor: Actor, input: z.input<typeof assignSchema>) {
   await requirePermission(db, actor, "grant.assign", HQ_ID);
   const d = assignSchema.parse(input);
@@ -183,7 +197,11 @@ export async function assignRole(db: DB, actor: Actor, input: z.input<typeof ass
   await tx(db, async (db) => {
     await run(db, `INSERT INTO role_assignments (id, user_id, role_code, org_unit_id, valid_from, valid_to, justification, granted_by, created_at) VALUES (?,?,?,?,?,?,?,?,?)`,
       id, d.userId, d.roleCode, d.orgUnitId, t, d.validTo ? `${d.validTo}T23:59:59.000Z` : null, d.justification, actor.userId, t);
-    await audit(db, { actorId: actor.userId, action: "iam.grant.assign", category: "IAM", entityType: "user", entityId: d.userId, orgUnitId: d.orgUnitId, details: { role: d.roleCode, validTo: d.validTo || null, privileged: ["PLATFORM_ADMIN", "SECURITY_ADMIN", "INTERNAL_AUDITOR"].includes(d.roleCode) } });
+    // An authorised grant resolves any open reassignment flag left by a retired role (bootstrap.syncCatalogue).
+    const flags = await all<{ id: string; role_code: string }>(db, "SELECT id, role_code FROM role_reassignments WHERE user_id = ? AND resolved_at IS NULL", d.userId);
+    if (flags.length) await run(db, "UPDATE role_reassignments SET resolved_at = ?, resolved_by = ?, resolution_assignment_id = ? WHERE user_id = ? AND resolved_at IS NULL", t, actor.userId, id, d.userId);
+    await audit(db, { actorId: actor.userId, action: "iam.grant.assign", category: "IAM", entityType: "user", entityId: d.userId, orgUnitId: d.orgUnitId,
+      details: { role: d.roleCode, validTo: d.validTo || null, privileged: PRIVILEGED_ROLES.includes(d.roleCode as RoleCode), resolvedReassignment: flags.map((f) => f.role_code) } });
     await notify(db, d.userId, "Access granted", `${role.name} access has been assigned to your account.`, "/app/profile");
   });
   return id;

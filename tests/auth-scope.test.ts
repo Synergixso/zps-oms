@@ -64,12 +64,13 @@ describe("password authentication", () => {
 });
 
 describe("role catalogue and hierarchical scope", () => {
-  it("defines exactly the 27 roles of the three-tier directive with unique numbers", () => {
-    expect(ROLES).toHaveLength(27);
-    expect([...ROLES.map((r) => r.no)].sort((a, b) => a - b)).toEqual(Array.from({ length: 27 }, (_, i) => i + 1));
-    expect(ROLES.filter((r) => r.tier === 1).map((r) => r.no)).toEqual([1, 2, 3, 4, 5, 6]);
-    expect(ROLES.filter((r) => r.tier === 2).map((r) => r.no)).toEqual([7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]);
-    expect(ROLES.filter((r) => r.tier === 3).map((r) => r.no)).toEqual([18, 19, 20, 21, 22, 23, 24, 25, 26, 27]);
+  it("defines exactly the 31 roles of the four-level catalogue with unique numbers", () => {
+    expect(ROLES).toHaveLength(31);
+    expect([...ROLES.map((r) => r.no)].sort((a, b) => a - b)).toEqual(Array.from({ length: 31 }, (_, i) => i + 1));
+    expect(ROLES.filter((r) => r.tier === 1).map((r) => r.no)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(ROLES.filter((r) => r.tier === 2).map((r) => r.no)).toEqual([8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
+    expect(ROLES.filter((r) => r.tier === 3).map((r) => r.no)).toEqual([20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]);
+    expect(ROLES.filter((r) => r.tier === 4).map((r) => r.no)).toEqual([31]);
   });
 
   it("platform super administrator has no personnel access and no approval authority", () => withDb(async (db) => {

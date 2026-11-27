@@ -1,5 +1,5 @@
 /**
- * General Stores — non-sensitive consumables and general stock only (27-role directive: roles 15, 23, 27).
+ * General Stores — non-sensitive consumables and general stock only (31-role catalogue: roles 16, 25, 29).
  *
  * Firearms, ammunition, armoury items, communications and tactical equipment are NOT representable:
  * categories come from a fixed allowlist and every free-text field is screened against PROHIBITED_TERMS.

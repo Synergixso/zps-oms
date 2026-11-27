@@ -95,8 +95,8 @@ const MODULES: Array<{ no: number; name: string; icon: IconName; href?: string; 
   { no: 13, name: "Notifications & Tasks", icon: "bell", href: "/app/notifications", any: [] },
   { no: 14, name: "Audit & Compliance", icon: "shieldCheck", href: "/app/audit", any: ["audit.view"] },
   { no: 15, name: "Platform Administration", icon: "server", href: "/app/platform", any: ["platform.view"] },
-  { no: 16, name: "Administrative Scheduling", icon: "gauge", any: [], planned: true },
-  { no: 17, name: "Correspondence Management", icon: "mail", any: [], planned: true },
+  { no: 16, name: "Administrative Scheduling", icon: "calendar", href: "/app/calendar", any: ["schedule.view"] },
+  { no: 17, name: "Correspondence Management", icon: "mail", href: "/app/correspondence", any: ["correspondence.view", "correspondence.register"] },
 ];
 
 const fmt = (iso: string) => new Date(iso).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Africa/Lusaka" });
@@ -171,7 +171,7 @@ export async function CommandOverview({ actor, kind }: { actor: Actor; kind: Das
             </Panel>
           </div>
 
-          <Panel title="ZPS-OMS system modules" icon="sitemap" action={<span className="text-[12px] text-white/85">15 active · 2 planned</span>}>
+          <Panel title="ZPS-OMS system modules" icon="sitemap" action={<span className="text-[12px] text-white/85">{MODULES.filter((m) => !m.planned).length} active</span>}>
             {/* Phones: only the modules this role can open, as compact links. */}
             <ul className="space-y-1.5 md:hidden">
               {MODULES.filter((m) => !m.planned && m.href && (m.any.length === 0 || m.any.some((p) => hasPermission(actor, p)))).map((m) => (
@@ -200,7 +200,9 @@ export async function CommandOverview({ actor, kind }: { actor: Actor; kind: Das
                 return <li key={m.no}>{allowed && m.href ? <Link href={m.href} className="block h-full rounded-lg">{body}</Link> : body}</li>;
               })}
             </ul>
-            <p className="mt-3 flex items-start gap-2 rounded-lg bg-[#eef4fc] px-3 py-2 text-[12px] text-ink-2"><Icon name="info" className="mt-0.5 h-4 w-4 shrink-0 text-[#173f8a]" />Modules 16 and 17 are planned for a later phase, subject to institutional requirements validation and security approval.</p>
+            <p className="mt-3 flex items-start gap-2 rounded-lg bg-[#eef4fc] px-3 py-2 text-[12px] text-ink-2"><Icon name="info" className="mt-0.5 h-4 w-4 shrink-0 text-[#173f8a]" />{def?.dashboard === "LIAISON"
+              ? "Your role works in the restricted liaison administration workspace (metadata only). The modules above are shown for orientation; they are outside your role."
+              : "Modules outside your role are shown for orientation only. Every module enforces your role and organisational scope on the server."}</p>
           </Panel>
         </div>
 

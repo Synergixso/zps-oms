@@ -1,12 +1,14 @@
 /**
  * Generates the role and permission completion reports from what the server enforces and from test evidence:
- *   docs/development/ROLE_DASHBOARD_COMPLETION_MATRIX.md   (27 roles: workspace, navigation, figures, actions, evidence)
+ *   docs/development/ROLE_DASHBOARD_COMPLETION_MATRIX.md   (31 roles: workspace, navigation, figures, actions, evidence)
+ *   docs/final-delivery/UPDATED_31_ROLE_CATALOGUE.md, UPDATED_PERMISSION_MATRIX.md
+ *   docs/final-delivery/TIER_1_DASHBOARD_VERIFICATION.md, TIER_2_..., TIER_3_..., TIER_4_INTELLIGENCE_ROLE_VERIFICATION.md
  *   docs/development/PERMISSION_VERIFICATION_REPORT.md     (permission × role, separation rules, route-audit outcomes per role)
  * Inputs: src/server/domain/catalogue.ts, src/server/domain/workspace-config.ts, src/lib/nav.ts, docs/evidence/route-audit.md.
  * Run: npm run docs:completion   (after `npm run audit:routes`, so the evidence is current)
  */
 import fs from "node:fs";
-import { PERMISSIONS, ROLES, type Coverage, type Permission, type RoleDef } from "../src/server/domain/catalogue.ts";
+import { PERMISSIONS, ROLES, TIER_NAMES, type Coverage, type Permission, type RoleDef, type Tier } from "../src/server/domain/catalogue.ts";
 import { WORKSPACE_CONFIG } from "../src/server/domain/workspace-config.ts";
 import { NAV } from "../src/lib/nav.ts";
 
@@ -34,7 +36,9 @@ for (const line of audit.split(/\r?\n/)) {
   tally.set(m[1], t);
 }
 
-const TIER_NAME = { 1: "Tier 1 — National Headquarters", 2: "Tier 2 — Provincial Divisions and Unit Formations", 3: "Tier 3 — District Commands and Police Stations" } as const;
+const TIER_NAME = Object.fromEntries(([1, 2, 3, 4] as Tier[]).map((t) => [t, `Tier ${t} — ${TIER_NAMES[t]}`])) as Record<Tier, string>;
+const isLiaison = (r: RoleDef) => r.dashboard === "LIAISON";
+const kind = (r: RoleDef) => (r.category === "TECHNICAL" ? "technical role: no business approvals or personnel records" : isLiaison(r) ? "restricted liaison role: administrative metadata only, no personnel or operational registers" : r.category === "FUNCTIONAL" ? "functional role" : "business role");
 
 // ── Role dashboard completion matrix ─────────────────────────────────────────────────────────────────
 const md: string[] = [
@@ -55,15 +59,15 @@ for (const r of ROLES) {
   md.push(`| ${nn(r.no)} | ${r.name} | ${r.tier} | ${r.backOffice} | ${navItems.length} | ${w?.kpis.length ?? 0} | ${quick.length} | ${t?.accounts ?? 0} | ${t ? `${t.rendered} / ${t.denied} / ${t.hidden}` : "—"} | ${t?.errors ?? "—"} | ${ok ? "Completed and Verified" : !w ? "Not Started" : !t ? "Implemented (no audit evidence)" : "Partially Implemented"} |`);
 }
 md.push("", `**${verified} of ${ROLES.length} role workspaces: Completed and Verified.**`, "");
-for (const tier of [1, 2, 3] as const) {
+for (const tier of [1, 2, 3, 4] as const) {
   md.push(`## ${TIER_NAME[tier]}`, "");
   for (const r of ROLES.filter((x) => x.tier === tier)) {
     const w = WORKSPACE_CONFIG.find((x) => x.role === r.code)!;
-    md.push(`### ${nn(r.no)} · ${r.name}`, "", `- **Back office:** ${r.backOffice} (${r.category === "TECHNICAL" ? "technical role: no business approvals or personnel records" : "business role"})`,
+    md.push(`### ${nn(r.no)} · ${r.name}`, "", `- **Back office:** ${r.backOffice} (${kind(r)})`,
       `- **Purpose:** ${w.purpose}`, `- **Organisational context:** ${r.context}; assignable to ${r.assignableTo.join(", ").toLowerCase().replace(/_/g, " ")}`);
     for (const g of w.nav) {
       const items = g.items.map((h) => NAV_ITEMS[h]).filter((i) => i && holds(r, i.any));
-      if (items.length) md.push(`- **${g.label}:** ${items.map((i) => i.label).join(", ")}`);
+      if (items.length) md.push(`- **${g.label}:** ${items.map((i) => w.labels?.[i.href] ?? i.label).join(", ")}`);
     }
     md.push(`- **Dashboard figures:** ${w.kpis.join(", ")}`, `- **Quick actions:** ${w.quick.filter((q) => holds(r, q.any)).map((q) => q.label).join(", ") || "none"}`, "");
   }
@@ -82,8 +86,8 @@ const pv: string[] = [
   "- Out-of-scope records return a neutral 404 (`loadOr404`); refusals are audited as SECURITY events.", "",
   "## Verification evidence", "",
   `- Route audit (\`docs/evidence/route-audit.md\`, ${auditStamp}): ${routeCount} routes × ${[...tally.values()].reduce((n, t) => n + t.accounts, 0)} accounts; server errors: ${[...tally.values()].reduce((n, t) => n + t.errors, 0)}.`,
-  "- Domain tests (`npm test`): `access-control`, `auth-scope`, `three-tier-roles` (27-role matrix, technical separation, role 16 restriction, stores separation), `scheduling-correspondence` (cross-Division denial, technical roles refused, RESTRICTED visibility, separation of filing), `account-activity`, `workflows`, `decision-chains`.",
-  "- Browser tests (`npm run test:e2e`): tenant isolation journey, context switching, CSP, public site.", "",
+  "- Domain tests (`npm test`): `access-control`, `auth-scope`, `three-tier-roles` (31-role matrix, technical separation, Armourer restriction, stores separation), `liaison` (liaison template, scope, channels, metadata-only boundary), `role-migration` (safe retirement and reassignment), `scheduling-correspondence` (cross-Division denial, technical roles refused, RESTRICTED visibility, separation of filing), `account-activity`, `workflows`, `decision-chains`.",
+  "- Browser tests (`npm run test:e2e`): tenant isolation journey, context switching, CSP, public site, liaison journey for the four Police Intelligence Officer roles.", "",
   "## Route-audit outcomes by role", "",
   "| # | Role | Accounts | Rendered | Access denied (audited) | Out of scope (404) | Server errors |", "|--:|---|--:|--:|--:|--:|--:|",
 ];
@@ -94,7 +98,8 @@ for (const r of ROLES) {
 pv.push("", "## Separation rules checked by tests", "",
   `- Technical administrators (${ROLES.filter((r) => r.category === "TECHNICAL").map((r) => nn(r.no)).join(", ")}) hold no personnel, assignment, manpower, stores, request, fleet, scheduling or correspondence permissions.`,
   `- Only Superadmin holds \`platform.configure\` and \`tenant.manage\`: ${ROLES.filter((r) => r.permissions["platform.configure"]).map((r) => r.name).join(", ")}.`,
-  `- Role 16 (Divisional Principal Armourer) holds only: ${Object.keys(ROLES.find((r) => r.no === 16)!.permissions).join(", ")} — no firearms, ammunition or armoury functions exist.`,
+  `- Role ${nn(ROLES.find((r) => r.code === "PRINCIPAL_ARMOURER")!.no)} (Divisional Principal Armourer) holds only: ${Object.keys(ROLES.find((r) => r.code === "PRINCIPAL_ARMOURER")!.permissions).join(", ")} — no firearms, ammunition or armoury functions exist.`,
+  `- The liaison roles (${ROLES.filter(isLiaison).map((r) => nn(r.no)).join(", ")}) hold only the \`liaison.*\` template; no other role holds any \`liaison.*\` permission.`,
   `- \`stores.manage\` is held only by roles ${ROLES.filter((r) => r.permissions["stores.manage"]).map((r) => nn(r.no)).join(", ")}; \`stores.approve\` only by business roles.`,
   `- \`correspondence.manage\` (filing, RESTRICTED records) is held by roles ${ROLES.filter((r) => r.permissions["correspondence.manage"]).map((r) => nn(r.no)).join(", ")}.`, "",
   "## Permission × role grid", "",
@@ -103,7 +108,7 @@ for (const p of perms) pv.push(`| \`${p}\` | ${ROLES.map((r) => code(r.permissio
 write("docs/development/PERMISSION_VERIFICATION_REPORT.md", pv);
 console.log(`ROLE_DASHBOARD_COMPLETION_MATRIX.md: ${verified}/${ROLES.length} verified; PERMISSION_VERIFICATION_REPORT.md: ${perms.length} permissions`);
 
-// ── docs/final-delivery/ALL_27_ROLES_VERIFICATION.md: each role individually (directive §6, §13) ─────────────
+// ── Per-role verification, written per tier (directive Part 8, Part 14) ──
 const APPROVAL_DOMAINS: Array<[string, Permission | null]> = [["Administrative requests", "request.view"], ["Manpower", "manpower.review"], ["Assignments and transfer release", "assignment.view"], ["Stores requisitions", "stores.approve"], ["Fleet maintenance", "maintenance.process"]];
 const MODULE_OF: Array<[string, (r: RoleDef) => boolean]> = [
   ["01 Organisation and tenants", (r) => !!(r.permissions["org.view"] || r.permissions["tenant.view"])],
@@ -123,38 +128,89 @@ const MODULE_OF: Array<[string, (r: RoleDef) => boolean]> = [
   ["15 Platform administration", (r) => !!(r.permissions["platform.view"] || r.permissions["health.view"])],
   ["16 Administrative scheduling", (r) => !!r.permissions["schedule.view"]],
   ["17 Administrative correspondence", (r) => !!(r.permissions["correspondence.view"] || r.permissions["correspondence.register"])],
+  ["Restricted liaison administration (metadata only)", (r) => isLiaison(r)],
 ];
-const rv: string[] = [
-  "# All 27 Roles — Verification", "",
-  "> Generated by `npm run docs:completion` from the role catalogue and workspace configuration the server enforces, and from the route-audit evidence. Do not edit by hand.", "",
-  `Evidence: route audit ${auditStamp} (${routeCount} routes per account); \`tests/three-tier-roles.test.ts\` (27-role matrix, technical separation, role 16 restriction, Administrative records configuration), \`tests/access-control.test.ts\` (including context switching); accessibility and reflow scans of every role's dashboard and navigation. Logout and sessions are common to all roles (\`tests/auth-scope.test.ts\`, \`tests/account-activity.test.ts\`, Playwright sign-in journeys).`, "",
-  "Approval authority is never a role permission: a role can decide only where an active delegation and a business role at that unit exist (`policy.approvalUnitFor`). Technical roles never approve.", "",
-];
-for (const r of ROLES) {
+const roleSection = (r: RoleDef): { lines: string[]; ok: boolean } => {
   const w = WORKSPACE_CONFIG.find((x) => x.role === r.code)!;
   const t = tally.get(r.code);
   const navItems = w.nav.flatMap((g) => g.items).map((h) => NAV_ITEMS[h]).filter((i) => i && holds(r, i.any));
   const perms = Object.entries(r.permissions).map(([p, c]) => `\`${p}\` (${code(c as Coverage)})`);
   const modules = MODULE_OF.filter(([, f]) => f(r)).map(([m]) => m);
   const ok = !!t && t.errors === 0 && navItems.length > 0;
-  rv.push(`## ${nn(r.no)} · ${r.name}`, "",
+  const lines = [`## ${nn(r.no)} · ${r.name}`, "",
     "| Check | Result |", "|---|---|",
     `| 1. Role identity | ${r.code} · Tier ${r.tier} · category ${r.category.toLowerCase()} |`,
     `| 2. Organisational context | ${r.context}; assignable to ${r.assignableTo.join(", ").toLowerCase().replace(/_/g, " ")} |`,
     `| 3. Dashboard | ${r.dashboardTitle} (\`${r.dashboard}\`) |`,
-    `| 4. Navigation | ${navItems.map((i) => i.label).join(", ")} |`,
+    `| 4. Navigation | ${navItems.map((i) => w.labels?.[i.href] ?? i.label).join(", ")} |`,
     `| 5. Modules available | ${modules.join("; ")} |`,
     `| 6. Page permissions (server-checked) | ${perms.join(", ") || "none"} |`,
-    `| 7. Action permissions | ${Object.keys(r.permissions).filter((p) => /\.(create|register|edit|verify|build|propose|transfer|renew|receive|change|manage|requisition|process|custody|inspect|dispose|provision|suspend|deactivate|support|assign|revoke|grant|configure|operate|record|contribute|export|submit|progress|close|cancel|reopen)$/.test(p)).map((p) => `\`${p}\``).join(", ") || "view only"} |`,
-    `| 8. Approval permissions | ${r.category === "TECHNICAL" ? "None (technical role)" : `Only with a recorded delegation for: ${APPROVAL_DOMAINS.filter(([, p]) => !p || r.permissions[p]).map(([d]) => d).join(", ") || "no approval domains in scope"}`} |`,
-    `| 9. Notifications | In-application notifications and tasks for the modules above; preferences on the notifications page |`,
+    `| 7. Action permissions | ${Object.keys(r.permissions).filter((p) => /\.(create|register|edit|verify|build|propose|transfer|renew|receive|change|manage|requisition|process|custody|inspect|dispose|provision|suspend|deactivate|support|assign|revoke|grant|configure|operate|record|contribute|export|submit|progress|close|cancel|reopen|acknowledge|route|update_own)$/.test(p)).map((p) => `\`${p}\``).join(", ") || "view only"} |`,
+    `| 8. Approval permissions | ${r.category === "TECHNICAL" ? "None (technical role)" : isLiaison(r) ? "None. Recording receipt and acknowledgement is an administrative act of the receiving office, not an approval; an approval reference is recorded as metadata" : `Only with a recorded delegation for: ${APPROVAL_DOMAINS.filter(([, p]) => !p || r.permissions[p]).map(([d]) => d).join(", ") || "no approval domains in scope"}`} |`,
+    `| 9. Notifications | ${isLiaison(r) ? "Routed-to-office and acknowledgement notifications, reminders and access changes" : "In-application notifications and tasks for the modules above"}; preferences on the notifications page |`,
     `| 10. Dashboard statistics | ${w.kpis.join(", ")} (live SQL within scope) |`,
-    `| 11. Reporting | ${r.permissions["report.view"] ? `Reports in scope${r.permissions["report.export"] ? ", export permitted" : ", no export"}` : "No report access"} |`,
-    `| 12. Audit behaviour | Every change and every refused access is audited; ${r.permissions["audit.view"] ? "may read the audit trail" : "cannot read the audit trail"} |`,
+    `| 11. Reporting | ${r.permissions["report.view"] ? `Reports in scope${r.permissions["report.export"] ? ", export permitted" : ", no export"}` : isLiaison(r) ? "Liaison status and organisational submission summaries on the dashboard; no management-report access" : "No report access"} |`,
+    `| 12. Audit behaviour | Every change and every refused access is audited; ${r.permissions["audit.view"] ? "may read the audit trail" : isLiaison(r) ? "may read the liaison transaction history in scope only, not the audit trail" : "cannot read the audit trail"} |`,
     `| 13. Logout and sessions | Sign-out, idle/absolute expiry, own session list and revocation (common to all roles) |`,
     `| Route-audit evidence | ${t ? `${t.accounts} account(s): ${t.rendered} rendered, ${t.denied} refused, ${t.hidden} hidden (404), ${t.errors} server errors` : "not audited"} |`,
-    `| **Status** | **${ok ? "Completed and Verified" : "Not verified"}** |`, "");
-}
+    `| **Status** | **${ok ? "Completed and Verified" : "Not verified"}** |`, ""];
+  return { lines, ok };
+};
 fs.mkdirSync("docs/final-delivery", { recursive: true });
-write("docs/final-delivery/ALL_27_ROLES_VERIFICATION.md", rv);
-console.log("ALL_27_ROLES_VERIFICATION.md written");
+const TIER_FILE: Record<Tier, string> = { 1: "TIER_1_DASHBOARD_VERIFICATION.md", 2: "TIER_2_DASHBOARD_VERIFICATION.md", 3: "TIER_3_DASHBOARD_VERIFICATION.md", 4: "TIER_4_INTELLIGENCE_ROLE_VERIFICATION.md" };
+const tierSummary: string[] = [];
+const liaisonNos = ROLES.filter(isLiaison).map((r) => nn(r.no)).join(", ");
+for (const tier of [1, 2, 3, 4] as const) {
+  const roles = ROLES.filter((r) => r.tier === tier);
+  const sections = roles.map(roleSection);
+  const ok = sections.filter((x) => x.ok).length;
+  tierSummary.push(`| ${TIER_NAME[tier]} | ${roles.length} | ${ok} | \`${TIER_FILE[tier]}\` |`);
+  const extra = roles.some(isLiaison) ? [`## Intelligence-liaison boundary (roles ${liaisonNos})`, "",
+    "- The liaison roles hold the seven `liaison.*` permissions only (`tests/liaison.test.ts`). No personnel, manpower, roster, assignment, correspondence, calendar, stores, fleet, report or audit permission; each refused register is a SECURITY audit event (domain and browser tests).",
+    "- Metadata only: reference numbers, offices, dates, status, responsible account, approved administrative classification, approval reference and routing history. There is no subject, note, narrative or attachment field (asserted against `information_schema`). Reference fields accept reference characters only; free text and excluded descriptive terms are refused.",
+    "- Scope: National (HQ assignment only), Division and District (assigned unit and subordinate units), Section/Police Station (assigned unit only). A draft is visible only at its own office until submitted. Receipt, acknowledgement, closure and onward routing are acts of the receiving office's own officer. Routing follows the line of command to an office with an assigned liaison officer.",
+    "- Governance record: `docs/final-delivery/INTELLIGENCE_LIAISON_SCOPE_AND_ACCESS_CONTROLS.md`.", ""] : [];
+  write(`docs/final-delivery/${TIER_FILE[tier]}`, [
+    `# ${tier === 4 ? "Tier 4 — Police Intelligence Officer Role Verification" : `${TIER_NAME[tier]} — Dashboard Verification`}`, "",
+    "> Generated by `npm run docs:completion` from the role catalogue and workspace configuration the server enforces, and from the route-audit evidence. Do not edit by hand.", "",
+    `Evidence: route audit ${auditStamp} (${routeCount} routes per account); domain tests \`three-tier-roles\`, \`access-control\`, \`auth-scope\`, \`liaison\`, \`role-migration\`; accessibility and reflow scans of every role's dashboard and navigation; Playwright journeys. Logout and sessions are common to all roles.`, "",
+    "Approval authority is never a role permission: a role can decide only where an active delegation and a business role at that unit exist (`policy.approvalUnitFor`). Technical and liaison roles never approve.", "",
+    `**${ok} of ${roles.length} role(s) in this tier: Completed and Verified.**`, "",
+    ...extra, ...sections.flatMap((x) => x.lines)]);
+}
+console.log("Tier verification documents written");
+
+// ── docs/final-delivery/UPDATED_31_ROLE_CATALOGUE.md ─────────────────────────────────────────────────────
+const cat: string[] = [
+  `# Updated ${ROLES.length}-Role Catalogue`, "",
+  "> Generated by `npm run docs:completion` from `src/server/domain/catalogue.ts` (the catalogue the server enforces). Do not edit by hand.", "",
+  `Active role profiles: **${ROLES.length}** — ${([1, 2, 3, 4] as Tier[]).map((t) => `Tier ${t}: ${ROLES.filter((r) => r.tier === t).length}`).join(" · ")}. Any other role definition is retired on start-up (\`bootstrap.syncCatalogue\`; see \`ROLE_DEPRECATION_AND_MIGRATION_REPORT.md\`). One canonical profile per role: the Tier 4 Police Intelligence Officer is a single role whose scope follows its assignment (Section or Police Station). Verified by \`tests/three-tier-roles.test.ts\`, \`tests/auth-scope.test.ts\` and \`tests/role-migration.test.ts\`.`, "",
+  "| Tier | Roles | Completed and Verified | Verification document |", "|---|--:|--:|---|", ...tierSummary, "",
+];
+for (const tier of [1, 2, 3, 4] as const) {
+  cat.push(`## ${TIER_NAME[tier]} (${ROLES.filter((r) => r.tier === tier).length})`, "",
+    "| # | Official role name | Code | Category | Back office (dashboard) | Organisational context | Assignable to | Status |", "|--:|---|---|---|---|---|---|---|");
+  for (const r of ROLES.filter((x) => x.tier === tier)) cat.push(`| ${nn(r.no)} | ${r.name} | \`${r.code}\` | ${r.category.toLowerCase()} | ${r.backOffice} | ${r.context} | ${r.assignableTo.join(", ").toLowerCase().replace(/_/g, " ")} | Active |`);
+  cat.push("");
+}
+cat.push("## Descriptions", "");
+for (const r of ROLES) cat.push(`- **${nn(r.no)} ${r.name}.** ${r.description}`);
+write("docs/final-delivery/UPDATED_31_ROLE_CATALOGUE.md", cat);
+
+// ── docs/final-delivery/UPDATED_PERMISSION_MATRIX.md ─────────────────────────────────────────────────────
+const liaisonPerms = (Object.keys(PERMISSIONS) as Permission[]).filter((p) => p.startsWith("liaison."));
+write("docs/final-delivery/UPDATED_PERMISSION_MATRIX.md", [
+  "# Updated Permission Matrix", "",
+  "> Generated by `npm run docs:completion` from `src/server/domain/catalogue.ts`. Do not edit by hand.", "",
+  `${perms.length} permissions × ${ROLES.length} roles. Coverage: **U** assigned unit · **S** assigned unit and subordinate units · **N** national (Service HQ assignments only). Blank = refused (deny by default). Approval authority is not a permission (delegation + business role).`, "",
+  "## Per role", "", "| # | Role | Permissions | Coverage used |", "|--:|---|--:|---|",
+  ...ROLES.map((r) => `| ${nn(r.no)} | ${r.name} | ${Object.keys(r.permissions).length} | ${[...new Set(Object.values(r.permissions).map((c) => code(c as Coverage)))].join(", ")} |`), "",
+  "## Restricted liaison namespace", "",
+  ...liaisonPerms.map((p) => `- \`${p}\` — ${PERMISSIONS[p]} · held by ${ROLES.filter((r) => r.permissions[p]).map((r) => `${nn(r.no)} (${code(r.permissions[p])})`).join(", ")}`), "",
+  "These permissions authorise administrative metadata only. They grant no access to intelligence content (which ZPS-OMS cannot store) and none to national personnel or operational records.", "",
+  "## Permission × role grid", "",
+  `| Permission | ${ROLES.map((r) => `R${nn(r.no)}`).join(" | ")} |`, `|---|${ROLES.map(() => ":-:").join("|")}|`,
+  ...perms.map((p) => `| \`${p}\` | ${ROLES.map((r) => code(r.permissions[p])).join(" | ")} |`),
+]);
+console.log("UPDATED_31_ROLE_CATALOGUE.md and UPDATED_PERMISSION_MATRIX.md written");
+

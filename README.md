@@ -71,7 +71,7 @@ An *assignment* is an administrative duty-area record. It is never a location. T
 | **Fleet maintenance** | Vehicle registry, maintenance requests, separation of duties between the requesting and verifying officers. | Delivered |
 | **Asset accountability** | Asset register, custody transfer between units, receipt acknowledgement, reconciliation (stock-take). | Delivered |
 | **General stores** | Store items, append-only stock ledger (receipt, issue, return, adjustment), requisitions to own or higher store with delegated approval and issue by the store keeper; reorder and overdue reminders. Consumables only. | Delivered |
-| **Role back offices** | 27 role-specific workspaces in three tiers (HQ, Division/Formation, District/Station): back-office name, navigation, live headline figures, quick actions and working panels per role; one active role context per session. | Delivered |
+| **Role back offices** | 31 role-specific workspaces in four levels (HQ, Division/Formation, District/Station, Section/Station): back-office name, navigation, live headline figures, quick actions and working panels per role; one active role context per session. | Delivered |
 | **Reports** | 14 scoped reports, saved custom views, CSV and native Excel (.xlsx) export, scheduled in-application delivery (daily, weekly, monthly). | Delivered |
 | **Audit** | A hash-chained, append-only audit log (database triggers prevent updates and deletes), an explorer, an evidence export and chain verification. | Delivered |
 | **Platform & security** | Automation engine and run log, verified database backups, migration history, error log, maintenance mode, settings; security events, sessions, authentication history, lockouts. | Delivered |
@@ -103,7 +103,7 @@ National HQ (tenant t_zps)
 - **Sessions:** random tokens, stored server-side only as a hash, in HttpOnly, SameSite cookies, with idle and absolute expiry.
 - **Passwords:** scrypt hashes with per-user salts. Repeated failures lock the account temporarily, and every attempt is recorded.
 - **Audit:** each event stores the hash of the previous event; appends are serialised so the chain cannot fork under concurrent requests. MySQL triggers reject `UPDATE` and `DELETE` on the audit table. Chain verification is available in the app and as `npm run verify:audit`.
-- **Roles:** 27 roles in three tiers (`docs/role-architecture/ROLE_CATALOGUE.md`). Technical administrators (Superadmin, HQ Tech, Division/Unit, District and Station system administrators) never hold personnel access or approval authority.
+- **Roles:** 31 roles in four levels (`docs/final-delivery/UPDATED_31_ROLE_CATALOGUE.md`). Technical administrators (Superadmin, HQ Tech, Division/Unit, District and Station system administrators) never hold personnel access or approval authority. The four Police Intelligence Officer roles (07, 19, 30, 31) hold only restricted liaison administration: metadata such as reference numbers, offices, dates, status and routing, with no content field and no access to personnel or operational registers (`docs/final-delivery/INTELLIGENCE_LIAISON_SCOPE_AND_ACCESS_CONTROLS.md`).
 - **Database:** every connection runs in strict SQL mode, so values are never silently truncated.
 - **Data hygiene:** synthetic data only; credentials only in `.env.local`, which is git-ignored; no paid or external services.
 
@@ -184,7 +184,7 @@ On first start the server applies any pending migrations and then loads the synt
 | `npm run docs:permissions` | Regenerate the role catalogue, permission matrix, dashboard configuration and tier documents from the enforced configuration |
 
 ## 10. Synthetic accounts and review walkthrough
-Every account is synthetic: `demo.*` usernames and "Demo" names. The development password for all of them is shown on the local sign-in page (development builds only) and defined in `src/server/db/constants.ts`. It is a published test value for local review only. There are 54 synthetic accounts covering all 27 roles; the per-role list is in `docs/development/ROLE_BACKOFFICE_DEVELOPMENT_STATUS.md` and the user acceptance scripts in `docs/uat/`.
+Every account is synthetic: `demo.*` usernames and "Demo" names. The development password for all of them is shown on the local sign-in page (development builds only) and defined in `src/server/db/constants.ts`. It is a published test value for local review only. There are 60 synthetic accounts covering all 31 roles; the per-role list is in `docs/development/ROLE_BACKOFFICE_DEVELOPMENT_STATUS.md` and the user acceptance scripts in `docs/uat/`.
 
 | Sign in as | Try |
 |---|---|
@@ -203,11 +203,14 @@ Every account is synthetic: `demo.*` usernames and "Demo" names. The development
 | Demo Copperbelt Assignment Coordinator (`demo.cb.assignments`) | Propose an assignment; initiate a transfer (tenure rule applies) |
 | Demo Copperbelt Division Commander (`demo.cb.commander`) | Approve assignments, exceptions, renewals and transfer releases |
 | Demo Mufulira Receiving Area Officer (`demo.mufulira.receiving`) | Accept a transfer into the receiving area |
+| Police Intelligence Officer, Kitwe Central (`demo.kitwec.pio`) | Record a liaison reference (free text is refused) and submit it to Kitwe District |
+| District Police Intelligence Officer, Kitwe (`demo.kitwe.pio`) | Record receipt, acknowledge, route onward to the Division; open `/app/personnel` → access denied |
+| National Police Intelligence Officer (`demo.hq.pio`) | Liaison activity register, organisational routing, audit history; station drafts are not visible |
 | Demo Kitwe District Commander (`demo.kitwe.commander`) | District dashboard; personnel limited to Kitwe; a Lusaka record returns 404 |
 | Demo A Company Administrative Officer (`demo.mu.acoy.admin`) | Select eligible officers for a contribution and submit |
 
 ## 11. Testing and verification evidence
-- **Domain and integration tests** (`npm test`, 158 tests in 26 files, strict SQL mode) cover access control, tenant isolation, the 27-role matrix, context switching, scoped technical administration, stores, workflows and decision chains, separation of duties, scheduled delivery, Excel export, backups and restore drills, audit-chain concurrency, migrations and the seed.
+- **Domain and integration tests** (`npm test`, 169 tests in 28 files, strict SQL mode) cover access control, tenant isolation, the 31-role matrix, the liaison boundary and the safe role migration, context switching, scoped technical administration, stores, workflows and decision chains, separation of duties, scheduled delivery, Excel export, backups and restore drills, audit-chain concurrency, migrations and the seed.
 - **Playwright** (`npm run test:e2e`, Microsoft Edge): 8 journeys, the axe-core accessibility scan (`docs/evidence/accessibility.md`), the reflow/200 % zoom/tablet check (`docs/evidence/reflow.md`), the A4 print check (`docs/evidence/print.md`) and the Content Security Policy check.
 - **Load and page-weight baseline** (`npm run test:load -- http://localhost:3100` against `npm run start`) — `docs/evidence/load-test.md`.
 - **Route audit** (`npm run audit:routes`): every route against every user — `docs/evidence/route-audit.md`. **Phone-width review** (`npm run review:mobile`) — `docs/evidence/mobile/`.
@@ -246,7 +249,7 @@ Put these in `.env.local`, which is never committed. `.env.example` documents th
 | Direction | `docs/PRD.md`, `docs/PROJECT_CHARTER.md`, `docs/PHASE3_AUDIT_AND_ARCHITECTURE.md` |
 | Governance | `docs/governance/INSTITUTIONAL_DECISIONS_PACK.md`, `docs/DECISION_REGISTER.md`, `docs/ASSUMPTIONS_REGISTER.md`, `docs/KNOWN_LIMITATIONS.md`, `docs/REQUIREMENTS_TRACEABILITY.md` |
 | Roles | `docs/role-architecture/` (catalogue, permission matrix, scope model, dashboards, tiers, approval authority, test results) |
-| Acceptance | `docs/uat/` (plan, 27 role scripts, sign-off) |
+| Acceptance | `docs/uat/` (plan, 31 role scripts, sign-off) |
 | Design | `docs/ORGANISATIONAL_MODEL.md`, `docs/USER_ROLES_AND_PERMISSIONS.md`, `docs/MODULE_SPECIFICATIONS.md`, `docs/WORKFLOW_SPECIFICATIONS.md`, `docs/UI_UX_DESIGN_SYSTEM.md`, `docs/SCREEN_SPECIFICATION.md` |
 | Technical | `docs/DATABASE_SCHEMA.md`, `docs/DATA_DICTIONARY.md`, `docs/API_SPECIFICATION.md`, `docs/SECURITY_ARCHITECTURE.md`, `docs/THREAT_MODEL.md` |
 | Operations | `docs/DEPLOYMENT_GUIDE.md`, `docs/development/KNOWN_ISSUES.md`, `docs/development/DEVELOPMENT_STATUS.md`, `docs/QA_AND_REVIEW.md`, `docs/evidence/` |

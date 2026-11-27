@@ -1,5 +1,5 @@
 /**
- * Role → back-office workspace DATA for the 27 roles (navigation, headline figures, quick actions).
+ * Role → back-office workspace DATA for the 31 roles (navigation, headline figures, quick actions).
  * Dependency-free (type imports only) so documentation generators can read it; see workspaces.ts.
  */
 import type { Permission, RoleCode } from "./catalogue";
@@ -15,6 +15,8 @@ export interface Workspace {
   kpis: string[];
   nav: WorkspaceNavGroup[];
   quick: QuickAction[];
+  /** Optional role-specific labels for navigation entries (the directive names some pages per tier). */
+  labels?: Record<string, string>;
 }
 
 // Reusable navigation sections (hrefs resolve to NAV_ITEMS in src/lib/nav.ts).
@@ -46,7 +48,15 @@ const Q = {
   vehicles: { href: "/app/fleet", label: "Vehicle register", any: ["fleet.view"] as Permission[] },
   maintenance: { href: "/app/fleet/maintenance", label: "Maintenance requests", any: ["maintenance.view"] as Permission[] },
   transfers: { href: "/app/transfers", label: "Transfers", any: ["assignment.view"] as Permission[] },
+  liaisonNew: { href: "/app/liaison/new", label: "Record a liaison reference", any: ["liaison.metadata.create"] as Permission[] },
+  liaisonQueue: { href: "/app/liaison/incoming", label: "Receiving and review queue", any: ["liaison.submission.acknowledge"] as Permission[] },
+  liaisonAcks: { href: "/app/liaison/acknowledgements", label: "Outstanding acknowledgements", any: ["liaison.status.view"] as Permission[] },
+  liaisonHistory: { href: "/app/liaison/history", label: "Liaison history", any: ["liaison.audit.view"] as Permission[] },
 };
+
+// Intelligence-liaison administration (roles 07, 19, 30, 31). Metadata only; no personnel or operational registers.
+const LIAISON_KPIS = ["liaisonAssigned", "liaisonIncoming", "liaisonToAcknowledge", "liaisonAwaiting", "liaisonReports", "unread"];
+const ACCOUNT = { label: "Account", items: ["/app/notifications", "/app/profile"] };
 
 const BASE_CONFIG: Omit<Workspace, "backOffice">[] = [
   // ── Tier 1 ──
@@ -75,6 +85,15 @@ const BASE_CONFIG: Omit<Workspace, "backOffice">[] = [
     kpis: ["usersActive", "sessions", "locked", "failedLogins24h", "denied24h", "jobFailures"],
     nav: [OVERVIEW, { label: "Technical operations", items: ["/app/platform", "/app/security"] }, { label: "Accounts and access", items: ["/app/admin/users", "/app/admin/roles", "/app/admin/reviews"] }, { label: "Organisation", items: ["/app/org"] }],
     quick: [Q.users, Q.security, Q.health] },
+  { role: "NATIONAL_INTEL_OFFICER", purpose: "National intelligence liaison administration: administrative references, submissions, routing and acknowledgements. Metadata only.",
+    kpis: LIAISON_KPIS,
+    nav: [{ label: "Overview", items: ["/app", "/app/tasks"] },
+      { label: "Liaison administration", items: ["/app/liaison/assigned", "/app/liaison", "/app/liaison/submissions", "/app/liaison/reports", "/app/liaison/routing", "/app/liaison/acknowledgements", "/app/liaison/incoming", "/app/liaison/history"] },
+      ACCOUNT],
+    labels: { "/app": "National Intelligence Liaison Dashboard", "/app/liaison/assigned": "Assigned Administrative References", "/app/liaison": "Liaison Activity Register",
+      "/app/liaison/submissions": "Administrative Submission Register", "/app/liaison/reports": "Report Reference Tracking", "/app/liaison/routing": "Organisational Routing",
+      "/app/liaison/acknowledgements": "Submission Status", "/app/liaison/incoming": "Administrative Review Queue", "/app/liaison/history": "Audit History", "/app/profile": "My Profile" },
+    quick: [Q.liaisonNew, Q.liaisonQueue, Q.liaisonAcks, Q.liaisonHistory] },
   // ── Tier 2 ──
   { role: "UNIT_TECH_ADMIN", purpose: "Technical account support within your Division or Formation. Higher-level issues go to HQ Tech.",
     kpis: ["usersActive", "locked", "failedLogins24h", "myTasks"], nav: [OVERVIEW, TECH_LOCAL, { label: "Organisation", items: ["/app/org"] }], quick: [Q.users] },
@@ -111,6 +130,15 @@ const BASE_CONFIG: Omit<Workspace, "backOffice">[] = [
   { role: "MTO_OIC", purpose: "Divisional motor transport administration: vehicle register, documentation, maintenance and service history.",
     kpis: ["vehicles", "maintenanceOpen", "serviceDue", "pendingDecisions", "myTasks", "unread"],
     nav: [OVERVIEW, { label: "Motor transport", items: ["/app/fleet", "/app/fleet/maintenance"] }, REPORTS], quick: [Q.vehicles, Q.maintenance, Q.reports] },
+  { role: "DIVISION_INTEL_OFFICER", purpose: "Division-level intelligence liaison administration within your Province or Unit/Formation. Metadata only; no cross-divisional access.",
+    kpis: LIAISON_KPIS,
+    nav: [{ label: "Overview", items: ["/app", "/app/tasks"] },
+      { label: "Liaison administration", items: ["/app/liaison/assigned", "/app/liaison", "/app/liaison/submissions", "/app/liaison/incoming", "/app/liaison/acknowledgements", "/app/liaison/history"] },
+      ACCOUNT],
+    labels: { "/app": "Division Intelligence Liaison Dashboard", "/app/liaison/assigned": "Assigned References", "/app/liaison": "Division Liaison Register",
+      "/app/liaison/submissions": "Administrative Submission Status", "/app/liaison/incoming": "Receiving and Routing Register", "/app/liaison/acknowledgements": "Administrative Review",
+      "/app/liaison/history": "History" },
+    quick: [Q.liaisonNew, Q.liaisonQueue, Q.liaisonAcks, Q.liaisonHistory] },
   // ── Tier 3 ──
   { role: "DISTRICT_TECH_ADMIN", purpose: "Technical account support within your District.",
     kpis: ["usersActive", "locked", "failedLogins24h", "myTasks"], nav: [OVERVIEW, TECH_LOCAL, { label: "Organisation", items: ["/app/org"] }], quick: [Q.users] },
@@ -144,11 +172,28 @@ const BASE_CONFIG: Omit<Workspace, "backOffice">[] = [
     kpis: ["storesItems", "storesLow", "myRequisitions", "assets", "myRequests", "myTasks"],
     nav: [OVERVIEW, { label: "Stores and assets", items: ["/app/stores", "/app/stores/requisitions", "/app/assets"] }, { label: "Administration", items: ["/app/requests"] }, REPORTS],
     quick: [Q.requisition, Q.stores, Q.request] },
+  { role: "DISTRICT_INTEL_OFFICER", purpose: "District-level intelligence liaison administration for your District only. Metadata only.",
+    kpis: LIAISON_KPIS,
+    nav: [{ label: "Overview", items: ["/app", "/app/tasks"] },
+      { label: "Liaison administration", items: ["/app/liaison/assigned", "/app/liaison", "/app/liaison/submissions", "/app/liaison/acknowledgements", "/app/liaison/history"] },
+      ACCOUNT],
+    labels: { "/app": "District Intelligence Liaison Dashboard", "/app/liaison/assigned": "Assigned References", "/app/liaison": "District Liaison Register",
+      "/app/liaison/submissions": "Administrative Submissions", "/app/liaison/acknowledgements": "Routing and Acknowledgements", "/app/liaison/history": "Administrative History" },
+    quick: [Q.liaisonNew, Q.liaisonAcks, Q.liaisonHistory] },
+  // ── Tier 4 ──
+  { role: "INTEL_OFFICER", purpose: "Local intelligence liaison administration for your Section or Police Station only. Metadata only.",
+    kpis: ["liaisonAssigned", "liaisonIncoming", "liaisonToAcknowledge", "liaisonAwaiting", "myTasks", "unread"],
+    nav: [{ label: "Overview", items: ["/app", "/app/tasks"] },
+      { label: "Liaison administration", items: ["/app/liaison/assigned", "/app/liaison", "/app/liaison/submissions", "/app/liaison/acknowledgements"] },
+      ACCOUNT],
+    labels: { "/app": "Police Intelligence Officer Dashboard", "/app/liaison/assigned": "Assigned References", "/app/liaison": "Local Liaison Register",
+      "/app/liaison/submissions": "Submission Status", "/app/liaison/acknowledgements": "Administrative Acknowledgements", "/app/profile": "My Profile" },
+    quick: [Q.liaisonNew, Q.liaisonAcks] },
 ];
 
 /**
  * Modules 16 and 17: the "Administrative records" section for roles holding schedule.* or correspondence.*
- * (technical roles and role 16 hold neither). Kept equal to the catalogue by tests/three-tier-roles.test.ts;
+ * (technical roles, role 17 and the liaison roles 07/19/30/31 hold neither). Kept equal to the catalogue by tests/three-tier-roles.test.ts;
  * the layout also filters each entry by permission.
  */
 export const ADMIN_RECORDS_ROLES: RoleCode[] = [
@@ -200,4 +245,9 @@ export const KPI_LABELS: Record<string, string> = {
   myRequisitions: "My open requisitions",
   jobFailures: "Automation failures (24 h)",
   orgChangesPending: "Structure changes pending",
+  liaisonAssigned: "Assigned references",
+  liaisonIncoming: "Awaiting receipt",
+  liaisonToAcknowledge: "To acknowledge",
+  liaisonAwaiting: "Awaiting acknowledgement elsewhere",
+  liaisonReports: "Report references",
 };

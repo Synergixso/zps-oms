@@ -2,6 +2,24 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.10.0] — 2026-11-27 — Final system completion: 31-role catalogue and restricted liaison workspaces
+### Added
+- **31-role catalogue in four levels** (Tier 1: 7, Tier 2: 12, Tier 3: 11, Tier 4: 1; DEC-072), numbered 1–31 in the directive's order. Codes unchanged; former roles 7–17 are now 8–18 and 18–27 are 20–29.
+- **Four Police Intelligence Officer roles** (07 National, 19 Division, 30 District, 31 Section/Police Station) with their own dashboards, navigation (page names per tier), figures, quick actions, activity chart, help and notifications. They hold only the restricted `liaison.*` template (DEC-073).
+- **Liaison administration** (`/app/liaison`: register, assigned references, submission status, receiving and review queue, acknowledgements, report reference tracking, organisational routing, history, record and detail pages). Metadata only: generated `LIA-` reference, document reference number, offices, dates, responsible officer, administrative classification, status, approval reference and routing history. There is no content field, and reference fields refuse free text and excluded terms. Drafts are need-to-know; only the receiving office's officer records receipt, acknowledges, closes or routes onward; routing follows the line of command to an office with an assigned liaison officer.
+- **Safe role migration**: any role outside the catalogue is retired, its permissions removed, its live assignments revoked (history kept) and recorded in `role_reassignments` with no guessed replacement. Unreferenced rows are deleted. An authorised grant resolves the flag, and *Users & access* lists open flags within the administrator's scope.
+- Migration 013 (additive): `role_reassignments`, `liaison_records`, `liaison_routing`. Seed step 013 (development only): six synthetic liaison officers and five example records.
+- Tests: `liaison` (8), `role-migration` (2); Playwright `liaison.spec.ts` (5: all four liaison roles, free-text refusal, routing, cross-Province 404, denied registers, axe scan); 13 new HTTP security probes. Reflow is now split per tier.
+- Documents: `FINAL_CODEBASE_AUDIT`, `ROLE_DEPRECATION_AND_MIGRATION_REPORT`, `ALL_17_MODULES_COMPLETION_REPORT`, `MULTI_TENANT_SECURITY_REPORT`, `INTELLIGENCE_LIAISON_SCOPE_AND_ACCESS_CONTROLS`, `END_TO_END_TEST_RESULTS`; generated `UPDATED_31_ROLE_CATALOGUE`, `UPDATED_PERMISSION_MATRIX` and the four tier verification documents (replacing `ALL_27_ROLES_VERIFICATION`).
+### Fixed
+- The dashboard module panel said "15 active · 2 planned" and called Modules 16 and 17 "planned for a later phase", although both shipped in v0.9.0.
+- Liaison step confirmations were lost when a successful step removed its form; steps now return to the record with a confirmation banner.
+- Breadcrumbs for the liaison routes.
+- The reflow browser test could exceed its 30-minute limit on a cold build cache; it now runs one test per tier.
+### Changed
+- The excluded-term screen used by correspondence, calendar, manpower, stores and assets also refuses *informer* and *covert*.
+- CLAUDE.md states the liaison boundary; documentation generators derive role counts, tiers and numbers from the catalogue.
+
 ## [0.9.1] — 2026-11-27 — Master final engineering directive: integrity, paging, lint, verification
 ### Fixed
 - Ten registers (requests, manpower, vehicles, maintenance, assets, store items, requisitions, transfers, correspondence, users) stopped silently at 300–500 rows: now paged with true totals (`domain/paging.ts`, `components/pager.tsx`). The rosters index, audit explorer and security events are paged too (the audit explorer showed only the latest 200).

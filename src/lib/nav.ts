@@ -51,6 +51,27 @@ export const NAV: NavGroup[] = [
     ],
   },
   {
+    // Intelligence-liaison administration (roles 07, 19, 30, 31): metadata only (DEC-073).
+    label: "Liaison administration",
+    items: [
+      { href: "/app/liaison", label: "Liaison register", icon: "list", any: ["liaison.metadata.view"] },
+      { href: "/app/liaison/assigned", label: "Assigned references", icon: "userCircle", any: ["liaison.metadata.view"] },
+      { href: "/app/liaison/submissions", label: "Submission status", icon: "send", any: ["liaison.status.view"] },
+      { href: "/app/liaison/incoming", label: "Receiving and review queue", icon: "inbox", any: ["liaison.submission.acknowledge"] },
+      { href: "/app/liaison/acknowledgements", label: "Acknowledgements", icon: "checkCircle", any: ["liaison.status.view"] },
+      { href: "/app/liaison/reports", label: "Report reference tracking", icon: "docSearch", any: ["liaison.metadata.view"] },
+      { href: "/app/liaison/routing", label: "Organisational routing", icon: "sitemap", any: ["liaison.audit.view"] },
+      { href: "/app/liaison/history", label: "Liaison history", icon: "docSearch", any: ["liaison.audit.view"] },
+    ],
+  },
+  {
+    label: "Account",
+    items: [
+      { href: "/app/notifications", label: "Notifications", icon: "bell", any: [] },
+      { href: "/app/profile", label: "My profile", icon: "userCircle", any: [] },
+    ],
+  },
+  {
     label: "Organisation",
     items: [
       { href: "/app/org", label: "Organisation directory", icon: "building", any: ["org.view"] },

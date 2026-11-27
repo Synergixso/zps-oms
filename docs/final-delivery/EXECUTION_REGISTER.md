@@ -22,6 +22,31 @@ Live task register (directive §15). Statuses: Not Started · In Progress · Par
 | T14 | 17 | QA | Beta testing: happy path, negative, regression, browser | All | In Progress | See report | `BETA_TESTING_REPORT.md` | — |
 | T15 | 18 | All | Regression: unit, browser, route audit, load, build | All | In Progress | See results | `COMPLETE_WORKFLOW_TEST_RESULTS.md` | — |
 | T16 | 19 | All | Final documentation and delivery report | All | In Progress | — | `FINAL_DELIVERY_REPORT.md` | — |
+## v0.10.0 — Final system completion and role catalogue restructuring (owner directive 27 Nov 2026)
+
+| ID | Stage | Module / role | Requirement | Dependency | Status | Test result | Evidence | Blocker |
+|---|---|---|---|---|---|---|---|---|
+| V01 | 1 | All | Audit of code, database and running application for the new directive | — | Completed and Verified | Findings F1–F13 | `FINAL_CODEBASE_AUDIT.md` | — |
+| V02 | 2 | DB | Back up before migration 013 | XAMPP MySQL | Completed and Verified | Dump completed (7.5 MB), SHA-256 recorded | `backups/zps_oms_dev_pre013_*.sql` (git-ignored) | — |
+| V03 | 3 | 02 | Retire every role outside the catalogue; revoke and flag live assignments; no guessed replacement; delete only unreferenced rows | V02 | Completed and Verified | `role-migration` 2/2 | `bootstrap.syncCatalogue`; `ROLE_DEPRECATION_AND_MIGRATION_REPORT.md` | — |
+| V04 | 4 | 02 | Authoritative 31-role catalogue, 7 / 12 / 11 / 1, numbered 1–31 | V03 | Completed and Verified | `three-tier-roles`, `auth-scope` | `UPDATED_31_ROLE_CATALOGUE.md` (generated) | — |
+| V05 | 5 | 01, 02 | Central RBAC with tier 4, restricted `liaison.*` namespace, technical/business/liaison separation | V04 | Completed and Verified | `liaison` › catalogue; `three-tier-roles` | `UPDATED_PERMISSION_MATRIX.md` (generated) | — |
+| V06 | 6 | Tier 1 | Six Tier 1 roles kept; National Police Intelligence Officer back office | V05 | Tested | route audit; `e2e/liaison.spec.ts` | `TIER_1_DASHBOARD_VERIFICATION.md` | — |
+| V07 | 7 | Tier 2 | Eleven Tier 2 roles kept; Division Police Intelligence Officer back office | V05 | Tested | route audit; browser | `TIER_2_DASHBOARD_VERIFICATION.md` | — |
+| V08 | 8 | Tier 3 | Ten Tier 3 roles kept; District Police Intelligence Officer back office | V05 | Tested | route audit; browser | `TIER_3_DASHBOARD_VERIFICATION.md` | — |
+| V09 | 9 | Tier 4 | Section / Police Station Police Intelligence Officer back office | V05 | Tested | route audit; browser | `TIER_4_INTELLIGENCE_ROLE_VERIFICATION.md` | — |
+| V10 | 10, 11 | 09, 12, 13, 14 | Liaison metadata, routing channels, receipt, acknowledgement, notifications, history, dashboards | V05 | Completed and Verified | `liaison` 8/8; `e2e/liaison.spec.ts` 5/5 | `INTELLIGENCE_LIAISON_SCOPE_AND_ACCESS_CONTROLS.md` | — |
+| V11 | 10 | 12 | Dashboard module panel showed Modules 16 and 17 as "planned" | — | Completed and Verified | browser | `src/app/app/overview.tsx` | — |
+| V12 | 12 | Public site | Modules page removed, `/modules` → `/features`, accurate copy, no intelligence functionality implied | — | Tested | `e2e/public-site.spec.ts` | DEC-073 (liaison roles not advertised) | — |
+| V13 | 13 | Security | Multi-tenant and liaison security verification; new HTTP probes | V10 | In Progress | security probes (see results) | `MULTI_TENANT_SECURITY_REPORT.md` | — |
+| V14 | 14, 15 | All | Beta and end-to-end testing for all 31 roles; defects fixed | V13 | In Progress | see results | `END_TO_END_TEST_RESULTS.md` | — |
+| V15 | 16 | All | Production-readiness verification and documentation | V14 | In Progress | — | `PRODUCTION_READINESS_REPORT.md` | — |
+| X07 | — | Liaison | Information-security and legal review of the liaison metadata, classification list and retention | Service | Blocked by External Dependency | — | DEC-073 | Service decision |
+
+## External dependencies
+
+| ID | Stage | Module / role | Requirement | Dependency | Status | Test result | Evidence | Blocker |
+|---|---|---|---|---|---|---|---|---|
 | X01 | — | Production | Production infrastructure, TLS, least-privilege DB account, off-host backups, monitoring | Service ICT | Blocked by External Dependency | — | `docs/development/DEPLOYMENT_READINESS.md` | Infrastructure not provided |
 | X02 | — | 02 | Single sign-on and MFA | Approved identity provider | Blocked by External Dependency | — | DEC-039 | IdP decision |
 | X03 | — | Security | Independent penetration test and DPIA | Production-configured deployment | Blocked by External Dependency | — | `CYBERSECURITY_VERIFICATION.md` | Assessor and environment |

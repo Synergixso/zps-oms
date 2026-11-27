@@ -1,4 +1,4 @@
-# Permission Matrix — 27 Roles
+# Permission Matrix — 31 Roles
 
 > Generated from `src/server/domain/catalogue.ts` and `src/server/domain/workspace-config.ts` — the configuration the server enforces. Do not edit by hand; run `npm run docs:permissions`.
 
@@ -33,189 +33,224 @@ Approval authority is never a role permission: it needs an active delegation (do
 
 ## Tier 1 — National Headquarters
 
-| Permission | R01 | R02 | R03 | R04 | R05 | R06 |
-|---|:-:|:-:|:-:|:-:|:-:|:-:|
-| `dashboard.national.view` |  | N | N | N | N |  |
-| `org.view` | N | N | N | N | N | N |
-| `org.propose` | N |  |  |  |  |  |
-| `tenant.view` | N |  |  |  |  |  |
-| `tenant.manage` | N |  |  |  |  |  |
-| `user.view` | N |  |  |  |  | N |
-| `user.provision` | N |  |  |  |  |  |
-| `user.suspend` | N |  |  |  |  | N |
-| `user.deactivate` | N |  |  |  |  |  |
-| `grant.assign` | N |  |  |  |  |  |
-| `grant.revoke` | N |  |  |  |  | N |
-| `delegation.grant` | N |  |  |  |  |  |
-| `delegation.revoke` | N |  |  |  |  | N |
-| `accessreview.manage` | N |  |  |  |  | N |
-| `user.support` | N |  |  |  |  | N |
-| `request.view` |  |  | U | N |  |  |
-| `request.create` |  |  |  | U |  |  |
-| `request.edit` |  |  |  | U |  |  |
-| `request.submit` |  |  |  | U |  |  |
-| `request.assign` |  |  |  | N |  |  |
-| `request.cancel` |  |  |  | U |  |  |
-| `request.progress` |  |  |  | U |  |  |
-| `request.close` |  |  |  | N |  |  |
-| `fleet.view` |  |  | N | N |  |  |
-| `maintenance.view` |  |  |  | N |  |  |
-| `asset.view` |  |  | N | N |  |  |
-| `report.view` |  | N | N | N | N |  |
-| `report.export` |  | N | N | N | N |  |
-| `audit.view` |  | N | N |  |  |  |
-| `audit.export` |  | N |  |  |  |  |
-| `security.view` | N |  |  |  |  | N |
-| `platform.view` | N |  |  |  |  | N |
-| `platform.configure` | N |  |  |  |  |  |
-| `platform.operate` | N |  |  |  |  | N |
-| `health.view` | N |  |  |  |  | N |
-| `workflow.view` | U | U | U | U |  |  |
-| `workflow.configure` |  |  |  | N |  |  |
-| `personnel.view` |  |  | N | N | N |  |
-| `personnel.register` |  |  |  |  | N |  |
-| `personnel.edit` |  |  |  |  | N |  |
-| `personnel.verify` |  |  |  |  | N |  |
-| `personnel.export` |  |  |  | N | N |  |
-| `manpower.view` |  | N | N | N | N |  |
-| `manpower.create` |  |  |  | U | U |  |
-| `manpower.review` |  |  |  | N | N |  |
-| `roster.view` |  |  | N | N | N |  |
-| `roster.build` |  |  |  | N | N |  |
-| `roster.review` |  |  | N | N | N |  |
-| `roster.export` |  |  | N | N | N |  |
-| `area.view` |  |  | N | N | N |  |
-| `area.manage` |  |  |  | N |  |  |
-| `assignment.view` |  |  | N | N | N |  |
-| `assignment.propose` |  |  |  | N | N |  |
-| `assignment.transfer` |  |  |  | N | N |  |
-| `assignment.renew` |  |  |  | N | N |  |
-| `assignment.receive` |  |  |  | N |  |  |
-| `disposition.change` |  |  |  | N |  |  |
-| `stores.view` |  |  | N | N |  |  |
-| `schedule.view` |  | N | N | N | N |  |
-| `schedule.manage` |  |  |  | N | N |  |
-| `correspondence.view` |  | N | N | N | N |  |
-| `correspondence.register` |  |  |  | N | N |  |
-| `correspondence.manage` |  |  | N | N | N |  |
-| `contact.view` | N |  |  | N |  |  |
-| `contact.manage` | N |  |  | N |  |  |
+| Permission | R01 | R02 | R03 | R04 | R05 | R06 | R07 |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| `dashboard.national.view` |  | N | N | N | N |  |  |
+| `org.view` | N | N | N | N | N | N |  |
+| `org.propose` | N |  |  |  |  |  |  |
+| `tenant.view` | N |  |  |  |  |  |  |
+| `tenant.manage` | N |  |  |  |  |  |  |
+| `user.view` | N |  |  |  |  | N |  |
+| `user.provision` | N |  |  |  |  |  |  |
+| `user.suspend` | N |  |  |  |  | N |  |
+| `user.deactivate` | N |  |  |  |  |  |  |
+| `grant.assign` | N |  |  |  |  |  |  |
+| `grant.revoke` | N |  |  |  |  | N |  |
+| `delegation.grant` | N |  |  |  |  |  |  |
+| `delegation.revoke` | N |  |  |  |  | N |  |
+| `accessreview.manage` | N |  |  |  |  | N |  |
+| `user.support` | N |  |  |  |  | N |  |
+| `request.view` |  |  | U | N |  |  |  |
+| `request.create` |  |  |  | U |  |  |  |
+| `request.edit` |  |  |  | U |  |  |  |
+| `request.submit` |  |  |  | U |  |  |  |
+| `request.assign` |  |  |  | N |  |  |  |
+| `request.cancel` |  |  |  | U |  |  |  |
+| `request.progress` |  |  |  | U |  |  |  |
+| `request.close` |  |  |  | N |  |  |  |
+| `fleet.view` |  |  | N | N |  |  |  |
+| `maintenance.view` |  |  |  | N |  |  |  |
+| `asset.view` |  |  | N | N |  |  |  |
+| `report.view` |  | N | N | N | N |  |  |
+| `report.export` |  | N | N | N | N |  |  |
+| `audit.view` |  | N | N |  |  |  |  |
+| `audit.export` |  | N |  |  |  |  |  |
+| `security.view` | N |  |  |  |  | N |  |
+| `platform.view` | N |  |  |  |  | N |  |
+| `platform.configure` | N |  |  |  |  |  |  |
+| `platform.operate` | N |  |  |  |  | N |  |
+| `health.view` | N |  |  |  |  | N |  |
+| `workflow.view` | U | U | U | U |  |  |  |
+| `workflow.configure` |  |  |  | N |  |  |  |
+| `personnel.view` |  |  | N | N | N |  |  |
+| `personnel.register` |  |  |  |  | N |  |  |
+| `personnel.edit` |  |  |  |  | N |  |  |
+| `personnel.verify` |  |  |  |  | N |  |  |
+| `personnel.export` |  |  |  | N | N |  |  |
+| `manpower.view` |  | N | N | N | N |  |  |
+| `manpower.create` |  |  |  | U | U |  |  |
+| `manpower.review` |  |  |  | N | N |  |  |
+| `roster.view` |  |  | N | N | N |  |  |
+| `roster.build` |  |  |  | N | N |  |  |
+| `roster.review` |  |  | N | N | N |  |  |
+| `roster.export` |  |  | N | N | N |  |  |
+| `area.view` |  |  | N | N | N |  |  |
+| `area.manage` |  |  |  | N |  |  |  |
+| `assignment.view` |  |  | N | N | N |  |  |
+| `assignment.propose` |  |  |  | N | N |  |  |
+| `assignment.transfer` |  |  |  | N | N |  |  |
+| `assignment.renew` |  |  |  | N | N |  |  |
+| `assignment.receive` |  |  |  | N |  |  |  |
+| `disposition.change` |  |  |  | N |  |  |  |
+| `stores.view` |  |  | N | N |  |  |  |
+| `schedule.view` |  | N | N | N | N |  |  |
+| `schedule.manage` |  |  |  | N | N |  |  |
+| `correspondence.view` |  | N | N | N | N |  |  |
+| `correspondence.register` |  |  |  | N | N |  |  |
+| `correspondence.manage` |  |  | N | N | N |  |  |
+| `liaison.metadata.view` |  |  |  |  |  |  | N |
+| `liaison.metadata.create` |  |  |  |  |  |  | N |
+| `liaison.metadata.update_own` |  |  |  |  |  |  | N |
+| `liaison.submission.acknowledge` |  |  |  |  |  |  | N |
+| `liaison.reference.route` |  |  |  |  |  |  | N |
+| `liaison.status.view` |  |  |  |  |  |  | N |
+| `liaison.audit.view` |  |  |  |  |  |  | N |
+| `contact.view` | N |  |  | N |  |  |  |
+| `contact.manage` | N |  |  | N |  |  |  |
 
-R01 Superadmin · R02 Inspector General of Police (IG) · R03 Deputy Inspector General of Police - Operations (DIG Operations) · R04 Commissioner – Operations HQ · R05 Deputy Commissioner – Operations HQ · R06 System Administrator – HQ Tech
+R01 Superadmin · R02 Inspector General of Police (IG) · R03 Deputy Inspector General of Police - Operations (DIG Operations) · R04 Commissioner – Operations HQ · R05 Deputy Commissioner – Operations HQ · R06 System Administrator – HQ Tech · R07 National Police Intelligence Officer
 
 ## Tier 2 — Provincial Divisions and Unit Formations
 
-| Permission | R07 | R08 | R09 | R10 | R11 | R12 | R13 | R14 | R15 | R16 | R17 |
-|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| `dashboard.division.view` |  | U | U | U | U |  |  |  |  |  |  |
-| `dashboard.formation.view` |  | U |  |  |  |  |  | U |  |  |  |
-| `dashboard.unit.view` |  |  |  |  |  | U | U |  |  |  |  |
-| `org.view` | N | N | N | N | N |  |  | N |  |  |  |
-| `user.view` | S |  |  |  |  |  |  |  |  |  |  |
-| `user.support` | S |  |  |  |  |  |  |  |  |  |  |
-| `request.view` |  | U | U | U |  |  |  | U |  | U |  |
-| `request.create` |  |  |  | U |  |  |  | U |  | U |  |
-| `request.edit` |  |  |  | U |  |  |  | U |  | U |  |
-| `request.submit` |  |  |  | U |  |  |  | U |  | U |  |
-| `request.assign` |  | U |  |  |  |  |  |  |  |  |  |
-| `request.cancel` |  |  |  | U |  |  |  | U |  | U |  |
-| `request.progress` |  |  |  | U |  |  |  | U |  |  |  |
-| `request.close` |  | U |  |  |  |  |  |  |  |  |  |
-| `request.reopen` |  | U |  |  |  |  |  |  |  |  |  |
-| `fleet.view` |  | U |  | U |  |  |  | U |  |  | U |
-| `fleet.manage` |  |  |  |  |  |  |  |  |  |  | U |
-| `maintenance.view` |  | U |  | U |  |  |  | U |  |  | U |
-| `maintenance.create` |  |  |  | U |  |  |  | U |  |  | U |
-| `maintenance.process` |  |  |  |  |  |  |  |  |  |  | U |
-| `maintenance.verify` |  |  |  |  |  |  |  |  |  |  | U |
-| `service.record` |  |  |  |  |  |  |  |  |  |  | U |
-| `asset.view` |  | S |  | U |  |  |  | U | S |  |  |
-| `asset.register` |  |  |  |  |  |  |  |  | S |  |  |
-| `asset.custody` |  |  |  |  |  |  |  |  | S |  |  |
-| `asset.inspect` |  |  |  |  |  |  |  |  | S |  |  |
-| `asset.dispose` |  |  |  |  |  |  |  |  | S |  |  |
-| `report.view` |  | S | S | S | S | S |  | S | U |  | U |
-| `report.export` |  | S | S | S |  |  |  |  | U |  | U |
-| `health.view` | S |  |  |  |  |  |  |  |  |  |  |
-| `personnel.view` |  | S | S | S | S | S | S | S |  |  |  |
-| `personnel.register` |  |  |  | S | S | S | S | S |  |  |  |
-| `personnel.edit` |  |  |  | S | S | S | S | S |  |  |  |
-| `personnel.verify` |  |  |  | S | S |  |  |  |  |  |  |
-| `personnel.export` |  |  | S | S |  |  |  |  |  |  |  |
-| `manpower.view` |  | S | S | S | S | S | S | S |  |  |  |
-| `manpower.create` |  |  |  | U | U |  |  | U |  |  |  |
-| `manpower.review` |  |  |  | S |  |  |  | S |  |  |  |
-| `manpower.contribute` |  |  |  | S | S | S | S | S |  |  |  |
-| `roster.view` |  | S | S | S | S | S | S | S |  |  |  |
-| `roster.build` |  |  |  | S | S |  |  | S |  |  |  |
-| `roster.review` |  | S | S |  |  |  |  |  |  |  |  |
-| `roster.export` |  |  | S | S |  |  |  | S |  |  |  |
-| `area.view` |  | S | S | S | S |  |  | S |  |  |  |
-| `area.manage` |  |  |  | S |  |  |  |  |  |  |  |
-| `assignment.view` |  | S | S | S | S | S |  | S |  |  |  |
-| `assignment.propose` |  |  |  | S | S |  |  | S |  |  |  |
-| `assignment.transfer` |  |  |  | S | S |  |  | S |  |  |  |
-| `assignment.renew` |  |  |  | S | S |  |  |  |  |  |  |
-| `assignment.receive` |  |  |  | S |  |  |  |  |  |  |  |
-| `disposition.change` |  |  |  | S |  |  |  |  |  |  |  |
-| `stores.view` |  | S | S |  |  |  |  |  | S |  |  |
-| `stores.manage` |  |  |  |  |  |  |  |  | S |  |  |
-| `stores.requisition` |  |  |  | S |  |  |  | S |  |  |  |
-| `stores.approve` |  | S |  |  |  |  |  |  |  |  |  |
-| `schedule.view` |  | S | S | S | S | S | S | S | S |  | S |
-| `schedule.manage` |  |  |  | S | S |  |  | S |  |  |  |
-| `correspondence.view` |  | S | S | S | S | S |  | S |  |  |  |
-| `correspondence.register` |  |  |  | S | S |  |  | S |  |  |  |
-| `correspondence.manage` |  | S | S | S |  |  |  |  |  |  |  |
+| Permission | R08 | R09 | R10 | R11 | R12 | R13 | R14 | R15 | R16 | R17 | R18 | R19 |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| `dashboard.division.view` |  | U | U | U | U |  |  |  |  |  |  |  |
+| `dashboard.formation.view` |  | U |  |  |  |  |  | U |  |  |  |  |
+| `dashboard.unit.view` |  |  |  |  |  | U | U |  |  |  |  |  |
+| `org.view` | N | N | N | N | N |  |  | N |  |  |  |  |
+| `user.view` | S |  |  |  |  |  |  |  |  |  |  |  |
+| `user.support` | S |  |  |  |  |  |  |  |  |  |  |  |
+| `request.view` |  | U | U | U |  |  |  | U |  | U |  |  |
+| `request.create` |  |  |  | U |  |  |  | U |  | U |  |  |
+| `request.edit` |  |  |  | U |  |  |  | U |  | U |  |  |
+| `request.submit` |  |  |  | U |  |  |  | U |  | U |  |  |
+| `request.assign` |  | U |  |  |  |  |  |  |  |  |  |  |
+| `request.cancel` |  |  |  | U |  |  |  | U |  | U |  |  |
+| `request.progress` |  |  |  | U |  |  |  | U |  |  |  |  |
+| `request.close` |  | U |  |  |  |  |  |  |  |  |  |  |
+| `request.reopen` |  | U |  |  |  |  |  |  |  |  |  |  |
+| `fleet.view` |  | U |  | U |  |  |  | U |  |  | U |  |
+| `fleet.manage` |  |  |  |  |  |  |  |  |  |  | U |  |
+| `maintenance.view` |  | U |  | U |  |  |  | U |  |  | U |  |
+| `maintenance.create` |  |  |  | U |  |  |  | U |  |  | U |  |
+| `maintenance.process` |  |  |  |  |  |  |  |  |  |  | U |  |
+| `maintenance.verify` |  |  |  |  |  |  |  |  |  |  | U |  |
+| `service.record` |  |  |  |  |  |  |  |  |  |  | U |  |
+| `asset.view` |  | S |  | U |  |  |  | U | S |  |  |  |
+| `asset.register` |  |  |  |  |  |  |  |  | S |  |  |  |
+| `asset.custody` |  |  |  |  |  |  |  |  | S |  |  |  |
+| `asset.inspect` |  |  |  |  |  |  |  |  | S |  |  |  |
+| `asset.dispose` |  |  |  |  |  |  |  |  | S |  |  |  |
+| `report.view` |  | S | S | S | S | S |  | S | U |  | U |  |
+| `report.export` |  | S | S | S |  |  |  |  | U |  | U |  |
+| `health.view` | S |  |  |  |  |  |  |  |  |  |  |  |
+| `personnel.view` |  | S | S | S | S | S | S | S |  |  |  |  |
+| `personnel.register` |  |  |  | S | S | S | S | S |  |  |  |  |
+| `personnel.edit` |  |  |  | S | S | S | S | S |  |  |  |  |
+| `personnel.verify` |  |  |  | S | S |  |  |  |  |  |  |  |
+| `personnel.export` |  |  | S | S |  |  |  |  |  |  |  |  |
+| `manpower.view` |  | S | S | S | S | S | S | S |  |  |  |  |
+| `manpower.create` |  |  |  | U | U |  |  | U |  |  |  |  |
+| `manpower.review` |  |  |  | S |  |  |  | S |  |  |  |  |
+| `manpower.contribute` |  |  |  | S | S | S | S | S |  |  |  |  |
+| `roster.view` |  | S | S | S | S | S | S | S |  |  |  |  |
+| `roster.build` |  |  |  | S | S |  |  | S |  |  |  |  |
+| `roster.review` |  | S | S |  |  |  |  |  |  |  |  |  |
+| `roster.export` |  |  | S | S |  |  |  | S |  |  |  |  |
+| `area.view` |  | S | S | S | S |  |  | S |  |  |  |  |
+| `area.manage` |  |  |  | S |  |  |  |  |  |  |  |  |
+| `assignment.view` |  | S | S | S | S | S |  | S |  |  |  |  |
+| `assignment.propose` |  |  |  | S | S |  |  | S |  |  |  |  |
+| `assignment.transfer` |  |  |  | S | S |  |  | S |  |  |  |  |
+| `assignment.renew` |  |  |  | S | S |  |  |  |  |  |  |  |
+| `assignment.receive` |  |  |  | S |  |  |  |  |  |  |  |  |
+| `disposition.change` |  |  |  | S |  |  |  |  |  |  |  |  |
+| `stores.view` |  | S | S |  |  |  |  |  | S |  |  |  |
+| `stores.manage` |  |  |  |  |  |  |  |  | S |  |  |  |
+| `stores.requisition` |  |  |  | S |  |  |  | S |  |  |  |  |
+| `stores.approve` |  | S |  |  |  |  |  |  |  |  |  |  |
+| `schedule.view` |  | S | S | S | S | S | S | S | S |  | S |  |
+| `schedule.manage` |  |  |  | S | S |  |  | S |  |  |  |  |
+| `correspondence.view` |  | S | S | S | S | S |  | S |  |  |  |  |
+| `correspondence.register` |  |  |  | S | S |  |  | S |  |  |  |  |
+| `correspondence.manage` |  | S | S | S |  |  |  |  |  |  |  |  |
+| `liaison.metadata.view` |  |  |  |  |  |  |  |  |  |  |  | S |
+| `liaison.metadata.create` |  |  |  |  |  |  |  |  |  |  |  | S |
+| `liaison.metadata.update_own` |  |  |  |  |  |  |  |  |  |  |  | S |
+| `liaison.submission.acknowledge` |  |  |  |  |  |  |  |  |  |  |  | S |
+| `liaison.reference.route` |  |  |  |  |  |  |  |  |  |  |  | S |
+| `liaison.status.view` |  |  |  |  |  |  |  |  |  |  |  | S |
+| `liaison.audit.view` |  |  |  |  |  |  |  |  |  |  |  | S |
 
-R07 Divisional/Unit System Administrator (Tech) · R08 Formation Commanding Officer · R09 Deputy Division Commander · R10 Division Senior Staff Officer – Operations (Staff I) · R11 Deputy Division Staff Officer – Operations (Staff II) · R12 Company Commander · R13 Section Head · R14 Formation Operations Staff Administrator · R15 Divisional Quarter Masters Stores Officer · R16 Divisional Principal Armourer · R17 Divisional MTO Officer-in-Charge
+R08 Divisional/Unit System Administrator (Tech) · R09 Formation Commanding Officer · R10 Deputy Division Commander · R11 Division Senior Staff Officer – Operations (Staff I) · R12 Deputy Division Staff Officer – Operations (Staff II) · R13 Company Commander · R14 Section Head · R15 Formation Operations Staff Administrator · R16 Divisional Quarter Masters Stores Officer · R17 Divisional Principal Armourer · R18 Divisional MTO Officer-in-Charge · R19 Division Police Intelligence Officer
 
 ## Tier 3 — District Commands and Police Stations
 
-| Permission | R18 | R19 | R20 | R21 | R22 | R23 | R24 | R25 | R26 | R27 |
-|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| `dashboard.district.view` |  | U | U | U | U |  |  |  |  |  |
-| `dashboard.station.view` |  |  |  |  |  |  |  | U | U |  |
-| `org.view` | N | N | N | N | N |  | N | N | N |  |
-| `user.view` | S |  |  |  |  |  | S |  |  |  |
-| `user.support` | S |  |  |  |  |  | S |  |  |  |
-| `request.view` |  |  |  |  |  |  |  |  |  | U |
-| `request.create` |  |  |  |  |  |  |  |  |  | U |
-| `request.edit` |  |  |  |  |  |  |  |  |  | U |
-| `request.submit` |  |  |  |  |  |  |  |  |  | U |
-| `request.cancel` |  |  |  |  |  |  |  |  |  | U |
-| `asset.view` |  | S |  |  |  | S |  | S |  | S |
-| `asset.register` |  |  |  |  |  | S |  |  |  | S |
-| `asset.custody` |  |  |  |  |  | S |  |  |  | S |
-| `asset.inspect` |  |  |  |  |  | S |  |  |  | S |
-| `report.view` |  | S | S | S | S | U |  | S | S | U |
-| `health.view` | S |  |  |  |  |  | S |  |  |  |
-| `personnel.view` |  | S | S | S | S |  |  | S | S |  |
-| `personnel.register` |  |  |  | S | S |  |  |  | S |  |
-| `personnel.edit` |  |  |  | S | S |  |  |  | S |  |
-| `personnel.verify` |  | S |  | S |  |  |  | S |  |  |
-| `personnel.export` |  |  |  |  | S |  |  |  |  |  |
-| `manpower.view` |  | S | S | S | S |  |  | S | S |  |
-| `manpower.create` |  |  |  | U |  |  |  |  |  |  |
-| `manpower.review` |  |  |  | S |  |  |  |  |  |  |
-| `manpower.contribute` |  | S | S | S | S |  |  | S | S |  |
-| `roster.view` |  | S | S | S | S |  |  | S | S |  |
-| `roster.build` |  |  |  | S | S |  |  |  |  |  |
-| `area.view` |  | S | S | S | S |  |  | S |  |  |
-| `assignment.view` |  | S | S | S | S |  |  | S | S |  |
-| `assignment.propose` |  |  | S | S | S |  |  |  |  |  |
-| `assignment.transfer` |  |  |  | S | S |  |  |  |  |  |
-| `assignment.receive` |  |  |  | S |  |  |  |  |  |  |
-| `disposition.change` |  |  |  | S |  |  |  |  |  |  |
-| `stores.view` |  | S |  |  |  | S |  | S |  | S |
-| `stores.manage` |  |  |  |  |  | S |  |  |  | S |
-| `stores.requisition` |  |  |  | S |  |  |  |  |  | S |
-| `stores.approve` |  | S |  |  |  |  |  | S |  |  |
-| `schedule.view` |  | S | S | S | S | S |  | S | S | S |
-| `schedule.manage` |  |  |  | S | S |  |  |  | S | S |
-| `correspondence.view` |  | S | S | S | S |  |  | S | S | S |
-| `correspondence.register` |  |  |  | S | S |  |  |  | S | S |
-| `correspondence.manage` |  | S | S | S |  |  |  | S |  |  |
+| Permission | R20 | R21 | R22 | R23 | R24 | R25 | R26 | R27 | R28 | R29 | R30 |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| `dashboard.district.view` |  | U | U | U | U |  |  |  |  |  |  |
+| `dashboard.station.view` |  |  |  |  |  |  |  | U | U |  |  |
+| `org.view` | N | N | N | N | N |  | N | N | N |  |  |
+| `user.view` | S |  |  |  |  |  | S |  |  |  |  |
+| `user.support` | S |  |  |  |  |  | S |  |  |  |  |
+| `request.view` |  |  |  |  |  |  |  |  |  | U |  |
+| `request.create` |  |  |  |  |  |  |  |  |  | U |  |
+| `request.edit` |  |  |  |  |  |  |  |  |  | U |  |
+| `request.submit` |  |  |  |  |  |  |  |  |  | U |  |
+| `request.cancel` |  |  |  |  |  |  |  |  |  | U |  |
+| `asset.view` |  | S |  |  |  | S |  | S |  | S |  |
+| `asset.register` |  |  |  |  |  | S |  |  |  | S |  |
+| `asset.custody` |  |  |  |  |  | S |  |  |  | S |  |
+| `asset.inspect` |  |  |  |  |  | S |  |  |  | S |  |
+| `report.view` |  | S | S | S | S | U |  | S | S | U |  |
+| `health.view` | S |  |  |  |  |  | S |  |  |  |  |
+| `personnel.view` |  | S | S | S | S |  |  | S | S |  |  |
+| `personnel.register` |  |  |  | S | S |  |  |  | S |  |  |
+| `personnel.edit` |  |  |  | S | S |  |  |  | S |  |  |
+| `personnel.verify` |  | S |  | S |  |  |  | S |  |  |  |
+| `personnel.export` |  |  |  |  | S |  |  |  |  |  |  |
+| `manpower.view` |  | S | S | S | S |  |  | S | S |  |  |
+| `manpower.create` |  |  |  | U |  |  |  |  |  |  |  |
+| `manpower.review` |  |  |  | S |  |  |  |  |  |  |  |
+| `manpower.contribute` |  | S | S | S | S |  |  | S | S |  |  |
+| `roster.view` |  | S | S | S | S |  |  | S | S |  |  |
+| `roster.build` |  |  |  | S | S |  |  |  |  |  |  |
+| `area.view` |  | S | S | S | S |  |  | S |  |  |  |
+| `assignment.view` |  | S | S | S | S |  |  | S | S |  |  |
+| `assignment.propose` |  |  | S | S | S |  |  |  |  |  |  |
+| `assignment.transfer` |  |  |  | S | S |  |  |  |  |  |  |
+| `assignment.receive` |  |  |  | S |  |  |  |  |  |  |  |
+| `disposition.change` |  |  |  | S |  |  |  |  |  |  |  |
+| `stores.view` |  | S |  |  |  | S |  | S |  | S |  |
+| `stores.manage` |  |  |  |  |  | S |  |  |  | S |  |
+| `stores.requisition` |  |  |  | S |  |  |  |  |  | S |  |
+| `stores.approve` |  | S |  |  |  |  |  | S |  |  |  |
+| `schedule.view` |  | S | S | S | S | S |  | S | S | S |  |
+| `schedule.manage` |  |  |  | S | S |  |  |  | S | S |  |
+| `correspondence.view` |  | S | S | S | S |  |  | S | S | S |  |
+| `correspondence.register` |  |  |  | S | S |  |  |  | S | S |  |
+| `correspondence.manage` |  | S | S | S |  |  |  | S |  |  |  |
+| `liaison.metadata.view` |  |  |  |  |  |  |  |  |  |  | S |
+| `liaison.metadata.create` |  |  |  |  |  |  |  |  |  |  | S |
+| `liaison.metadata.update_own` |  |  |  |  |  |  |  |  |  |  | S |
+| `liaison.submission.acknowledge` |  |  |  |  |  |  |  |  |  |  | S |
+| `liaison.reference.route` |  |  |  |  |  |  |  |  |  |  | S |
+| `liaison.status.view` |  |  |  |  |  |  |  |  |  |  | S |
+| `liaison.audit.view` |  |  |  |  |  |  |  |  |  |  | S |
 
-R18 District System Administrator (Tech) · R19 Officer Commanding — District · R20 Deputy OC — District · R21 Operations Officer — District · R22 Deputy Operations Officer — District · R23 Stores Officer — District · R24 Police Station System Administrator · R25 Officer-in-Charge — Police Station GD · R26 Station Inspector — Police Station GD · R27 Police Station Administrator (Stores and Admin)
+R20 District System Administrator (Tech) · R21 Officer Commanding — District · R22 Deputy OC — District · R23 Operations Officer — District · R24 Deputy Operations Officer — District · R25 Stores Officer — District · R26 Police Station System Administrator · R27 Officer-in-Charge — Police Station GD · R28 Station Inspector — Police Station GD · R29 Police Station Administrator (Stores and Admin) · R30 District Police Intelligence Officer
+
+## Tier 4 — Section / Police Station
+
+| Permission | R31 |
+|---|:-:|
+| `liaison.metadata.view` | U |
+| `liaison.metadata.create` | U |
+| `liaison.metadata.update_own` | U |
+| `liaison.submission.acknowledge` | U |
+| `liaison.reference.route` | U |
+| `liaison.status.view` | U |
+| `liaison.audit.view` | U |
+
+R31 Police Intelligence Officer
 

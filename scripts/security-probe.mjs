@@ -1,7 +1,7 @@
 /**
  * Security probes over HTTP (attacker's view, no interface): authentication redirects, cross-Division access,
  * technical-role separation, download-route traversal and injection, setup closure, retired-route redirect,
- * reflected-input escaping and parameter abuse. Read-only apart from temporary sessions, which are deleted.
+ * reflected-input escaping, parameter abuse and liaison-administration scope (roles 07, 19, 30, 31). Read-only apart from temporary sessions, which are deleted.
  * Usage: node scripts/security-probe.mjs [baseUrl]   (local server and synthetic zps_oms_* database only). Exits 1 on any failure.
  */
 import crypto from "node:crypto";
@@ -55,6 +55,30 @@ for (const p of ["/app/correspondence/files/..%2F..%2Fpackage.json", "/app/corre
   const r = await get(p, await session("u_cb_sops"));
   check(`download probe ${p}`, [404, 400].includes(r.status) && !/"dependencies"/.test(r.body), `${r.status}`);
 }
+// 4b. Liaison administration (roles 07, 19, 30, 31): another Province gets a neutral 404; a station officer cannot see a
+// division-held record outside its unit; liaison officers get the access-denied page for every operational register;
+// a non-liaison role cannot open liaison pages; record ids are not guessable through malformed input.
+const [[liaCb]] = await db.query("SELECT id FROM liaison_records WHERE external_reference = 'SYN-HQ-RPT-0004'");
+if (liaCb) {
+  for (const [who, uid] of [["Lusaka district liaison", "u_lsk_pio"], ["Section liaison (Mobile Unit)", "u_mus_pio"], ["Kitwe Central station liaison", "u_kitc_pio"]]) {
+    const r = await get(`/app/liaison/records/${liaCb.id}`, await session(uid));
+    check(`${who} → Copperbelt/HQ liaison record`, r.status === 404 && !/SYN-HQ-RPT-0004/.test(r.body), `${r.status}`);
+  }
+  const pio = await session("u_kitc_pio");
+  for (const p of ["/app/personnel", "/app/manpower", "/app/assignments", "/app/audit", "/app/correspondence"]) {
+    const r = await get(p, pio);
+    check(`liaison officer → ${p}`, r.status === 200 && /not authorised to view/i.test(r.body) && !/<td[^>]*>[^<]*SYN-PER/.test(r.body), `${r.status}`);
+  }
+  const staff = await session("u_cb_sops");
+  for (const p of ["/app/liaison", `/app/liaison/records/${liaCb.id}`, "/app/liaison/history"]) {
+    const r = await get(p, staff);
+    check(`non-liaison role → ${p}`, r.status === 200 && /not authorised to view/i.test(r.body) && !/LIA-20\d\d-/.test(r.body), `${r.status}`);
+  }
+  for (const p of ["/app/liaison/records/..%2F..%2Fpackage.json", "/app/liaison/records/%27%20OR%201%3D1--"]) {
+    const r = await get(p, await session("u_hq_pio"));
+    check(`liaison id probe ${p}`, r.status === 404 && !/"dependencies"/.test(r.body), `${r.status}`);
+  }
+} else check("liaison records seeded", false, "seed step 013 has not run");
 // 5. Setup is closed on a database with accounts; /modules redirects.
 const s = await get("/setup");
 check("/setup closed", s.status === 200 && /Setup has been completed/.test(s.body) && !/name="token"/.test(s.body), `${s.status}`);
