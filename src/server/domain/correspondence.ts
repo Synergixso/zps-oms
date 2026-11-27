@@ -14,6 +14,7 @@
  *
  * Status flow: REGISTERED → ASSIGNED → IN_PROGRESS ⇄ AWAITING_REPLY → CLOSED → FILED (filing needs a file reference).
  */
+import { firstRows, pageQuery, splitSelect, type Page, type Paging, type Query } from "./paging";
 import { createHash } from "node:crypto";
 import { inflateSync } from "node:zlib";
 import { z } from "zod";
@@ -116,7 +117,9 @@ export async function getCorrespondence(db: DB, actor: Actor, id: string): Promi
   return c;
 }
 
-export async function listCorrespondence(db: DB, actor: Actor, f: { q?: string; status?: string; direction?: string; mine?: boolean } = {}): Promise<Correspondence[]> {
+export type CorrespondenceFilters = { q?: string; status?: string; direction?: string; mine?: boolean };
+
+function correspondenceQuery(actor: Actor, f: CorrespondenceFilters): Query {
   const where: string[] = [];
   const params: unknown[] = [];
   const s = scopeFor(actor, "correspondence.view");
@@ -133,7 +136,15 @@ export async function listCorrespondence(db: DB, actor: Actor, f: { q?: string; 
   if (f.q) { where.push("(c.reference LIKE ? OR c.subject LIKE ? OR c.letter_reference LIKE ? OR c.counterpart_name LIKE ?)"); params.push(...Array(4).fill(`%${f.q}%`)); }
   if (f.status && f.status in CORR_STATUS_LABEL) { where.push("c.status = ?"); params.push(f.status); }
   if (f.direction === "INCOMING" || f.direction === "OUTGOING") { where.push("c.direction = ?"); params.push(f.direction); }
-  return await all<Correspondence>(db, `${SELECT} WHERE ${where.join(" AND ")} ORDER BY c.register_date DESC, c.reference DESC LIMIT 500`, ...params);
+  return { ...splitSelect(SELECT), where: where.join(" AND "), params, order: "c.register_date DESC, c.reference DESC" };
+}
+
+/** Up to 500 records (panels and tests); the register uses pageCorrespondence. */
+export async function listCorrespondence(db: DB, actor: Actor, f: CorrespondenceFilters = {}): Promise<Correspondence[]> {
+  return firstRows<Correspondence>(db, correspondenceQuery(actor, f));
+}
+export async function pageCorrespondence(db: DB, actor: Actor, f: CorrespondenceFilters & Paging = {}): Promise<Page<Correspondence>> {
+  return pageQuery<Correspondence>(db, correspondenceQuery(actor, f), f);
 }
 
 export async function correspondenceHistory(db: DB, actor: Actor, id: string) {

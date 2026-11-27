@@ -1,9 +1,10 @@
+import { Pager } from "@/components/pager";
 import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
 import { hasPermission } from "@/server/domain/policy";
-import { CORR_STATUS_LABEL, listCorrespondence } from "@/server/domain/correspondence";
+import { CORR_STATUS_LABEL, pageCorrespondence } from "@/server/domain/correspondence";
 import { AccessDenied, Badge, ButtonLink, Card, PageHeader, Table, td, fmtDate, btnSecondary } from "@/components/ui";
 
 export const metadata = { title: "Correspondence register" };
@@ -15,7 +16,8 @@ export default async function CorrespondencePage({ searchParams }: { searchParam
   const status = sp.status && CORR_STATUS_LABEL[sp.status] ? sp.status : undefined;
   const direction = sp.direction === "INCOMING" || sp.direction === "OUTGOING" ? sp.direction : undefined;
   const q = (sp.q ?? "").trim().slice(0, 60);
-  const rows = await listCorrespondence(getDb(), actor, { q: q || undefined, status, direction, mine: sp.mine === "1" });
+  const list = await pageCorrespondence(getDb(), actor, { q: q || undefined, status, direction, mine: sp.mine === "1", page: Number(sp.page) || 1 });
+  const rows = list.rows;
   const overdue = (d: string | null, s: string) => !!d && d < new Date().toISOString().slice(0, 10) && !["CLOSED", "FILED"].includes(s);
   return (
     <>
@@ -44,7 +46,7 @@ export default async function CorrespondencePage({ searchParams }: { searchParam
           <label className="flex items-center gap-2 py-2 text-sm"><input type="checkbox" name="mine" value="1" defaultChecked={sp.mine === "1"} /> Assigned to or registered by me</label>
           <button type="submit" className={btnSecondary}>Apply filters</button>
           {(q || status || direction || sp.mine) && <Link href="/app/correspondence" className="py-2 text-sm text-zp-blue hover:underline">Clear</Link>}
-          <p className="ml-auto self-center text-xs text-muted">{rows.length} record(s)</p>
+          <p className="ml-auto self-center text-xs text-muted">{list.total} record(s)</p>
         </form>
         <Table head={["Reference", "Direction", "Subject", "From / to", "Organisation", "Assigned to", "Status", "Follow-up"]} caption="Correspondence register" empty="No correspondence matches the current filters in your scope.">
           {rows.map((c) => (
@@ -60,6 +62,7 @@ export default async function CorrespondencePage({ searchParams }: { searchParam
             </tr>
           ))}
         </Table>
+        <Pager path="/app/correspondence" params={sp} page={list.page} pages={list.pages} total={list.total} pageSize={list.pageSize} />
       </Card>
     </>
   );

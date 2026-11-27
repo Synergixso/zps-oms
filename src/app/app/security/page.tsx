@@ -1,7 +1,8 @@
+import { Pager } from "@/components/pager";
 import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
-import { all, getDb } from "@/server/db/connection";
-import { securityEvents } from "@/server/domain/auditq";
+import { all, getDb, one } from "@/server/db/connection";
+import { pageSecurityEvents } from "@/server/domain/auditq";
 import { Badge, Card, PageHeader, Stat, Table, td, fmtDateTime } from "@/components/ui";
 import { ActionForm, Hidden, Submit } from "@/components/forms";
 import { endSessionsAction } from "@/server/actions/iam";
@@ -16,11 +17,13 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
   if (!await pageAllowed(actor, "security.view")) return <AccessDenied what="security events" />;
   const sp = await searchParams;
   const db = getDb();
-  const rows = await securityEvents(db, actor, { q: sp.q?.slice(0, 60), category: sp.category, outcome: sp.outcome, from: sp.from, to: sp.to });
+  const list = await pageSecurityEvents(db, actor, { q: sp.q?.slice(0, 60), category: sp.category, outcome: sp.outcome, from: sp.from, to: sp.to }, { page: Number(sp.page) || 1 });
+  const rows = list.rows;
   const sessions = await all<{ user_id: string; display_name: string; created_at: string; last_seen_at: string }>(db, "SELECT s.user_id, u.display_name, s.created_at, s.last_seen_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.expires_at > ? ORDER BY s.last_seen_at DESC", new Date().toISOString());
   const attempts = await all<{ id: number; username: string; succeeded: number; created_at: string; client_key: string }>(db, "SELECT id, username, succeeded, created_at, client_key FROM login_attempts ORDER BY id DESC LIMIT 100");
   const locked = await all<{ id: string; display_name: string; username: string; locked_until: string }>(db, "SELECT id, display_name, username, locked_until FROM users WHERE locked_until > ? ORDER BY locked_until DESC", new Date().toISOString());
-  const failed24 = attempts.filter((a) => !a.succeeded && Date.parse(a.created_at) > Date.now() - 86400000).length;
+  // Counted in SQL over the full 24 hours (the attempts table below shows only the latest 100).
+  const failed24 = Number((await one<{ n: number }>(db, "SELECT COUNT(*) AS n FROM login_attempts WHERE succeeded = 0 AND created_at > ?", new Date(Date.now() - 86400000).toISOString()))?.n ?? 0);
   const canEnd = hasPermission(actor, "user.suspend");
   const byActor = await all<{ name: string | null; c: number }>(db, "SELECT u.display_name name, COUNT(*) c FROM audit_events e LEFT JOIN users u ON u.id=e.actor_id WHERE e.outcome='DENIED' GROUP BY e.actor_id ORDER BY c DESC LIMIT 6");
   return (
@@ -49,6 +52,7 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
       <Card bodyClass="p-0" title="Security-relevant events (latest 200)">
         <AuditFiltersForm sp={sp} base="/app/security" categories={["AUTH", "IAM", "SECURITY", "CONFIG"]} />
         <AuditTable rows={rows} />
+        <Pager path="/app/security" params={sp} page={list.page} pages={list.pages} total={list.total} pageSize={list.pageSize} label="Security event pages" />
       </Card>
     </>
   );

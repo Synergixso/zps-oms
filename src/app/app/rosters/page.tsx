@@ -1,16 +1,18 @@
+import { Pager } from "@/components/pager";
 import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
-import { ROSTER_STATUS_LABEL, rosterIndex } from "@/server/domain/manpower";
+import { ROSTER_STATUS_LABEL, pageRosters } from "@/server/domain/manpower";
 import { AccessDenied, Badge, Card, PageHeader, Table, td, fmtDate } from "@/components/ui";
 
 export const metadata = { title: "Rosters" };
 
-export default async function RostersPage() {
+export default async function RostersPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const actor = await requireActor();
   if (!(await pageAllowed(actor, "roster.view"))) return <AccessDenied what="rosters" />;
-  const rows = await rosterIndex(getDb(), actor);
+  const list = await pageRosters(getDb(), actor, { page: Number((await searchParams).page) || 1 });
+  const rows = list.rows;
   return (
     <>
       <PageHeader eyebrow="Manpower" title="Rosters and approved personnel lists" description="Consolidated rosters built from approved contributions. Historical versions are kept and can be retrieved at any time." />
@@ -28,6 +30,7 @@ export default async function RostersPage() {
             </tr>
           ))}
         </Table>
+        <Pager path="/app/rosters" params={{}} page={list.page} pages={list.pages} total={list.total} pageSize={list.pageSize} label="Roster pages" />
       </Card>
     </>
   );

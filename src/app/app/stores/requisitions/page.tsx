@@ -1,9 +1,10 @@
+import { Pager } from "@/components/pager";
 import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
 import { hasPermission } from "@/server/domain/policy";
-import { listRequisitions, REQ_STATUS_LABEL } from "@/server/domain/stores";
+import { pageRequisitions, REQ_STATUS_LABEL } from "@/server/domain/stores";
 import { AccessDenied, Badge, ButtonLink, Card, PageHeader, Table, td, fmtDate, btnSecondary } from "@/components/ui";
 
 export const metadata = { title: "Stores requisitions" };
@@ -13,7 +14,8 @@ export default async function RequisitionsPage({ searchParams }: { searchParams:
   if (!await pageAllowed(actor, "stores.view", "stores.requisition")) return <AccessDenied what="stores requisitions" />;
   const sp = await searchParams;
   const status = sp.status && REQ_STATUS_LABEL[sp.status] ? sp.status : undefined;
-  const rows = await listRequisitions(getDb(), actor, { status, mine: sp.mine === "1" });
+  const list = await pageRequisitions(getDb(), actor, { status, mine: sp.mine === "1", page: Number(sp.page) || 1 });
+  const rows = list.rows;
   return (
     <>
       <p className="mb-2 text-sm"><Link href={hasPermission(actor, "stores.view") ? "/app/stores" : "/app"} className="text-zp-blue hover:underline">← {hasPermission(actor, "stores.view") ? "Stores and stock" : "Dashboard"}</Link></p>
@@ -30,7 +32,7 @@ export default async function RequisitionsPage({ searchParams }: { searchParams:
           </div>
           <label className="flex items-center gap-2 py-2 text-sm"><input type="checkbox" name="mine" value="1" defaultChecked={sp.mine === "1"} /> Raised by me</label>
           <button type="submit" className={btnSecondary}>Apply</button>
-          <p className="ml-auto self-center text-xs text-muted">{rows.length} requisition(s)</p>
+          <p className="ml-auto self-center text-xs text-muted">{list.total} requisition(s)</p>
         </form>
         <Table head={["Reference", "Requesting unit", "Store", "Purpose", "Status", "Raised by", "Raised"]} caption="Stores requisitions" empty="No requisitions in your scope.">
           {rows.map((r) => (
@@ -45,6 +47,7 @@ export default async function RequisitionsPage({ searchParams }: { searchParams:
             </tr>
           ))}
         </Table>
+        <Pager path="/app/stores/requisitions" params={sp} page={list.page} pages={list.pages} total={list.total} pageSize={list.pageSize} />
       </Card>
     </>
   );

@@ -131,9 +131,13 @@ export async function listPersonnel(db: DB, actor: Actor, f: PersonnelFilters = 
 
 /** Loads one record, enforcing scope (out-of-scope → NOT_FOUND so existence is not disclosed). */
 export async function getPersonnel(db: DB, actor: Actor, id: string) {
-  await requirePermission(db, actor, "personnel.view");
+  await requirePermission(db, actor, "personnel.view", undefined, { type: "personnel", id });
   const p = await one<PersonnelRow & { eligibility_note: string | null; tenant_id: string; created_by: string | null; verified_by: string | null; verified_at: string | null }>(db, `${BASE_SELECT} WHERE p.id = ?`, id);
-  if (!p || !can(actor, "personnel.view", p.home_unit_id)) throw notFound();
+  if (!p || !can(actor, "personnel.view", p.home_unit_id)) {
+    // Refused reads of personnel records are security events (attempted access outside scope), as in every other module.
+    await audit(db, { actorId: actor.userId, action: "personnel.view", outcome: "DENIED", category: "SECURITY", entityType: "personnel", entityId: id });
+    throw notFound();
+  }
   return p;
 }
 
@@ -241,7 +245,7 @@ export async function updatePersonnel(db: DB, actor: Actor, id: string, input: z
                    ${identityChanged ? ", verification_status = 'UNVERIFIED', verified_by = NULL, verified_at = NULL" : ""} WHERE id = ?`,
       d.surname, d.firstNames, nameKey(d.surname, d.firstNames), d.rankCode, d.employmentStatus, d.eligibilityNote || null, nowIso(), id);
     for (const [field, a, b] of changes) await run(db, "INSERT INTO personnel_history (personnel_id, field, old_value, new_value, reason, actor_id, created_at) VALUES (?,?,?,?,?,?,?)", id, field, a, b, d.reason, actor.userId, nowIso());
-    await audit(db, { actorId: actor.userId, action: "personnel.update", category: "BUSINESS", entityType: "personnel", entityId: id, orgUnitId: p.home_unit_id, details: { fields: changes.map(([f]) => f), reverified: identityChanged } });
+    await audit(db, { actorId: actor.userId, action: "personnel.update", category: "BUSINESS", entityType: "personnel", entityId: id, orgUnitId: p.home_unit_id, details: { changes: changes.map(([field, from, to]) => ({ field, from, to })), reverified: identityChanged } });
   });
 }
 

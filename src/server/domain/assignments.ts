@@ -16,12 +16,13 @@
  *    role there (policy.approvalUnitFor). The proposer/initiator can never approve their own matter.
  *  - Every state change writes approval_actions, disposition_history and the audit trail.
  */
+import { firstRows, pageQuery, splitSelect, type Page, type Paging, type Query } from "./paging";
 import { z } from "zod";
 import type { DB } from "../db/connection";
 import { all, one, run, tx } from "../db/connection";
 import { audit } from "./audit";
 import { addDays, conflict, forbidden, invalid, newId, notFound, notify, nowIso, today } from "./core";
-import { type Actor, approvalUnitFor, can, requirePermission, unitsFor } from "./policy";
+import { type Actor, approvalUnitFor, can, delegationReference, requirePermission, unitsFor } from "./policy";
 import { activeChainId, currentStep, levelApprover, type ChainState } from "./decision-chains";
 import { eligibilityOf, recordDisposition, type Disposition } from "./personnel";
 
@@ -438,7 +439,8 @@ export async function decideAssignment(db: DB, actor: Actor, id: string, decisio
       await recordDisposition(db, { personnelId: a.personnel_id, status: "AVAILABLE_HOME", reason: `Assignment ${a.reference} rejected: ${comment.trim()}`, actorId: actor.userId, assignmentId: id, reference: a.reference });
       await logAction(db, "assignment", id, "REJECT", a.status, "REJECTED", actor.userId, unit, comment);
     }
-    await audit(db, { actorId: actor.userId, action: `assignment.${decision.toLowerCase()}`, category: "BUSINESS", entityType: "assignment", entityId: id, orgUnitId: a.responsible_unit_id, details: { ref: a.reference } });
+    await audit(db, { actorId: actor.userId, action: `assignment.${decision.toLowerCase()}`, category: "BUSINESS", entityType: "assignment", entityId: id, orgUnitId: a.responsible_unit_id,
+      details: { ref: a.reference, from: a.status, to: decision === "APPROVE" ? (a.commencement_date <= today() ? "ACTIVE" : "APPROVED") : "REJECTED", authorisingUnit: unit, delegation: unit ? await delegationReference(db, actor.userId, "ASSIGNMENT", unit) : null } });
   });
   await notify(db, a.created_by, `Assignment ${a.reference} ${decision === "APPROVE" ? "approved" : "rejected"}`, comment || "Decision recorded.", `/app/assignments/${id}`);
 }
@@ -453,7 +455,7 @@ export async function cancelAssignment(db: DB, actor: Actor, id: string, reason:
     await run(db, "UPDATE personnel_assignments SET status = 'CANCELLED', close_reason = 'CANCELLED', ended_on = ?, updated_at = ?, version = version + 1 WHERE id = ?", today(), nowIso(), id);
     await recordDisposition(db, { personnelId: a.personnel_id, status: "CANCELLED", reason: `Assignment ${a.reference} cancelled: ${reason.trim()}`, actorId: actor.userId, assignmentId: id, reference: a.reference });
     await logAction(db, "assignment", id, "CANCEL", a.status, "CANCELLED", actor.userId, a.responsible_unit_id, reason);
-    await audit(db, { actorId: actor.userId, action: "assignment.cancel", category: "BUSINESS", entityType: "assignment", entityId: id, orgUnitId: a.responsible_unit_id });
+    await audit(db, { actorId: actor.userId, action: "assignment.cancel", category: "BUSINESS", entityType: "assignment", entityId: id, orgUnitId: a.responsible_unit_id, details: { ref: a.reference, from: a.status, to: "CANCELLED" } });
   });
 }
 
@@ -573,7 +575,7 @@ export async function markRenewalPending(db: DB, actor: Actor, id: string, note:
   await tx(db, async (db) => {
     await recordDisposition(db, { personnelId: a.personnel_id, status: "RENEWAL_PENDING", reason: `Renewal of ${a.reference} requested${note.trim() ? `: ${note.trim()}` : ""}`, actorId: actor.userId, assignmentId: id, reference: a.reference });
     await logAction(db, "assignment", id, "RENEWAL_REQUESTED", null, null, actor.userId, a.responsible_unit_id, note);
-    await audit(db, { actorId: actor.userId, action: "assignment.renewal.request", category: "BUSINESS", entityType: "assignment", entityId: id, orgUnitId: a.responsible_unit_id });
+    await audit(db, { actorId: actor.userId, action: "assignment.renewal.request", category: "BUSINESS", entityType: "assignment", entityId: id, orgUnitId: a.responsible_unit_id, details: { ref: a.reference, reviewDate: a.review_date } });
   });
   await notifyApprovers(db, a.responsible_unit_id, `Renewal decision needed: ${a.reference}`, "An assignment is due for review and renewal.", `/app/assignments/${id}`);
 }
@@ -625,11 +627,20 @@ const TR_SELECT = `SELECT t.*, a.reference AS assignment_ref, CONCAT(p.surname, 
   LEFT JOIN assignment_exceptions e ON e.id = t.exception_id
   JOIN users iu ON iu.id = t.initiated_by LEFT JOIN users ru ON ru.id = t.released_by LEFT JOIN users au ON au.id = t.accepted_by`;
 
-export async function listTransfers(db: DB, actor: Actor, status?: string) {
-  await requirePermission(db, actor, "assignment.view");
+function transferQuery(actor: Actor, status?: string): Query {
   const s = scopeIn(actor, "assignment.view", ["t.releasing_unit_id", "t.receiving_unit_id", "a.home_unit_id"]);
   const st = status && status !== "ALL" ? status === "OPEN" ? "AND t.status IN ('PENDING_RELEASE','PENDING_ACCEPTANCE')" : "AND t.status = ?" : "";
-  return all<TransferRow>(db, `${TR_SELECT} WHERE ${s.sql} ${st} ORDER BY t.initiated_at DESC LIMIT 300`, ...s.params, ...(st.includes("?") ? [status] : []));
+  return { ...splitSelect(TR_SELECT), where: `${s.sql} ${st}`, params: [...s.params, ...(st.includes("?") ? [status] : [])], order: "t.initiated_at DESC" };
+}
+
+/** Up to 500 transfers (panels); use pageTransfers for the register. */
+export async function listTransfers(db: DB, actor: Actor, status?: string) {
+  await requirePermission(db, actor, "assignment.view");
+  return firstRows<TransferRow>(db, transferQuery(actor, status));
+}
+export async function pageTransfers(db: DB, actor: Actor, status: string | undefined, p: Paging = {}): Promise<Page<TransferRow>> {
+  await requirePermission(db, actor, "assignment.view");
+  return pageQuery<TransferRow>(db, transferQuery(actor, status), p);
 }
 
 export async function getTransfer(db: DB, actor: Actor, id: string) {
@@ -717,7 +728,8 @@ export async function releaseDecision(db: DB, actor: Actor, transferId: string, 
       await revertTransfer(db, t, actor.userId, `Transfer ${t.reference} not released: ${comment.trim()}`);
       await logAction(db, "transfer", transferId, "RELEASE_REJECTED", "PENDING_RELEASE", "REJECTED", actor.userId, t.releasing_unit_id, comment);
     }
-    await audit(db, { actorId: actor.userId, action: `transfer.release.${decision.toLowerCase()}`, category: "BUSINESS", entityType: "transfer", entityId: transferId, orgUnitId: t.releasing_unit_id });
+    await audit(db, { actorId: actor.userId, action: `transfer.release.${decision.toLowerCase()}`, category: "BUSINESS", entityType: "transfer", entityId: transferId, orgUnitId: t.releasing_unit_id,
+      details: { ref: t.reference, from: "PENDING_RELEASE", to: decision === "APPROVE" ? "PENDING_ACCEPTANCE" : "REJECTED", authorisingUnit: releaser, delegation: releaser ? await delegationReference(db, actor.userId, "ASSIGNMENT", releaser) : null } });
   });
   await notify(db, t.initiated_by, `Transfer ${t.reference}: release ${decision === "APPROVE" ? "approved" : "rejected"}`, comment.trim(), `/app/transfers/${transferId}`);
 }
@@ -754,7 +766,7 @@ export async function acceptDecision(db: DB, actor: Actor, transferId: string, d
     await logAction(db, "transfer", transferId, "ACCEPTED_COMPLETED", "PENDING_ACCEPTANCE", "COMPLETED", actor.userId, t.receiving_unit_id, input.comment);
     await audit(db, { actorId: actor.userId, action: "transfer.complete", category: "BUSINESS", entityType: "transfer", entityId: transferId, orgUnitId: t.receiving_unit_id, details: { ref: t.reference, closed: old.reference, opened: created.ref, effective: eff } });
   });
-  if (decision === "DECLINE") await audit(db, { actorId: actor.userId, action: "transfer.decline", category: "BUSINESS", entityType: "transfer", entityId: transferId, orgUnitId: t.receiving_unit_id });
+  if (decision === "DECLINE") await audit(db, { actorId: actor.userId, action: "transfer.decline", category: "BUSINESS", entityType: "transfer", entityId: transferId, orgUnitId: t.receiving_unit_id, details: { ref: t.reference, from: "PENDING_ACCEPTANCE", to: "REJECTED" } });
   await notify(db, t.initiated_by, `Transfer ${t.reference} ${decision === "ACCEPT" ? "completed" : "declined"}`, input.comment.trim(), `/app/transfers/${transferId}`);
   return newId_;
 }
@@ -768,7 +780,7 @@ export async function cancelTransfer(db: DB, actor: Actor, transferId: string, r
     await run(db, "UPDATE assignment_transfers SET status = 'CANCELLED', decision_comment = ? WHERE id = ?", reason.trim(), transferId);
     await revertTransfer(db, t, actor.userId, `Transfer ${t.reference} withdrawn: ${reason.trim()}`);
     await logAction(db, "transfer", transferId, "CANCEL", t.status, "CANCELLED", actor.userId, t.releasing_unit_id, reason);
-    await audit(db, { actorId: actor.userId, action: "transfer.cancel", category: "BUSINESS", entityType: "transfer", entityId: transferId, orgUnitId: t.releasing_unit_id });
+    await audit(db, { actorId: actor.userId, action: "transfer.cancel", category: "BUSINESS", entityType: "transfer", entityId: transferId, orgUnitId: t.releasing_unit_id, details: { ref: t.reference, from: t.status, to: "CANCELLED", reason: reason.trim() } });
   });
 }
 

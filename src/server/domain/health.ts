@@ -6,8 +6,6 @@
  *  - liveness:  the process answers (no database call);
  *  - readiness: the database answers and every migration file has been applied.
  */
-import fs from "node:fs";
-import path from "node:path";
 import type { DB } from "../db/connection";
 import { one } from "../db/connection";
 import { listMigrationFiles } from "../db/migrate";

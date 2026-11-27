@@ -1,6 +1,6 @@
 # A4 print check
 
-Generated 2026-11-27T05:28:08.672Z · print media emulated at the A4 printable width (180 mm = 680 CSS px, 15 mm margins); PDF produced by the browser's print engine. Synthetic data only.
+Generated 2026-11-27T09:51:12.254Z · print media emulated at the A4 printable width (180 mm = 680 CSS px, 15 mm margins); PDF produced by the browser's print engine. Synthetic data only.
 
 | Page | PDF pages | Page size | Findings |
 |---|--:|---|---|

@@ -4,13 +4,13 @@ import { all, getDb, one } from "@/server/db/connection";
 import { ROLE_BY_CODE } from "@/server/domain/catalogue";
 import { type Actor, dashboardKind, hasPermission, primaryAssignment, primaryRole, scopeFor } from "@/server/domain/policy";
 import { breakdownByOrg, computeSummary, type Summary } from "@/server/domain/reports";
-import { approvalInbox, assignmentQueue, listRequests, overdueRequests, STATUS_LABEL, type RequestRow } from "@/server/domain/requests";
-import { listMaintenance, listVehicles, MAINT_LABEL } from "@/server/domain/fleet";
-import { listAssets, ASSET_STATUS_LABEL } from "@/server/domain/assets";
+import { approvalInbox, assignmentQueue, listRequests, STATUS_LABEL, type RequestRow } from "@/server/domain/requests";
+import { fleetFigures, listMaintenance, listVehicles, MAINT_LABEL } from "@/server/domain/fleet";
+import { assetFigures, listAssets, ASSET_STATUS_LABEL } from "@/server/domain/assets";
 import { listChanges } from "@/server/domain/org";
 import { verifyAuditChain } from "@/server/domain/audit";
 import { listReviews } from "@/server/domain/iam";
-import { Badge, Bar, ButtonLink, Card, SectionHeader, PageHeader, Stat, Table, td, fmtDate, fmtDateTime, Notice } from "@/components/ui";
+import { Badge, Bar, ButtonLink, Card, SectionHeader, Stat, Table, td, fmtDate, fmtDateTime, Notice } from "@/components/ui";
 
 import { PersonnelDashboard } from "./dashboards";
 import { CommandOverview } from "./overview";
@@ -199,7 +199,7 @@ async function National({ actor, coordinator }: { actor: Actor; coordinator: boo
   const orgs = await breakdownByOrg(db, scope);
   const inbox = await approvalInbox(db, actor);
   const queue = coordinator ? await assignmentQueue(db, actor) : [];
-  const overdue = coordinator ? overdueRequests(await listRequests(db, actor)) : [];
+  const overdue = coordinator ? await listRequests(db, actor, { overdue: true, sort: "due" }) : [];
   const provinces = orgs.filter((o) => o.unit_type === "PROVINCIAL_DIVISION");
   const formations = orgs.filter((o) => o.unit_type === "FORMATION");
   return (
@@ -276,7 +276,7 @@ async function UnitCommand({ actor }: { actor: Actor }) {
   const inbox = await approvalInbox(db, actor);
   const queue = await assignmentQueue(db, actor);
   const recent = (await listRequests(db, actor)).slice(0, 8);
-  const maint = hasPermission(actor, "maintenance.view") ? (await listMaintenance(db, actor)).filter((m) => m.status === "VALIDATED") : [];
+  const maint = hasPermission(actor, "maintenance.view") ? await listMaintenance(db, actor, { status: "VALIDATED" }) : [];
   const unit = (await one<{ code: string; validation_note: string | null }>(db, "SELECT code, validation_note FROM org_units WHERE id = ?", pa.orgUnitId))!;
   const isProv = pa.orgUnitType === "PROVINCIAL_DIVISION";
   return (
@@ -328,15 +328,15 @@ async function UnitCommand({ actor }: { actor: Actor }) {
 async function StaffWorkspace({ actor }: { actor: Actor }) {
   const db = getDb();
   const pa = primaryAssignment(actor)!;
-  const all_ = await listRequests(db, actor);
-  const mine = all_.filter((r) => r.created_by === actor.userId);
-  const drafts = mine.filter((r) => r.status === "DRAFT");
-  const returned = mine.filter((r) => r.status === "RETURNED");
-  const submitted = mine.filter((r) => ["SUBMITTED", "UNDER_REVIEW"].includes(r.status));
-  const toAction = all_.filter((r) => ["APPROVED", "IN_PROGRESS"].includes(r.status) && hasPermission(actor, "request.progress"));
-  const overdue = overdueRequests(all_);
-  const completed = mine.filter((r) => ["COMPLETED", "CLOSED"].includes(r.status));
-  const role = primaryRole(actor)!;
+  // Each list is its own SQL query over the whole scope (no capped list filtered in memory).
+  const [drafts, returned, submitted, toAction, overdue, completed] = await Promise.all([
+    listRequests(db, actor, { mine: true, status: "DRAFT" }),
+    listRequests(db, actor, { mine: true, status: "RETURNED" }),
+    listRequests(db, actor, { mine: true, statusIn: ["SUBMITTED", "UNDER_REVIEW"] }),
+    hasPermission(actor, "request.progress") ? listRequests(db, actor, { statusIn: ["APPROVED", "IN_PROGRESS"] }) : Promise.resolve([]),
+    listRequests(db, actor, { overdue: true, sort: "due" }),
+    listRequests(db, actor, { mine: true, statusIn: ["COMPLETED", "CLOSED"] }),
+  ]);
   return (
     <>
       <SectionHeader
@@ -384,21 +384,19 @@ async function StaffWorkspace({ actor }: { actor: Actor }) {
 
 async function FleetDash({ actor }: { actor: Actor }) {
   const db = getDb();
-  const vehicles = await listVehicles(db, actor);
-  const maint = await listMaintenance(db, actor);
-  const today = new Date().toISOString().slice(0, 10);
-  const due = vehicles.filter((v) => v.status !== "DISPOSED" && v.next_service_due && v.next_service_due < today);
+  // Figures are SQL counts over the whole scope; the tables show the most relevant rows.
+  const [fig, open, dueSoon] = await Promise.all([fleetFigures(db, actor), listMaintenance(db, actor, { open: true }), listVehicles(db, actor, { due: "30d" })]);
   const units = [...new Set(actor.assignments.filter((a) => a.roleCode === "MTO_OIC").map((a) => a.orgUnitName))];
-  const open = maint.filter((m) => !["CLOSED", "REJECTED"].includes(m.status));
+  const today = new Date().toISOString().slice(0, 10);
   return (
     <>
       <SectionHeader eyebrow="Fleet and transport" title={title(actor)} description={`Granted organisations: ${units.join(", ")}. Administrative fleet records only — no location, route, mission or deployment data.`}
         actions={<><ButtonLink href="/app/fleet">Fleet register</ButtonLink><ButtonLink href="/app/fleet/maintenance/new" variant="primary">New maintenance request</ButtonLink></>} />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Stat label="Vehicles in scope" value={vehicles.length} href="/app/fleet" />
-        <Stat label="Service overdue" value={due.length} tone={due.length ? "err" : "default"} href="/app/fleet?due=overdue" />
-        <Stat label="Open maintenance" value={open.length} href="/app/fleet/maintenance" />
-        <Stat label="Completion to verify" value={maint.filter((m) => m.status === "COMPLETION_SUBMITTED").length} href="/app/fleet/maintenance?status=COMPLETION_SUBMITTED" />
+        <Stat label="Vehicles in scope" value={fig.vehicles} href="/app/fleet" />
+        <Stat label="Service overdue" value={fig.serviceOverdue} tone={fig.serviceOverdue ? "err" : "default"} href="/app/fleet?due=overdue" />
+        <Stat label="Open maintenance" value={fig.openMaintenance} href="/app/fleet/maintenance" />
+        <Stat label="Completion to verify" value={fig.completionToVerify} href="/app/fleet/maintenance?status=COMPLETION_SUBMITTED" />
       </div>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <Card title="Maintenance workbench" subtitle="Open requests by stage" bodyClass="p-0">
@@ -410,7 +408,7 @@ async function FleetDash({ actor }: { actor: Actor }) {
         </Card>
         <Card title="Service due-date monitor" subtitle="Overdue or due within 30 days" bodyClass="p-0">
           <Table head={["Fleet ref", "Vehicle", "Custody", "Next service"]} empty="Nothing due.">
-            {vehicles.filter((v) => v.next_service_due && v.next_service_due < new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10)).map((v) => (
+            {dueSoon.map((v) => (
               <tr key={v.id}><td className={td}><Link className="font-semibold text-zp-blue hover:underline" href={`/app/fleet/${v.id}`}>{v.fleet_ref}</Link></td><td className={td}>{v.make} {v.model}</td><td className={td}>{v.custody_name}</td><td className={`${td} ${v.next_service_due! < today ? "font-semibold text-err" : ""}`}>{fmtDate(v.next_service_due)}</td></tr>
             ))}
           </Table>
@@ -423,12 +421,11 @@ async function FleetDash({ actor }: { actor: Actor }) {
 
 async function AssetDash({ actor }: { actor: Actor }) {
   const db = getDb();
-  const assets = await listAssets(db, actor);
-  const units = new Set(scopeFor(actor, "asset.custody").units);
-  const inbound = assets.filter((a) => a.status === "IN_TRANSFER" && a.transfer_to_org_id && units.has(a.transfer_to_org_id));
-  const yearAgo = new Date(Date.now() - 365 * 864e5).toISOString();
-  const uninspected = assets.filter((a) => a.status !== "DISPOSED" && (!a.last_inspected_at || a.last_inspected_at < yearAgo));
-  const by = (st: string) => assets.filter((a) => a.status === st && units.has(a.custody_org_id)).length;
+  // Figures are SQL counts over the whole scope (never derived from a capped list).
+  const [fig, uninspectedRows] = await Promise.all([assetFigures(db, actor), listAssets(db, actor, { notInspected: true })]);
+  const by = (st: "IN_STORE" | "ISSUED" | "UNDER_REPAIR") => ({ IN_STORE: fig.inStore, ISSUED: fig.issued, UNDER_REPAIR: fig.underRepair })[st];
+  const inbound = { length: fig.inbound };
+  const uninspected = { length: fig.notInspected };
   return (
     <>
       <SectionHeader eyebrow="Assets and equipment" title={title(actor)} description="General non-sensitive assets in approved categories. Firearms, ammunition, armoury, communications and tactical equipment are excluded."
@@ -441,7 +438,7 @@ async function AssetDash({ actor }: { actor: Actor }) {
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <Card title="Inspection due" subtitle="Reconciliation priority" bodyClass="p-0">
           <Table head={["Tag", "Description", "Custody", "Last inspected"]} empty="All assets inspected within 12 months.">
-            {uninspected.slice(0, 10).map((a) => (
+            {uninspectedRows.slice(0, 10).map((a) => (
               <tr key={a.id}><td className={td}><Link className="font-semibold text-zp-blue hover:underline" href={`/app/assets/${a.id}`}>{a.asset_tag}</Link></td><td className={td}>{a.description}</td><td className={td}>{a.custody_name}</td><td className={`${td} text-muted`}>{fmtDate(a.last_inspected_at)}</td></tr>
             ))}
           </Table>

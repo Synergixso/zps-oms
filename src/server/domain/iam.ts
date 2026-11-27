@@ -5,6 +5,7 @@
  * - Role assignment = role + org unit + validity window + justification.
  * - Auditor (and other requiresExpiry) roles must be time-limited.
  */
+import type { Page, Paging, Query } from "./paging";
 import { identifierField } from "../lib/identifiers";
 import { isProduction } from "../lib/environment";
 import { z } from "zod";
@@ -57,8 +58,7 @@ export interface UserRow {
   active_roles: number;
 }
 
-export async function listUsers(db: DB, actor: Actor, q?: string): Promise<UserRow[]> {
-  await requirePermission(db, actor, "user.view");
+function userQuery(actor: Actor, q?: string): Query {
   const t = nowIso();
   const s = scopeFor(actor, "user.view");
   const where: string[] = [];
@@ -68,12 +68,27 @@ export async function listUsers(db: DB, actor: Actor, q?: string): Promise<UserR
     where.push(`EXISTS (SELECT 1 FROM role_assignments x WHERE x.user_id = u.id AND x.revoked_at IS NULL AND (x.valid_to IS NULL OR x.valid_to > ?) AND x.org_unit_id IN (${s.units.map(() => "?").join(",")}))`);
     params.push(t, ...s.units);
   }
-  return await all<UserRow>(
-    db,
-    `SELECT u.*, (SELECT COUNT(*) FROM role_assignments a WHERE a.user_id = u.id AND a.revoked_at IS NULL AND (a.valid_to IS NULL OR a.valid_to > ?)) AS active_roles
-       FROM users u ${where.length ? "WHERE " + where.join(" AND ") : ""} ORDER BY u.display_name`,
-    ...params,
-  );
+  // The first parameter belongs to the active_roles subquery in the column list.
+  return { columns: "u.*, (SELECT COUNT(*) FROM role_assignments a WHERE a.user_id = u.id AND a.revoked_at IS NULL AND (a.valid_to IS NULL OR a.valid_to > ?)) AS active_roles",
+    from: "FROM users u", where: where.length ? where.join(" AND ") : "1=1", params, order: "u.display_name" };
+}
+
+/** Every user in scope (used by panels that need the complete set). */
+export async function listUsers(db: DB, actor: Actor, q?: string): Promise<UserRow[]> {
+  await requirePermission(db, actor, "user.view");
+  const u = userQuery(actor, q);
+  return await all<UserRow>(db, `SELECT ${u.columns} ${u.from} WHERE ${u.where} ORDER BY ${u.order}`, ...u.params);
+}
+export async function pageUsers(db: DB, actor: Actor, q: string | undefined, p: Paging = {}): Promise<Page<UserRow>> {
+  await requirePermission(db, actor, "user.view");
+  const u = userQuery(actor, q);
+  // COUNT does not include the column-list subquery, so drop its parameter for the count.
+  const total = Number((await one<{ n: number }>(db, `SELECT COUNT(*) AS n ${u.from} WHERE ${u.where}`, ...u.params.slice(1)))?.n ?? 0);
+  const pageSize = Math.min(200, Math.max(5, Math.floor(Number(p.pageSize) || 50)));
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  const page = Math.min(pages, Math.max(1, Math.floor(Number(p.page) || 1)));
+  const rows = await all<UserRow>(db, `SELECT ${u.columns} ${u.from} WHERE ${u.where} ORDER BY ${u.order} LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}`, ...u.params);
+  return { rows, total, page, pages, pageSize };
 }
 
 export interface AssignmentRow {

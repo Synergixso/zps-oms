@@ -35,7 +35,7 @@ Recorded 27 November 2026 for v0.9.0, against the owner's Final Full-System Impl
 
 ## 4. What remains (not engineering)
 
-Institutional decisions and approvals (`INSTITUTIONAL_APPROVAL_STATUS.md`), production infrastructure and an independent penetration test (`DEPLOYMENT_READINESS.md`). The software stage is **Production candidate**; see `PRODUCTION_READINESS_REPORT.md` for why it is not yet recorded as production ready.
+Institutional decisions and approvals (`docs/final-delivery/INSTITUTIONAL_APPROVAL_STATUS.md`), production infrastructure and an independent penetration test (`DEPLOYMENT_READINESS.md`). The software stage is **Production candidate**; see `docs/final-delivery/PRODUCTION_READINESS_REPORT.md` for why it is not yet recorded as production ready.
 
 ## 5. Process note
 

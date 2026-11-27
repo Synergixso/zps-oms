@@ -1,18 +1,20 @@
+import { Pager } from "@/components/pager";
 import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
-import { listTransfers } from "@/server/domain/assignments";
+import { pageTransfers } from "@/server/domain/assignments";
 import { AccessDenied, Badge, Card, PageHeader, Table, td, fmtDate } from "@/components/ui";
 
 export const metadata = { title: "Transfers" };
 const LABEL: Record<string, string> = { PENDING_RELEASE: "Awaiting releasing decision", PENDING_ACCEPTANCE: "Awaiting receiving acceptance", COMPLETED: "Completed", REJECTED: "Rejected", CANCELLED: "Withdrawn" };
 
-export default async function TransfersPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
+export default async function TransfersPage({ searchParams }: { searchParams: Promise<{ status?: string; page?: string }> }) {
   const actor = await requireActor();
   if (!(await pageAllowed(actor, "assignment.view"))) return <AccessDenied what="transfers" />;
-  const { status = "OPEN" } = await searchParams;
-  const rows = await listTransfers(getDb(), actor, status);
+  const { status = "OPEN", page } = await searchParams;
+  const list = await pageTransfers(getDb(), actor, status, { page: Number(page) || 1 });
+  const rows = list.rows;
   const tabs = [["OPEN", "Open"], ["COMPLETED", "Completed"], ["REJECTED", "Rejected"], ["ALL", "All"]];
   return (
     <>
@@ -33,6 +35,7 @@ export default async function TransfersPage({ searchParams }: { searchParams: Pr
             </tr>
           ))}
         </Table>
+        <Pager path="/app/transfers" params={{ status }} page={list.page} pages={list.pages} total={list.total} pageSize={list.pageSize} />
       </Card>
     </>
   );

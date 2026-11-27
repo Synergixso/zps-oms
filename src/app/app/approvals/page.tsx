@@ -3,7 +3,7 @@ import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
 import { hasPermission } from "@/server/domain/policy";
-import { approvalInbox, assignmentQueue, listRequests, overdueRequests, STATUS_LABEL, type RequestRow } from "@/server/domain/requests";
+import { approvalInbox, assignmentQueue, listRequests, STATUS_LABEL, type RequestRow } from "@/server/domain/requests";
 import { listMaintenance, MAINT_LABEL, maintenanceActions } from "@/server/domain/fleet";
 import { listChanges } from "@/server/domain/org";
 import { manpowerInbox } from "@/server/domain/manpower";
@@ -35,9 +35,10 @@ export default async function Approvals() {
   const db = getDb();
   const inbox = await approvalInbox(db, actor);
   const queue = await assignmentQueue(db, actor);
-  const myReturned = hasPermission(actor, "request.view") ? (await listRequests(db, actor, { status: "RETURNED" })).filter((r) => r.created_by === actor.userId) : [];
-  const overdue = hasPermission(actor, "request.view") ? overdueRequests(await listRequests(db, actor)) : [];
-  const maintAll = hasPermission(actor, "maintenance.view") ? await listMaintenance(db, actor) : [];
+  // Filters run in SQL over the whole scope, so older items are never missed.
+  const myReturned = hasPermission(actor, "request.view") ? await listRequests(db, actor, { status: "RETURNED", mine: true }) : [];
+  const overdue = hasPermission(actor, "request.view") ? await listRequests(db, actor, { overdue: true, sort: "due" }) : [];
+  const maintAll = hasPermission(actor, "maintenance.view") ? await listMaintenance(db, actor, { open: true }) : [];
   const actionable = await Promise.all(maintAll.map(async (m) => ((await maintenanceActions(db, actor, m)).length > 0 ? m : null)));
   const maint = actionable.filter((m): m is NonNullable<typeof m> => m !== null);
   const mpr = hasPermission(actor, "manpower.view") || hasPermission(actor, "manpower.contribute") ? await manpowerInbox(db, actor) : [];

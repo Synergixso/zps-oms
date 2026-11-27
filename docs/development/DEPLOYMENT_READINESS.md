@@ -34,7 +34,7 @@ Recorded 27 November 2026 for v0.9.0. No production server, hosting provider or 
 | 7 | Approved records-retention schedule (NFR-013) | Service records management |
 | 8 | Independent penetration test, DPIA and accreditation | Service / independent assessor |
 | 9 | Load model and production performance targets (NFR-002) | Service |
-| 10 | Production deployment authorisation (`INSTITUTIONAL_APPROVAL_STATUS.md`) | Service |
+| 10 | Production deployment authorisation (`docs/final-delivery/INSTITUTIONAL_APPROVAL_STATUS.md`) | Service |
 
 ## Production configuration checklist
 

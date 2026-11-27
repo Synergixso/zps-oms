@@ -7,7 +7,7 @@
  *     the Service's decisions. An approval can only be recorded with a reference, an approving authority, an
  *     effective date and where the evidence is held (validateRelease, tests/release.test.ts). Nothing here is
  *     inferred from engineering progress.
- * Shown on the platform console and in /api/health; documented in docs/development/INSTITUTIONAL_APPROVAL_STATUS.md.
+ * Shown on the platform console and in /api/health; documented in docs/final-delivery/INSTITUTIONAL_APPROVAL_STATUS.md.
  */
 import { VERSION } from "../domain/version";
 
@@ -54,7 +54,7 @@ export const RELEASE: ReleaseRecord = {
   stage: "PRODUCTION_CANDIDATE",
   stageDate: "2026-11-27",
   stageEvidence: [
-    "docs/development/END_TO_END_TEST_RESULTS.md", "docs/development/SECURITY_AUDIT.md", "docs/development/PRODUCTION_READINESS_REPORT.md",
+    "docs/development/END_TO_END_TEST_RESULTS.md", "docs/final-delivery/CYBERSECURITY_VERIFICATION.md", "docs/final-delivery/PRODUCTION_READINESS_REPORT.md", "docs/final-delivery/COMPLETE_WORKFLOW_TEST_RESULTS.md",
     "docs/evidence/route-audit.md", "docs/evidence/accessibility.md", "docs/evidence/reflow.md", "docs/evidence/print.md", "docs/evidence/load-test.md",
   ],
   nextStageBlockers: [

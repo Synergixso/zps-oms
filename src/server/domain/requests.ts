@@ -9,6 +9,7 @@
  *   CLOSED → IN_PROGRESS (controlled reopen, reason mandatory)
  * Multi-level definitions keep the request UNDER_REVIEW until every level approves, in order.
  */
+import { countQuery, firstRows, pageQuery, type Page, type Paging, type Query } from "./paging";
 import { z } from "zod";
 import type { DB } from "../db/connection";
 import { all, one, run, tx } from "../db/connection";
@@ -81,14 +82,13 @@ export interface RequestRow {
   approval_steps: string;
 }
 
-const BASE_SELECT = `
-  SELECT r.*, o.name AS origin_name, u.display_name AS creator_name, a.display_name AS assignee_name,
-         w.version AS workflow_version, w.approval_steps
-    FROM admin_requests r
+const REQ_COLUMNS = `r.*, o.name AS origin_name, u.display_name AS creator_name, a.display_name AS assignee_name, w.version AS workflow_version, w.approval_steps`;
+const REQ_FROM = `FROM admin_requests r
     JOIN org_units o ON o.id = r.origin_org_id
     JOIN users u ON u.id = r.created_by
     LEFT JOIN users a ON a.id = r.assigned_to
     JOIN workflow_definitions w ON w.id = r.workflow_id`;
+const BASE_SELECT = `SELECT ${REQ_COLUMNS} ${REQ_FROM}`;
 
 export function stepsOf(r: Pick<RequestRow, "approval_steps" | "origin_org_id">): ApprovalStep[] {
   const steps = JSON.parse(r.approval_steps) as ApprovalStep[];
@@ -116,13 +116,22 @@ export async function canViewRequest(db: DB, actor: Actor, r: RequestRow): Promi
 
 export interface RequestFilters {
   status?: string;
+  /** Any of these statuses (SQL), e.g. work in progress. */
+  statusIn?: string[];
   category?: string;
   q?: string;
   orgUnitId?: string;
+  /** Only requests created by the actor. */
+  mine?: boolean;
+  /** Only open requests past their due date (the same rule as overdueRequests). */
+  overdue?: boolean;
+  sort?: "updated" | "due" | "reference";
 }
 
-export async function listRequests(db: DB, actor: Actor, f: RequestFilters = {}): Promise<RequestRow[]> {
-  await requirePermission(db, actor, "request.view");
+const OPEN_FOR_SLA = ["SUBMITTED", "UNDER_REVIEW", "APPROVED", "IN_PROGRESS"];
+
+/** The scoped, filtered request query shared by the register, the paged register and dashboard figures. */
+function requestQuery(actor: Actor, f: RequestFilters): Query {
   const s = scopeFor(actor, "request.view");
   const where: string[] = [];
   const params: unknown[] = [];
@@ -137,6 +146,11 @@ export async function listRequests(db: DB, actor: Actor, f: RequestFilters = {})
     where.push("r.status = ?");
     params.push(f.status);
   }
+  const statusIn = (f.statusIn ?? []).filter((x) => (REQUEST_STATUSES as readonly string[]).includes(x));
+  if (statusIn.length) {
+    where.push(`r.status IN (${statusIn.map(() => "?").join(",")})`);
+    params.push(...statusIn);
+  }
   if (f.category) {
     where.push("r.category_code = ?");
     params.push(f.category);
@@ -145,11 +159,38 @@ export async function listRequests(db: DB, actor: Actor, f: RequestFilters = {})
     where.push("r.origin_org_id = ?");
     params.push(f.orgUnitId);
   }
+  if (f.mine) {
+    where.push("r.created_by = ?");
+    params.push(actor.userId);
+  }
+  if (f.overdue) {
+    where.push(`r.due_date IS NOT NULL AND r.due_date < ? AND r.status IN (${OPEN_FOR_SLA.map(() => "?").join(",")})`);
+    params.push(nowIso().slice(0, 10), ...OPEN_FOR_SLA);
+  }
   if (f.q) {
     where.push("(r.reference LIKE ? OR r.title LIKE ?)");
     params.push(`%${f.q}%`, `%${f.q}%`);
   }
-  return await all<RequestRow>(db, `${BASE_SELECT} WHERE ${where.join(" AND ")} ORDER BY r.updated_at DESC LIMIT 500`, ...params);
+  const order = f.sort === "due" ? "r.due_date IS NULL, r.due_date, r.reference" : f.sort === "reference" ? "r.reference DESC" : "r.updated_at DESC";
+  return { columns: REQ_COLUMNS, from: REQ_FROM, where: where.join(" AND "), params, order };
+}
+
+/** Up to 500 requests (dashboard panels); use pageRequests for the register. */
+export async function listRequests(db: DB, actor: Actor, f: RequestFilters = {}): Promise<RequestRow[]> {
+  await requirePermission(db, actor, "request.view");
+  return firstRows<RequestRow>(db, requestQuery(actor, f));
+}
+
+/** One page of the request register with the true total. */
+export async function pageRequests(db: DB, actor: Actor, f: RequestFilters & Paging = {}): Promise<Page<RequestRow>> {
+  await requirePermission(db, actor, "request.view");
+  return pageQuery<RequestRow>(db, requestQuery(actor, f), f);
+}
+
+/** Count of requests matching the filters (dashboard figures). */
+export async function countRequests(db: DB, actor: Actor, f: RequestFilters = {}): Promise<number> {
+  await requirePermission(db, actor, "request.view");
+  return countQuery(db, requestQuery(actor, f));
 }
 
 /** Items awaiting this actor's decision (approval inbox), across levels. */

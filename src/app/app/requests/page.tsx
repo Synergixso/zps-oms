@@ -1,10 +1,11 @@
+import { Pager } from "@/components/pager";
 import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
 import { REQUEST_CATEGORIES } from "@/server/domain/catalogue";
 import { hasPermission } from "@/server/domain/policy";
-import { listRequests, REQUEST_STATUSES, STATUS_LABEL } from "@/server/domain/requests";
+import { pageRequests, REQUEST_STATUSES, STATUS_LABEL } from "@/server/domain/requests";
 import { AccessDenied, Badge, ButtonLink, Card, PageHeader, Table, td, fmtDate, btnSecondary } from "@/components/ui";
 
 export const metadata = { title: "Administrative requests" };
@@ -13,7 +14,9 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
   const actor = await requireActor();
   if (!await pageAllowed(actor, "request.view")) return <AccessDenied what="administrative requests" />;
   const sp = await searchParams;
-  const rows = await listRequests(getDb(), actor, { status: sp.status, category: sp.category, q: sp.q?.slice(0, 60) });
+  const sort = sp.sort === "due" || sp.sort === "reference" ? sp.sort : "updated";
+  const list = await pageRequests(getDb(), actor, { status: sp.status, category: sp.category, q: sp.q?.slice(0, 60), sort, page: Number(sp.page) || 1 });
+  const rows = list.rows;
   const today = new Date().toISOString().slice(0, 10);
   const catName = Object.fromEntries(REQUEST_CATEGORIES.map((c) => [c.code, c.name]));
   return (
@@ -44,9 +47,17 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
               {REQUEST_CATEGORIES.map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}
             </select>
           </div>
+          <div>
+            <label htmlFor="sort" className="block text-xs font-semibold text-ink-2">Sort by</label>
+            <select id="sort" name="sort" defaultValue={sort} className="mt-1 rounded-md border border-line-2 px-3 py-2 text-sm">
+              <option value="updated">Last updated</option>
+              <option value="due">Due date (soonest first)</option>
+              <option value="reference">Reference (newest first)</option>
+            </select>
+          </div>
           <button type="submit" className={btnSecondary}>Apply filters</button>
           {(sp.q || sp.status || sp.category) && <Link href="/app/requests" className="py-2 text-sm text-zp-blue hover:underline">Clear</Link>}
-          <p className="ml-auto self-center text-xs text-muted">{rows.length} record(s)</p>
+          <p className="ml-auto self-center text-xs text-muted">{list.total} record(s)</p>
         </form>
         <Table head={["Reference", "Subject", "Category", "Organisation", "Status", "Due", "Updated"]} caption="Administrative requests" empty="No requests match the current filters. Adjust or clear the filters.">
           {rows.map((r) => {
@@ -64,6 +75,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
             );
           })}
         </Table>
+        <Pager path="/app/requests" params={sp} page={list.page} pages={list.pages} total={list.total} pageSize={list.pageSize} />
       </Card>
     </>
   );

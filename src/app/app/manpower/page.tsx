@@ -1,18 +1,20 @@
+import { Pager } from "@/components/pager";
 import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
 import { hasPermission } from "@/server/domain/policy";
-import { MPR_CATEGORIES, MPR_STATUS_LABEL, listManpowerRequests } from "@/server/domain/manpower";
+import { MPR_CATEGORIES, MPR_STATUS_LABEL, pageManpowerRequests } from "@/server/domain/manpower";
 import { AccessDenied, Badge, ButtonLink, Card, PageHeader, Table, td, fmtDate } from "@/components/ui";
 
 export const metadata = { title: "Manpower requests" };
 
-export default async function ManpowerPage({ searchParams }: { searchParams: Promise<{ status?: string; q?: string }> }) {
+export default async function ManpowerPage({ searchParams }: { searchParams: Promise<{ status?: string; q?: string; page?: string }> }) {
   const actor = await requireActor();
   if (!(await pageAllowed(actor, "manpower.view"))) return <AccessDenied what="manpower requests" />;
-  const { status = "ALL", q } = await searchParams;
-  const rows = await listManpowerRequests(getDb(), actor, { status, q });
+  const { status = "ALL", q, page } = await searchParams;
+  const list = await pageManpowerRequests(getDb(), actor, { status, q, page: Number(page) || 1 });
+  const rows = list.rows;
   const tabs = [["ALL", "All"], ["OPEN", "Open"], ["DRAFT", "Drafts"], ["APPROVED", "Approved"], ["COMPLETED", "Completed"]];
   return (
     <>
@@ -48,6 +50,7 @@ export default async function ManpowerPage({ searchParams }: { searchParams: Pro
             </tr>
           ))}
         </Table>
+        <Pager path="/app/manpower" params={{ status, q }} page={list.page} pages={list.pages} total={list.total} pageSize={list.pageSize} />
       </Card>
     </>
   );

@@ -3,7 +3,7 @@
 > **National Operations Personnel, Manpower and Administration Management Platform**
 > Developed by Synergix Solutions · Designed and developed by SPOM Technical Services Section Team
 
-**Status: v0.9.0 — software stage *Production candidate*; institutional approval: *Awaiting Formal Institutional Approval*; production deployment: not authorised** (`docs/development/PRODUCTION_READINESS_REPORT.md`, `docs/development/INSTITUTIONAL_APPROVAL_STATUS.md`). The application is not connected to any Zambia Police Service network or data. Every person, service number, roster and reference in this repository and its development seed data is synthetic.
+**Status: v0.9.0 — software stage *Production candidate*; institutional approval: *Awaiting Formal Institutional Approval*; production deployment: not authorised** (`docs/final-delivery/PRODUCTION_READINESS_REPORT.md`, `docs/final-delivery/INSTITUTIONAL_APPROVAL_STATUS.md`). The application is not connected to any Zambia Police Service network or data. Every person, service number, roster and reference in this repository and its development seed data is synthetic.
 
 ---
 
@@ -172,6 +172,8 @@ On first start the server applies any pending migrations and then loads the synt
 | `npm test` | Vitest suites against `zps_oms_test` (recreated once per run; every test runs inside a rolled-back transaction) |
 | `npm run test:e2e` | Playwright end-to-end tests in Microsoft Edge against a dedicated `zps_oms_e2e` database (port 3200) |
 | `npm run typecheck` | `tsc --noEmit` |
+| `npm run lint` | ESLint (Next.js and React rules), fails on any warning |
+| `npm run test:security` | HTTP security probes against a running local server (headers, CSP, cookies, refusals) |
 | `npm run build` / `npm start` | Production build and serve. For the local cookie flag, see `docs/DEPLOYMENT_GUIDE.md` |
 | `npm run db:migrate` | Apply pending SQL migrations to `DATABASE_URL` |
 | `npm run db:reset` | Drop and recreate the local `zps_oms_*` database. **Destroys its data.** Refuses any other database name |
@@ -205,11 +207,11 @@ Every account is synthetic: `demo.*` usernames and "Demo" names. The development
 | Demo A Company Administrative Officer (`demo.mu.acoy.admin`) | Select eligible officers for a contribution and submit |
 
 ## 11. Testing and verification evidence
-- **Domain and integration tests** (`npm test`, 148 tests in strict SQL mode) cover access control, tenant isolation, the 27-role matrix, context switching, scoped technical administration, stores, workflows and decision chains, separation of duties, scheduled delivery, Excel export, backups and restore drills, audit-chain concurrency, migrations and the seed.
+- **Domain and integration tests** (`npm test`, 158 tests in 26 files, strict SQL mode) cover access control, tenant isolation, the 27-role matrix, context switching, scoped technical administration, stores, workflows and decision chains, separation of duties, scheduled delivery, Excel export, backups and restore drills, audit-chain concurrency, migrations and the seed.
 - **Playwright** (`npm run test:e2e`, Microsoft Edge): 8 journeys, the axe-core accessibility scan (`docs/evidence/accessibility.md`), the reflow/200 % zoom/tablet check (`docs/evidence/reflow.md`), the A4 print check (`docs/evidence/print.md`) and the Content Security Policy check.
 - **Load and page-weight baseline** (`npm run test:load -- http://localhost:3100` against `npm run start`) — `docs/evidence/load-test.md`.
 - **Route audit** (`npm run audit:routes`): every route against every user — `docs/evidence/route-audit.md`. **Phone-width review** (`npm run review:mobile`) — `docs/evidence/mobile/`.
-- **CI**: `.github/workflows/ci.yml` (type check, tests on MariaDB 10.4, dependency audit, build).
+- **CI**: `.github/workflows/ci.yml` (type check, ESLint with zero warnings, tests on MariaDB 10.4, dependency audit, build).
 - **Evidence:** `docs/role-architecture/ROLE_TEST_RESULTS.md`, `docs/development/TEST_RESULTS.md`.
 
 Before every change: `npx tsc --noEmit`, then `npm test`, then the route audit against a production build.

@@ -1,20 +1,22 @@
+import { Pager } from "@/components/pager";
 import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
 import { hasPermission } from "@/server/domain/policy";
-import { listUsers } from "@/server/domain/iam";
+import { pageUsers } from "@/server/domain/iam";
 import { provisionUserAction } from "@/server/actions/iam";
 import { AccessDenied, Badge, Card, PageHeader, Table, td, fmtDate, btnSecondary } from "@/components/ui";
 import { ActionForm, Submit, TextField } from "@/components/forms";
 
 export const metadata = { title: "Users & access" };
 
-export default async function UsersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+export default async function UsersPage({ searchParams }: { searchParams: Promise<{ q?: string; page?: string }> }) {
   const actor = await requireActor();
   if (!await pageAllowed(actor, "user.view")) return <AccessDenied what="user administration" />;
-  const { q } = await searchParams;
-  const users = await listUsers(getDb(), actor, q?.slice(0, 40));
+  const { q, page } = await searchParams;
+  const list = await pageUsers(getDb(), actor, q?.slice(0, 40), { page: Number(page) || 1 });
+  const users = list.rows;
   return (
     <>
       <PageHeader eyebrow="M02 · Identity and access" title="Users & access" description={hasPermission(actor, "user.provision") ? "Unique individual accounts only. No public self-registration. Access = role + organisational scope + validity window, recorded with a justification." : "Technical account support for users assigned within your organisational scope: temporary passwords, sign-in lockouts and sessions. Role and delegation changes are referred to Headquarters."} />
@@ -37,6 +39,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
               </tr>
             ))}
           </Table>
+          <Pager path="/app/admin/users" params={{ q }} page={list.page} pages={list.pages} total={list.total} pageSize={list.pageSize} />
         </Card>
         {hasPermission(actor, "user.provision") && (
           <Card title="Provision a synthetic account" subtitle="New accounts have no access until a role and scope are assigned.">

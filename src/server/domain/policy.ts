@@ -216,6 +216,15 @@ export async function approvalUnitFor(db: DB, actor: Actor, domain: DelegationDo
   return rows.find((r) => business.has(r.org_unit_id))?.org_unit_id ?? null;
 }
 
+/** The reference of the delegation that authorises the actor to decide `domain` at `unitId` (recorded in audit events). */
+export async function delegationReference(db: DB, userId: string, domain: DelegationDomain, unitId: string): Promise<string | null> {
+  const t = nowIso();
+  const r = await one<{ approval_ref: string }>(db,
+    `SELECT d.approval_ref FROM delegations d WHERE d.user_id = ? AND d.domain = ? AND d.org_unit_id = ? AND d.revoked_at IS NULL
+        AND d.valid_from <= ? AND (d.valid_to IS NULL OR d.valid_to > ?) ORDER BY d.valid_from DESC LIMIT 1`, userId, domain, unitId, t, t);
+  return r?.approval_ref ?? null;
+}
+
 /** Units the actor may act on for `perm` (expanded); `null` means national. */
 export function unitsFor(actor: Actor, perm: Permission): string[] | null {
   const s = scopeFor(actor, perm);

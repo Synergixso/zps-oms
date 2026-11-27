@@ -1,3 +1,4 @@
+import { Pager } from "@/components/pager";
 import { identifierHint, identifierRule } from "@/server/lib/identifiers";
 import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
@@ -5,7 +6,7 @@ import { pageAllowed } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
 import { ROLE_BY_CODE } from "@/server/domain/catalogue";
 import { hasPermission } from "@/server/domain/policy";
-import { listItems, storeCategories, storesSummary, storeUnits } from "@/server/domain/stores";
+import { pageItems, storeCategories, storesSummary, storeUnits } from "@/server/domain/stores";
 import { createStoreItemAction } from "@/server/actions/stores";
 import { AccessDenied, Badge, ButtonLink, Card, Notice, PageHeader, Stat, Table, td, fmtDateTime, btnSecondary } from "@/components/ui";
 import { ActionForm, Select, Submit, TextField } from "@/components/forms";
@@ -17,12 +18,13 @@ export default async function StoresPage({ searchParams }: { searchParams: Promi
   if (!await pageAllowed(actor, "stores.view")) return <AccessDenied what="general stores" />;
   const sp = await searchParams;
   const db = getDb();
-  const [rows, cats, units, sum] = await Promise.all([
-    listItems(db, actor, { q: sp.q?.slice(0, 40), category: sp.category, unit: sp.unit, low: sp.low === "1" }),
+  const [list, cats, units, sum] = await Promise.all([
+    pageItems(db, actor, { q: sp.q?.slice(0, 40), category: sp.category, unit: sp.unit, low: sp.low === "1", page: Number(sp.page) || 1 }),
     storeCategories(db),
     storeUnits(db, actor),
     storesSummary(db, actor),
   ]);
+  const rows = list.rows;
   const manageUnits = actor.assignments.filter((a) => ROLE_BY_CODE[a.roleCode]?.permissions["stores.manage"]).map((a) => ({ value: a.orgUnitId, label: a.orgUnitName }));
   const canRequisition = hasPermission(actor, "stores.requisition");
   return (
@@ -66,7 +68,7 @@ export default async function StoresPage({ searchParams }: { searchParams: Promi
             <label className="flex items-center gap-2 py-2 text-sm"><input type="checkbox" name="low" value="1" defaultChecked={sp.low === "1"} /> Reorder needed</label>
             <button type="submit" className={btnSecondary}>Apply</button>
             {(sp.q || sp.category || sp.unit || sp.low) && <Link href="/app/stores" className="py-2 text-sm text-zp-blue hover:underline">Clear</Link>}
-            <p className="ml-auto self-center text-xs text-muted">{rows.length} item(s)</p>
+            <p className="ml-auto self-center text-xs text-muted">{list.total} item(s)</p>
           </form>
           <Table head={["Code", "Item", "Category", "Store", "On hand", "Reorder level", "Status", "Updated"]} caption="Store items" empty="No store items in your scope.">
             {rows.map((i) => {
@@ -85,6 +87,7 @@ export default async function StoresPage({ searchParams }: { searchParams: Promi
               );
             })}
           </Table>
+          <Pager path="/app/stores" params={sp} page={list.page} pages={list.pages} total={list.total} pageSize={list.pageSize} />
         </Card>
         {manageUnits.length > 0 && (
           <Card title="Add a store item" subtitle="Approved general-stores categories only">

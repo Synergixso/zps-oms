@@ -15,13 +15,9 @@ export function DonutChart({ data, centerLabel, emptyText = "No data in your sco
   const total = data.reduce((n, d) => n + d.value, 0);
   if (!total) return <p className="py-8 text-center text-sm text-muted">{emptyText}</p>;
   const r = 70, c = 2 * Math.PI * r, gap = 2;
-  let offset = 0;
-  const arcs = data.map((d, i) => {
-    const len = (d.value / total) * c;
-    const arc = { i, d, dash: Math.max(len - gap, 0.5), offset };
-    offset += len;
-    return arc;
-  });
+  // Each arc starts where the previous ones end (running total; nothing is reassigned after render).
+  const lengths = data.map((d) => (d.value / total) * c);
+  const arcs = data.map((d, i) => ({ i, d, dash: Math.max(lengths[i] - gap, 0.5), offset: lengths.slice(0, i).reduce((a, b) => a + b, 0) }));
   const pct = (v: number) => Math.round((v / total) * 100);
   return (
     <div className="@container"><div className="flex flex-col items-center gap-4 @[440px]:flex-row">

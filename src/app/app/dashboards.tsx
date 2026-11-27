@@ -1,7 +1,7 @@
 /** Role dashboards for the personnel, manpower and assignment levels (Directive §14). All figures are live, scoped queries. */
 import Link from "next/link";
 import { all, getDb } from "@/server/db/connection";
-import { ROLE_BY_CODE, type DashboardKind } from "@/server/domain/catalogue";
+import type { DashboardKind } from "@/server/domain/catalogue";
 import { type Actor, hasPermission, primaryAssignment, primaryRole, unitsFor } from "@/server/domain/policy";
 import { DISPOSITIONS, personnelSummary } from "@/server/domain/personnel";
 import { MPR_STATUS_LABEL, manpowerInbox, manpowerSummary, listManpowerRequests, myContributions } from "@/server/domain/manpower";
@@ -84,7 +84,6 @@ export async function PersonnelOpsPanel({ actor }: { actor: Actor }) {
 
 function header(actor: Actor, description: string) {
   const r = primaryRole(actor)!;
-  const pa = primaryAssignment(actor);
   return <SectionHeader title={r ? "Working panels" : "Workspace"} description={description} />;
 }
 

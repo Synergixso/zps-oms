@@ -14,6 +14,7 @@
  * submission, approval and finalisation; reused lists are revalidated, never assumed.
  * Approval = MANPOWER delegation at the request's approval unit or an ancestor + business role (policy.approvalUnitFor).
  */
+import { firstRows, pageQuery, splitSelect, type Page, type Paging, type Query } from "./paging";
 import { z } from "zod";
 import type { DB } from "../db/connection";
 import { all, one, run, tx } from "../db/connection";
@@ -92,15 +93,26 @@ function mprScope(actor: Actor): { sql: string; params: string[] } {
   };
 }
 
-export async function listManpowerRequests(db: DB, actor: Actor, f: { status?: string; q?: string } = {}) {
-  await requirePermission(db, actor, "manpower.view");
+export type MprFilters = { status?: string; q?: string };
+
+function mprQuery(actor: Actor, f: MprFilters): Query {
   const s = mprScope(actor);
   const where = [s.sql];
   const params: unknown[] = [...s.params];
   if (f.status === "OPEN") where.push("m.status IN ('SUBMITTED','UNDER_REVIEW','RETURNED','RECOMMENDED','APPROVED')");
   else if (f.status && f.status !== "ALL") { where.push("m.status = ?"); params.push(f.status); }
   if (f.q?.trim()) { where.push("(LOWER(m.reference) LIKE ? OR LOWER(m.purpose) LIKE ?)"); params.push(`%${f.q.trim().toLowerCase()}%`, `%${f.q.trim().toLowerCase()}%`); }
-  return all<MprRow>(db, `${MPR_SELECT} WHERE ${where.join(" AND ")} ORDER BY m.created_at DESC LIMIT 300`, ...params);
+  return { ...splitSelect(MPR_SELECT), where: where.join(" AND "), params, order: "m.created_at DESC" };
+}
+
+/** Up to 500 manpower requests (panels); use pageManpowerRequests for the register. */
+export async function listManpowerRequests(db: DB, actor: Actor, f: MprFilters = {}) {
+  await requirePermission(db, actor, "manpower.view");
+  return firstRows<MprRow>(db, mprQuery(actor, f));
+}
+export async function pageManpowerRequests(db: DB, actor: Actor, f: MprFilters & Paging = {}): Promise<Page<MprRow>> {
+  await requirePermission(db, actor, "manpower.view");
+  return pageQuery<MprRow>(db, mprQuery(actor, f), f);
 }
 
 export async function getManpowerRequest(db: DB, actor: Actor, id: string): Promise<MprRow> {
@@ -395,7 +407,8 @@ export async function eligibleForContribution(db: DB, actor: Actor, contribution
         AND NOT EXISTS (SELECT 1 FROM manpower_contribution_entries e JOIN manpower_contributions c2 ON c2.id = e.contribution_id WHERE c2.request_id = ? AND e.personnel_id = p.id)
         ${extra}
       ORDER BY r.seniority DESC, p.surname LIMIT 200`, ...params);
-  return rows.filter((p) => can(actor, "personnel.view", c.contributing_unit_id) || can(actor, "manpower.contribute", c.contributing_unit_id) ? true : false);
+  // Visible only to those who may see or prepare this unit's contribution (the same rule for every row).
+  return can(actor, "personnel.view", c.contributing_unit_id) || can(actor, "manpower.contribute", c.contributing_unit_id) ? rows : [];
 }
 
 export async function addContributionEntries(db: DB, actor: Actor, contributionId: string, personnelIds: string[]) {
@@ -503,6 +516,19 @@ export async function listRosters(db: DB, actor: Actor, requestId: string) {
 }
 
 /** Rosters visible to the actor (for the roster index and reuse pickers). */
+/** One page of the roster index with the true total. */
+export async function pageRosters(db: DB, actor: Actor, p: Paging = {}): Promise<Page<RosterIndexRow>> {
+  await requirePermission(db, actor, "roster.view");
+  const units = unitsFor(actor, "roster.view");
+  const scope = units === null ? "1=1" : units.length ? `m.requesting_unit_id IN (${inList(units)})` : "1=0";
+  return pageQuery<RosterIndexRow>(db, {
+    columns: "v.id, v.request_id, m.reference, m.purpose, v.version_no, v.status, v.created_at, v.approved_at, ar.name AS area_name, (SELECT COUNT(*) FROM roster_entries e WHERE e.version_id = v.id) AS entries",
+    from: "FROM roster_versions v JOIN manpower_requests m ON m.id = v.request_id LEFT JOIN operational_areas ar ON ar.id = m.area_id",
+    where: scope, params: units ?? [], order: "v.created_at DESC",
+  }, p);
+}
+export interface RosterIndexRow { id: string; request_id: string; reference: string; purpose: string; version_no: number; status: string; entries: number; created_at: string; approved_at: string | null; area_name: string | null }
+
 export async function rosterIndex(db: DB, actor: Actor, status?: string) {
   await requirePermission(db, actor, "roster.view");
   const units = unitsFor(actor, "roster.view");

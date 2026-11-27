@@ -1,6 +1,6 @@
 # Full Module Completion Matrix
 
-Recorded 27 November 2026 for v0.9.0 against the owner's directive of 27 November 2026 (§6, seventeen modules). Statuses use the directive's scale: Not Started · In Progress · Partially Implemented · Implemented · Tested · Completed and Verified · Blocked by External Dependency. "Completed and Verified" means implemented, integrated with MySQL and the interface, enforced server-side, and covered by passing automated tests and the route audit; evidence is in `END_TO_END_TEST_RESULTS.md` and `docs/evidence/`. Institutional validation of the *content* (roles, delegations, policy values) is a separate matter recorded in `INSTITUTIONAL_APPROVAL_STATUS.md`.
+Recorded 27 November 2026 for v0.9.0 against the owner's directive of 27 November 2026 (§6, seventeen modules). Statuses use the directive's scale: Not Started · In Progress · Partially Implemented · Implemented · Tested · Completed and Verified · Blocked by External Dependency. "Completed and Verified" means implemented, integrated with MySQL and the interface, enforced server-side, and covered by passing automated tests and the route audit; evidence is in `END_TO_END_TEST_RESULTS.md` and `docs/evidence/`. Institutional validation of the *content* (roles, delegations, policy values) is a separate matter recorded in `docs/final-delivery/INSTITUTIONAL_APPROVAL_STATUS.md`.
 
 | # | Module | Status | Outstanding (external) |
 |--:|---|---|---|
@@ -33,7 +33,7 @@ Recorded 27 November 2026 for v0.9.0 against the owner's directive of 27 Novembe
 ### 02 — User, roles and access management
 - **Implementation:** the 27 roles in three tiers (`catalogue.ts`), role-to-permission mapping with UNIT/SUBTREE/NATIONAL coverage, accounts, multi-role assignment with context switching, revocation, suspension and deactivation, temporary (time-limited) assignments, delegations, access reviews, sign-in lockout and throttling. **New in 0.9.0:** active-session list, per-session revocation (own other sessions; account support for users in scope) and sign-in / account history from the audit trail on the profile and account pages (`account-activity.ts`); production account creation no longer marks accounts synthetic; first-account setup for an empty production database (`setup.ts`, `/setup`).
 - **Permissions:** `user.*`, `grant.*`, `delegation.*`, `accessreview.manage`. **Automation:** `access.temporary-expiry`, `security.unusual-access`.
-- **Evidence:** `auth-scope`, `three-tier-roles`, `context-switching`, `account-activity`, `production-setup` tests; Playwright context-switch and admin-records journeys. **Status:** Completed and Verified.
+- **Evidence:** `auth-scope`, `three-tier-roles` (incl. context switching), `account-activity`, `production-setup` tests; Playwright context-switch and admin-records journeys. **Status:** Completed and Verified.
 
 ### 03 — Central personnel registry
 - **Implementation:** one canonical record per officer with generated `PER-` reference, rank, home unit and membership history, verification, duplicate detection and review, corrections, search, history and disposition history (`personnel.ts`). **New in 0.9.0:** service-number format by environment (synthetic outside production; the Service's configured format in production).
@@ -69,7 +69,7 @@ Recorded 27 November 2026 for v0.9.0 against the owner's directive of 27 Novembe
 
 ### 11 — General asset and equipment accountability
 - **Implementation:** non-sensitive assets (category allowlist, prohibited-term screening), custody, issue and return, transfers, inspections, condition, maintenance, reconciliation (stock-takes), disposal; general stores with ledger and requisitions. Firearms, ammunition and armoury items are not representable; role 16 holds administrative-request functions only.
-- **Automation:** `asset.custody-reminders`, `stores.reorder-and-requisitions`. **Evidence:** `extensions`, `stores` tests. **Status:** Completed and Verified.
+- **Automation:** `asset.custody-reminders`, `stores.reorder-and-requisitions`. **Evidence:** `extensions`, `three-tier-roles` (stores) tests. **Status:** Completed and Verified.
 
 ### 12 — Management dashboards and reporting
 - **Implementation:** 27 role dashboards (national, provincial, formation, district, station) whose figures are live SQL counts within scope; personnel, manpower, roster, assignment, disposition, tenure, transfer, fleet, asset, stores, approval and audit reports; column choice, saved views, CSV and .xlsx export, scheduled in-application delivery.

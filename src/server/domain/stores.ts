@@ -10,6 +10,7 @@
  *    or REJECTED / CANCELLED. Approval = stores.approve + a STORES delegation + a BUSINESS role at the
  *    delegating unit (policy.approvalUnitFor); never the requester. Issue is done by the store keeper.
  */
+import { firstRows, pageQuery, splitSelect, type Page, type Paging, type Query } from "./paging";
 import { identifierField } from "../lib/identifiers";
 import { z } from "zod";
 import type { DB } from "../db/connection";
@@ -117,8 +118,9 @@ export async function storeUnits(db: DB, actor: Actor) {
     `SELECT o.id, o.name, COUNT(*) AS items FROM store_items i JOIN org_units o ON o.id = i.org_unit_id ${where} GROUP BY o.id, o.name ORDER BY o.name`, ...(s.national ? [] : s.units));
 }
 
-export async function listItems(db: DB, actor: Actor, f: { q?: string; category?: string; unit?: string; low?: boolean } = {}): Promise<StoreItem[]> {
-  await requirePermission(db, actor, "stores.view");
+export type ItemFilters = { q?: string; category?: string; unit?: string; low?: boolean };
+
+function itemQuery(actor: Actor, f: ItemFilters): Query {
   const s = scopeFor(actor, "stores.view");
   const where: string[] = [];
   const params: unknown[] = [];
@@ -127,7 +129,17 @@ export async function listItems(db: DB, actor: Actor, f: { q?: string; category?
   if (f.category) { where.push("i.category_code = ?"); params.push(f.category); }
   if (f.unit) { where.push("i.org_unit_id = ?"); params.push(f.unit); }
   if (f.low) where.push("i.status = 'ACTIVE' AND i.quantity_on_hand <= i.reorder_level");
-  return await all<StoreItem>(db, `${ITEM_SELECT} ${where.length ? "WHERE " + where.join(" AND ") : ""} ORDER BY o.name, i.code LIMIT 500`, ...params);
+  return { ...splitSelect(ITEM_SELECT), where: where.length ? where.join(" AND ") : "1=1", params, order: "o.name, i.code" };
+}
+
+/** Up to 500 store items (panels); use pageItems for the register. */
+export async function listItems(db: DB, actor: Actor, f: ItemFilters = {}): Promise<StoreItem[]> {
+  await requirePermission(db, actor, "stores.view");
+  return firstRows<StoreItem>(db, itemQuery(actor, f));
+}
+export async function pageItems(db: DB, actor: Actor, f: ItemFilters & Paging = {}): Promise<Page<StoreItem>> {
+  await requirePermission(db, actor, "stores.view");
+  return pageQuery<StoreItem>(db, itemQuery(actor, f), f);
 }
 
 export async function getItem(db: DB, actor: Actor, id: string): Promise<StoreItem> {
@@ -210,7 +222,9 @@ export async function recordMovement(db: DB, actor: Actor, itemId: string, input
 
 // ── Requisitions ─────────────────────────────────────────────────────────────
 
-export async function listRequisitions(db: DB, actor: Actor, f: { status?: string; mine?: boolean } = {}): Promise<Requisition[]> {
+export type RequisitionFilters = { status?: string; statusIn?: string[]; mine?: boolean };
+
+async function requisitionQuery(db: DB, actor: Actor, f: RequisitionFilters): Promise<Query> {
   const v = scopeFor(actor, "stores.view");
   const q = scopeFor(actor, "stores.requisition");
   if (!v.national && !v.units.length && !q.national && !q.units.length) await requirePermission(db, actor, "stores.view");
@@ -223,8 +237,18 @@ export async function listRequisitions(db: DB, actor: Actor, f: { status?: strin
     params.push(...viewU, ...viewU, ...reqU, actor.userId);
   }
   if (f.status) { where.push("r.status = ?"); params.push(f.status); }
+  const statusIn = (f.statusIn ?? []).filter((x) => x in REQ_STATUS_LABEL);
+  if (statusIn.length) { where.push(`r.status IN (${statusIn.map(() => "?").join(",")})`); params.push(...statusIn); }
   if (f.mine) { where.push("r.requested_by = ?"); params.push(actor.userId); }
-  return await all<Requisition>(db, `${REQ_SELECT} ${where.length ? "WHERE " + where.join(" AND ") : ""} ORDER BY r.created_at DESC LIMIT 300`, ...params);
+  return { ...splitSelect(REQ_SELECT), where: where.length ? where.join(" AND ") : "1=1", params, order: "r.created_at DESC" };
+}
+
+/** Up to 500 requisitions (panels); use pageRequisitions for the register. */
+export async function listRequisitions(db: DB, actor: Actor, f: RequisitionFilters = {}): Promise<Requisition[]> {
+  return firstRows<Requisition>(db, await requisitionQuery(db, actor, f));
+}
+export async function pageRequisitions(db: DB, actor: Actor, f: RequisitionFilters & Paging = {}): Promise<Page<Requisition>> {
+  return pageQuery<Requisition>(db, await requisitionQuery(db, actor, f), f);
 }
 
 function canSeeRequisition(actor: Actor, r: Requisition) {

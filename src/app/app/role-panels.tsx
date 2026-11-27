@@ -11,10 +11,15 @@ import { Badge, ButtonLink, Card, Notice, SectionHeader, Table, td, fmtDate, fmt
 
 export async function StoresPanels({ actor }: { actor: Actor }) {
   const db = getDb();
-  const [low, reqs] = await Promise.all([listItems(db, actor, { low: true }), listRequisitions(db, actor)]);
-  const toIssue = reqs.filter((r) => r.status === "APPROVED" && unitsFor(actor, "stores.manage")?.includes(r.store_unit_id) !== false);
-  const pending = reqs.filter((r) => r.status === "SUBMITTED");
-  const mine = reqs.filter((r) => r.requested_by === actor.userId && ["DRAFT", "SUBMITTED", "APPROVED"].includes(r.status));
+  // Each list is filtered in SQL over the whole scope (not derived from a capped list).
+  const [low, approved, pending, mine] = await Promise.all([
+    listItems(db, actor, { low: true }),
+    listRequisitions(db, actor, { status: "APPROVED" }),
+    listRequisitions(db, actor, { status: "SUBMITTED" }),
+    listRequisitions(db, actor, { mine: true, statusIn: ["DRAFT", "SUBMITTED", "APPROVED"] }),
+  ]);
+  const manageUnits = unitsFor(actor, "stores.manage");
+  const toIssue = approved.filter((r) => manageUnits?.includes(r.store_unit_id) !== false);
   const s = unitsFor(actor, "stores.view");
   const recent = s === null || s.length
     ? await all<{ id: string; item_id: string; code: string; name: string; txn_type: string; quantity: number; balance_after: number; created_at: string; actor_name: string }>(db,

@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { NavGroup } from "@/lib/nav";
 import { Icon } from "./icons";
 
@@ -17,6 +17,17 @@ function isActive(path: string, href: string) {
 }
 
 const STORE = "zps.nav.collapsed";
+const STORE_EVENT = "zps-nav-collapsed";
+
+/** Collapsed navigation sections, kept in browser storage and read without a hydration mismatch. */
+function subscribeCollapsed(onChange: () => void) {
+  window.addEventListener(STORE_EVENT, onChange);
+  window.addEventListener("storage", onChange);
+  return () => { window.removeEventListener(STORE_EVENT, onChange); window.removeEventListener("storage", onChange); };
+}
+function readCollapsed(): string {
+  try { return localStorage.getItem(STORE) ?? "{}"; } catch { return "{}"; } // storage unavailable: everything expanded
+}
 
 export interface ShellUser { name: string; role: string; initials: string }
 export interface ShellContext { id: string; role: string; unit: string; active: boolean }
@@ -24,30 +35,24 @@ export interface ShellContext { id: string; role: string; unit: string; active: 
 export function SideNav({ groups, crest, user, version, environment }: { groups: NavGroup[]; crest: React.ReactNode; user: ShellUser; version: string; environment: { banner: boolean; label: string; environment: string } }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
-  useEffect(() => setOpen(false), [path]);
-  useEffect(() => {
-    try {
-      setCollapsed(JSON.parse(localStorage.getItem(STORE) ?? "{}"));
-    } catch {
-      /* storage unavailable: everything expanded */
-    }
-  }, []);
+  // Close the drawer when the route changes (adjusting state during render, not in an effect).
+  const [shownPath, setShownPath] = useState(path);
+  if (shownPath !== path) { setShownPath(path); setOpen(false); }
+  const raw = useSyncExternalStore(subscribeCollapsed, readCollapsed, () => "{}");
+  const collapsed = useMemo<Record<string, boolean>>(() => { try { return JSON.parse(raw); } catch { return {}; } }, [raw]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
-  const toggle = (label: string) =>
-    setCollapsed((c) => {
-      const next = { ...c, [label]: !c[label] };
-      try {
-        localStorage.setItem(STORE, JSON.stringify(next));
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
+  const toggle = (label: string) => {
+    try {
+      localStorage.setItem(STORE, JSON.stringify({ ...collapsed, [label]: !collapsed[label] }));
+      window.dispatchEvent(new Event(STORE_EVENT));
+    } catch {
+      /* storage unavailable: the section stays as it is */
+    }
+  };
 
   const nav = (
     <nav aria-label="Primary" className="flex h-full flex-col">
@@ -95,6 +100,7 @@ export function SideNav({ groups, crest, user, version, environment }: { groups:
                         >
                           <Icon name={i.icon} className="h-[19px] w-[19px] shrink-0" />
                           <span className="truncate">{i.label}</span>
+                          <LinkPending />
                         </Link>
                       </li>
                     );
@@ -222,4 +228,19 @@ export function UserMenu({ user, signOut, contexts = [], switchContext }: { user
       )}
     </div>
   );
+}
+
+/**
+ * Navigation feedback while the next page is prepared on the server. Shown inside the link (not as a route-level
+ * loading boundary) so that the response status of the page is preserved: a route-level boundary would start
+ * streaming before an out-of-scope record is refused, turning its 404 into a 200.
+ */
+function LinkPending() {
+  const { pending } = useLinkStatus();
+  return pending ? (
+    <span role="status" className="ml-auto inline-flex shrink-0 items-center">
+      <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white motion-reduce:animate-none" aria-hidden />
+      <span className="sr-only">Loading</span>
+    </span>
+  ) : null;
 }

@@ -99,7 +99,11 @@ const audited = async (u) => {
       }
     }
     const denied = !failed && (/not authorised to view/.test(body) || res.status === 403);
-    const err = failed || res.status >= 500 || /Application error|Internal Server Error/.test(body);
+    // A not-found page delivered with status 200 (e.g. a streaming boundary committed the status first) would make a
+    // refusal look like a rendered page; it is counted as an error so the matrix cannot silently misclassify it.
+    const wrongStatus = !failed && res.status === 200 && /<h1[^>]*>Record not found or not within your authorised scope<\/h1>/.test(body);
+    if (wrongStatus) console.error(`[audit] ${r} as ${u.id}: not-found page served with status 200`);
+    const err = failed || wrongStatus || res.status >= 500 || /Application error|Internal Server Error/.test(body);
     if (err) errors++;
     row.cells.push(err ? "ERR" : res.status === 403 ? "✕" : res.status === 404 ? "404" : res.status >= 300 && res.status < 400 ? "→" : denied ? "✕" : "✓");
   }
@@ -114,7 +118,7 @@ const sep = `|---|${routes.map(() => ":-:").join("|")}|`;
 const md = [
   "# Route audit evidence",
   "",
-  `Generated ${new Date().toISOString()} against ${base} with the synthetic dataset. ✓ = rendered, ✕ = access-denied page (audited), 404 = record outside scope (existence not disclosed), → = redirect, ERR = server error.`,
+  `Generated ${new Date().toISOString()} against ${base} with the synthetic dataset. ✓ = rendered, ✕ = access-denied page (audited), 404 = record outside scope (existence not disclosed), → = redirect, ERR = server error, or a not-found page served with status 200.`,
   "",
   `**Server errors: ${errors}**`,
   "",

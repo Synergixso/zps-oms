@@ -1,10 +1,11 @@
+import { Pager } from "@/components/pager";
 import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
 import { ASSET_CATEGORIES } from "@/server/domain/catalogue";
 import { hasPermission } from "@/server/domain/policy";
-import { ASSET_STATUS_LABEL, listAssets } from "@/server/domain/assets";
+import { ASSET_STATUS_LABEL, pageAssets } from "@/server/domain/assets";
 import { AccessDenied, Badge, ButtonLink, Card, Notice, PageHeader, Table, td, fmtDate, btnSecondary } from "@/components/ui";
 
 export const metadata = { title: "General assets" };
@@ -13,7 +14,8 @@ export default async function AssetsPage({ searchParams }: { searchParams: Promi
   const actor = await requireActor();
   if (!await pageAllowed(actor, "asset.view")) return <AccessDenied what="the asset register" />;
   const sp = await searchParams;
-  const rows = await listAssets(getDb(), actor, { q: sp.q?.slice(0, 40), status: sp.status, category: sp.category });
+  const list = await pageAssets(getDb(), actor, { q: sp.q?.slice(0, 40), status: sp.status, category: sp.category, page: Number(sp.page) || 1 });
+  const rows = list.rows;
   return (
     <>
       <PageHeader eyebrow="M05 · General assets" title="General asset register" description="Approved non-sensitive categories only, within your organisational scope. Inbound transfers to your unit are included."
@@ -41,7 +43,7 @@ export default async function AssetsPage({ searchParams }: { searchParams: Promi
           </div>
           <button type="submit" className={btnSecondary}>Apply</button>
           {(sp.q || sp.status || sp.category) && <Link href="/app/assets" className="py-2 text-sm text-zp-blue hover:underline">Clear</Link>}
-          <p className="ml-auto self-center text-xs text-muted">{rows.length} asset(s)</p>
+          <p className="ml-auto self-center text-xs text-muted">{list.total} asset(s)</p>
         </form>
         <Table head={["Asset tag", "Description", "Category", "Custody", "Custodian ref", "Condition", "Status", "Last inspected"]} caption="General assets">
           {rows.map((a) => (
@@ -57,6 +59,7 @@ export default async function AssetsPage({ searchParams }: { searchParams: Promi
             </tr>
           ))}
         </Table>
+        <Pager path="/app/assets" params={sp} page={list.page} pages={list.pages} total={list.total} pageSize={list.pageSize} />
       </Card>
     </>
   );

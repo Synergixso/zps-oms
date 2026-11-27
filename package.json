@@ -1,6 +1,6 @@
 {
   "name": "zps-oms",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "private": true,
   "description": "ZPS-OMS local synthetic-data prototype. Not an authorised production police system.",
   "scripts": {
@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start -p 3100",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings=0",
     "test": "vitest run",
     "db:reset": "node --experimental-strip-types src/server/db/migrate.ts --reset --confirm-synthetic",
     "audit:routes": "node scripts/route-audit.mjs",
@@ -41,6 +42,8 @@
     "@types/pdfkit": "^0.13.9",
     "@types/react": "^19.3.3",
     "@types/react-dom": "^19.3.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.6",
     "tailwindcss": "^4.3.5",
     "typescript": "^5.9.3",
     "vitest": "^5.1.2"

@@ -4,6 +4,7 @@
  * classes (firearms, ammunition, armoury, communications, tactical) are
  * not representable and descriptions are screened.
  */
+import { countQuery, firstRows, pageQuery, type Page, type Paging, type Query } from "./paging";
 import { identifierField } from "../lib/identifiers";
 import { z } from "zod";
 import type { DB } from "../db/connection";
@@ -40,16 +41,18 @@ export interface AssetRow {
   updated_at: string;
 }
 
-const A_SELECT = `SELECT a.*, c.name AS category_name, o.name AS custody_name, t.name AS transfer_to_name
-  FROM assets a JOIN asset_categories c ON c.code = a.category_code JOIN org_units o ON o.id = a.custody_org_id
+const A_COLUMNS = "a.*, c.name AS category_name, o.name AS custody_name, t.name AS transfer_to_name";
+const A_FROM = `FROM assets a JOIN asset_categories c ON c.code = a.category_code JOIN org_units o ON o.id = a.custody_org_id
   LEFT JOIN org_units t ON t.id = a.transfer_to_org_id`;
+const A_SELECT = `SELECT ${A_COLUMNS} ${A_FROM}`;
 
 function assetScope(actor: Actor) {
   return scopeFor(actor, "asset.view");
 }
 
-export async function listAssets(db: DB, actor: Actor, f: { q?: string; status?: string; category?: string } = {}): Promise<AssetRow[]> {
-  await requirePermission(db, actor, "asset.view");
+export type AssetFilters = { q?: string; status?: string; category?: string; notInspected?: boolean };
+
+function assetQuery(actor: Actor, f: AssetFilters, extra?: { sql: string; params: unknown[] }): Query {
   const s = assetScope(actor);
   const where: string[] = [];
   const params: unknown[] = [];
@@ -62,7 +65,32 @@ export async function listAssets(db: DB, actor: Actor, f: { q?: string; status?:
   if (f.q) { where.push("(a.asset_tag LIKE ? OR a.description LIKE ?)"); params.push(`%${f.q}%`, `%${f.q}%`); }
   if (f.status) { where.push("a.status = ?"); params.push(f.status); }
   if (f.category) { where.push("a.category_code = ?"); params.push(f.category); }
-  return await all<AssetRow>(db, `${A_SELECT} ${where.length ? "WHERE " + where.join(" AND ") : ""} ORDER BY a.asset_tag LIMIT 500`, ...params);
+  if (f.notInspected) { where.push("a.status <> 'DISPOSED' AND (a.last_inspected_at IS NULL OR a.last_inspected_at < ?)"); params.push(new Date(Date.now() - 365 * 864e5).toISOString()); }
+  if (extra) { where.push(extra.sql); params.push(...extra.params); }
+  return { columns: A_COLUMNS, from: A_FROM, where: where.length ? where.join(" AND ") : "1=1", params, order: "a.asset_tag" };
+}
+
+/** Up to 500 assets (panels); use pageAssets for the register. */
+export async function listAssets(db: DB, actor: Actor, f: AssetFilters = {}): Promise<AssetRow[]> {
+  await requirePermission(db, actor, "asset.view");
+  return firstRows<AssetRow>(db, assetQuery(actor, f));
+}
+export async function pageAssets(db: DB, actor: Actor, f: AssetFilters & Paging = {}): Promise<Page<AssetRow>> {
+  await requirePermission(db, actor, "asset.view");
+  return pageQuery<AssetRow>(db, assetQuery(actor, f), f);
+}
+
+/** Asset dashboard figures, counted in SQL over the actor's whole scope (never from a capped list). */
+export async function assetFigures(db: DB, actor: Actor) {
+  await requirePermission(db, actor, "asset.view");
+  const custody = scopeFor(actor, "asset.custody");
+  const inUnits = (col: string) => (custody.national ? { sql: "1=1", params: [] as unknown[] } : custody.units.length ? { sql: `${col} IN (${custody.units.map(() => "?").join(",")})`, params: custody.units as unknown[] } : { sql: "1=0", params: [] as unknown[] });
+  const byStatus = async (st: string) => countQuery(db, assetQuery(actor, { status: st }, inUnits("a.custody_org_id")));
+  return {
+    inStore: await byStatus("IN_STORE"), issued: await byStatus("ISSUED"), underRepair: await byStatus("UNDER_REPAIR"),
+    inbound: await countQuery(db, assetQuery(actor, { status: "IN_TRANSFER" }, inUnits("a.transfer_to_org_id"))),
+    notInspected: await countQuery(db, assetQuery(actor, { notInspected: true })),
+  };
 }
 
 export async function getAsset(db: DB, actor: Actor, id: string): Promise<AssetRow> {

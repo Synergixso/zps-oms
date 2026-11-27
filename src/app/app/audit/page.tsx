@@ -1,8 +1,9 @@
+import { Pager } from "@/components/pager";
 import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
 import { verifyAuditChain } from "@/server/domain/audit";
-import { searchAudit } from "@/server/domain/auditq";
+import { pageAudit } from "@/server/domain/auditq";
 import { hasPermission } from "@/server/domain/policy";
 import { AccessDenied, Card, Notice, PageHeader } from "@/components/ui";
 import { AuditFiltersForm, AuditTable } from "@/components/audit-table";
@@ -15,7 +16,8 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
   const sp = await searchParams;
   const db = getDb();
   const f = { q: sp.q?.slice(0, 60), category: sp.category, outcome: sp.outcome, from: sp.from, to: sp.to };
-  const rows = await searchAudit(db, actor, f);
+  const list = await pageAudit(db, actor, f, { page: Number(sp.page) || 1 });
+  const rows = list.rows;
   const chain = await verifyAuditChain(db);
   const qs = new URLSearchParams(Object.entries(f).filter(([, v]) => v) as [string, string][]).toString();
   return (
@@ -26,13 +28,14 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
           {chain.ok ? `${chain.checked} events re-hashed and linked without a break.` : `Chain broken at event #${chain.brokenAt}. Preserve evidence and escalate to the Security Administrator.`}
         </Notice>
       </div>
-      <Card bodyClass="p-0" title={`${rows.length} event(s) (latest 200)`} action={hasPermission(actor, "audit.export") ? (
+      <Card bodyClass="p-0" title={`${list.total} matching event(s)`} action={hasPermission(actor, "audit.export") ? (
         <form method="post" action={`/app/audit/export${qs ? `?${qs}` : ""}`}>
           <button type="submit" className="rounded-md border border-line-2 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Export evidence (CSV, audited)</button>
         </form>
       ) : undefined}>
         <AuditFiltersForm sp={sp} base="/app/audit" categories={["AUTH", "IAM", "BUSINESS", "EXPORT", "CONFIG", "SECURITY", "ORG"]} />
         <AuditTable rows={rows} />
+        <Pager path="/app/audit" params={sp} page={list.page} pages={list.pages} total={list.total} pageSize={list.pageSize} label="Audit event pages" />
       </Card>
     </>
   );

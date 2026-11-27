@@ -2,6 +2,20 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.9.1] — 2026-11-27 — Master final engineering directive: integrity, paging, lint, verification
+### Fixed
+- Ten registers (requests, manpower, vehicles, maintenance, assets, store items, requisitions, transfers, correspondence, users) stopped silently at 300–500 rows: now paged with true totals (`domain/paging.ts`, `components/pager.tsx`). The rosters index, audit explorer and security events are paged too (the audit explorer showed only the latest 200).
+- Dashboard figures and queues (overdue requests, staff workspace lists, open and validated maintenance, service overdue, assets by status, stores queues, failed sign-ins in 24 h) are counted or filtered in SQL over the whole scope instead of being derived from capped lists.
+- Refused reads of personnel records are now audited with the record reference, as in every other module.
+- Nine React-hook findings (sidebar storage and drawer state, contact form counter, chart offsets) rewritten.
+### Added
+- Audit events for assignment decisions, transfer release, decline and cancellation, and personnel corrections record before/after values, the authorising unit and the delegation reference (`policy.delegationReference`).
+- Navigation pending indicator on sidebar links and error boundaries (`app/app/error.tsx`, `app/global-error.tsx`); sort control on the requests register. A route-level `loading.tsx` was removed during final regression because streaming turned out-of-scope 404 responses into 200.
+- Route audit counts a not-found page served with status 200 as an error.
+- ESLint with a zero-warning gate in CI (`npm run lint`, DEC-070).
+- Tests: `paging`, `transactions` (injected database failures roll back; audit values; disposition refusals).
+- `docs/final-delivery/`: existing-system audit, requirements matrix, all-17-modules and all-27-roles verification (generated), workflow test results, cybersecurity verification, beta testing report, production readiness, institutional approval status, execution register, final delivery report.
+
 ## [0.9.0] — 2026-11-27 — Full-system completion directive: Modules 16 and 17, production readiness
 ### Added
 - **Module 16 — administrative scheduling** (`/app/calendar`): non-sensitive events (meetings, deadlines, review appointments, administrative training, records inspections) with no location field and operational-term screening; month agenda merging events with assignment review dates, contribution deadlines, own tasks and correspondence follow-ups, all scoped server-side; reminders and outcome tasks (job `schedule.event-reminders`).

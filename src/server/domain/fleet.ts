@@ -2,6 +2,7 @@
  * M04 — Fleet Register and Maintenance Management (administrative only).
  * Deliberately excluded: GPS, live location, routes, mission purpose, crew, deployment history.
  */
+import { countQuery, firstRows, pageQuery, type Page, type Paging, type Query } from "./paging";
 import { identifierField } from "../lib/identifiers";
 import { z } from "zod";
 import type { DB } from "../db/connection";
@@ -9,7 +10,7 @@ import { all, one, run, tx } from "../db/connection";
 import { audit } from "./audit";
 import { SERVICE_TYPES } from "./catalogue";
 import { conflict, forbidden, invalid, newId, nextReference, notFound, notify, nowIso, today, addMonths, tenantOf } from "./core";
-import { type Actor, can, canApprove, requirePermission, scopeSql } from "./policy";
+import { type Actor, can, canApprove, hasPermission, requirePermission, scopeSql } from "./policy";
 
 export const VEHICLE_STATUSES = ["IN_SERVICE", "UNDER_MAINTENANCE", "AWAITING_DISPOSAL", "DISPOSED"] as const;
 export const VEHICLE_STATUS_LABEL: Record<string, string> = {
@@ -35,10 +36,13 @@ export interface VehicleRow {
   updated_at: string;
 }
 
-const V_SELECT = `SELECT v.*, o.name AS custody_name FROM vehicles v JOIN org_units o ON o.id = v.custody_org_id`;
+const V_COLUMNS = "v.*, o.name AS custody_name";
+const V_FROM = "FROM vehicles v JOIN org_units o ON o.id = v.custody_org_id";
+const V_SELECT = `SELECT ${V_COLUMNS} ${V_FROM}`;
 
-export async function listVehicles(db: DB, actor: Actor, f: { q?: string; status?: string; due?: string } = {}): Promise<VehicleRow[]> {
-  await requirePermission(db, actor, "fleet.view");
+export type VehicleFilters = { q?: string; status?: string; due?: string };
+
+function vehicleQuery(actor: Actor, f: VehicleFilters): Query {
   const s = scopeSql(actor, "fleet.view", "v.custody_org_id");
   const where = [s.sql];
   const params: unknown[] = [...s.params];
@@ -51,10 +55,24 @@ export async function listVehicles(db: DB, actor: Actor, f: { q?: string; status
     params.push(f.status);
   }
   if (f.due === "overdue") {
-    where.push("v.next_service_due < ?");
+    where.push("v.status <> 'DISPOSED' AND v.next_service_due < ?");
     params.push(today());
   }
-  return await all<VehicleRow>(db, `${V_SELECT} WHERE ${where.join(" AND ")} ORDER BY v.fleet_ref LIMIT 500`, ...params);
+  if (f.due === "30d") {
+    where.push("v.status <> 'DISPOSED' AND v.next_service_due IS NOT NULL AND v.next_service_due < ?");
+    params.push(new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10));
+  }
+  return { columns: V_COLUMNS, from: V_FROM, where: where.join(" AND "), params, order: f.due ? "v.next_service_due, v.fleet_ref" : "v.fleet_ref" };
+}
+
+/** Up to 500 vehicles (panels); use pageVehicles for the register. */
+export async function listVehicles(db: DB, actor: Actor, f: VehicleFilters = {}): Promise<VehicleRow[]> {
+  await requirePermission(db, actor, "fleet.view");
+  return firstRows<VehicleRow>(db, vehicleQuery(actor, f));
+}
+export async function pageVehicles(db: DB, actor: Actor, f: VehicleFilters & Paging = {}): Promise<Page<VehicleRow>> {
+  await requirePermission(db, actor, "fleet.view");
+  return pageQuery<VehicleRow>(db, vehicleQuery(actor, f), f);
 }
 
 export async function getVehicle(db: DB, actor: Actor, id: string): Promise<VehicleRow> {
@@ -163,22 +181,55 @@ export interface MaintRow {
   updated_at: string;
 }
 
-const M_SELECT = `SELECT m.*, v.fleet_ref, v.make, v.model, o.name AS org_name, u.display_name AS requester_name
-  FROM maintenance_requests m JOIN vehicles v ON v.id = m.vehicle_id JOIN org_units o ON o.id = m.org_unit_id JOIN users u ON u.id = m.requested_by`;
+const M_COLUMNS = "m.*, v.fleet_ref, v.make, v.model, o.name AS org_name, u.display_name AS requester_name";
+const M_FROM = "FROM maintenance_requests m JOIN vehicles v ON v.id = m.vehicle_id JOIN org_units o ON o.id = m.org_unit_id JOIN users u ON u.id = m.requested_by";
+const M_SELECT = `SELECT ${M_COLUMNS} ${M_FROM}`;
 
 export async function approvalThreshold(db: DB): Promise<number> {
   return Number((await one<{ value: string }>(db, "SELECT value FROM app_settings WHERE `key` = 'maintenance.approval_threshold_zmw'"))?.value ?? 5000);
 }
 
-export async function listMaintenance(db: DB, actor: Actor, f: { status?: string; vehicleId?: string; q?: string } = {}): Promise<MaintRow[]> {
-  await requirePermission(db, actor, "maintenance.view");
+export type MaintenanceFilters = { status?: string; vehicleId?: string; q?: string; open?: boolean };
+
+function maintenanceQuery(actor: Actor, f: MaintenanceFilters): Query {
   const s = scopeSql(actor, "maintenance.view", "m.org_unit_id");
   const where = [s.sql];
   const params: unknown[] = [...s.params];
   if (f.status) { where.push("m.status = ?"); params.push(f.status); }
+  if (f.open) where.push("m.status NOT IN ('CLOSED','REJECTED')");
   if (f.vehicleId) { where.push("m.vehicle_id = ?"); params.push(f.vehicleId); }
   if (f.q) { where.push("(m.reference LIKE ? OR v.fleet_ref LIKE ?)"); params.push(`%${f.q}%`, `%${f.q}%`); }
-  return await all<MaintRow>(db, `${M_SELECT} WHERE ${where.join(" AND ")} ORDER BY m.updated_at DESC LIMIT 500`, ...params);
+  return { columns: M_COLUMNS, from: M_FROM, where: where.join(" AND "), params, order: "m.updated_at DESC" };
+}
+
+/** Up to 500 maintenance requests (panels); use pageMaintenance for the register. */
+export async function listMaintenance(db: DB, actor: Actor, f: MaintenanceFilters = {}): Promise<MaintRow[]> {
+  await requirePermission(db, actor, "maintenance.view");
+  return firstRows<MaintRow>(db, maintenanceQuery(actor, f));
+}
+export async function pageMaintenance(db: DB, actor: Actor, f: MaintenanceFilters & Paging = {}): Promise<Page<MaintRow>> {
+  await requirePermission(db, actor, "maintenance.view");
+  return pageQuery<MaintRow>(db, maintenanceQuery(actor, f), f);
+}
+
+/** Maintenance requests per status in scope, counted in SQL (workbench figures). */
+export async function maintenanceStatusCounts(db: DB, actor: Actor): Promise<Record<string, number>> {
+  await requirePermission(db, actor, "maintenance.view");
+  const q = maintenanceQuery(actor, {});
+  const rows = await all<{ status: string; n: number }>(db, `SELECT m.status, COUNT(*) AS n ${q.from} WHERE ${q.where} GROUP BY m.status`, ...q.params);
+  return Object.fromEntries(rows.map((r) => [r.status, Number(r.n)]));
+}
+
+/** Fleet dashboard figures, counted in SQL over the actor's whole scope (never from a capped list). */
+export async function fleetFigures(db: DB, actor: Actor) {
+  await requirePermission(db, actor, "fleet.view");
+  const canMaint = hasPermission(actor, "maintenance.view");
+  return {
+    vehicles: await countQuery(db, vehicleQuery(actor, {})),
+    serviceOverdue: await countQuery(db, vehicleQuery(actor, { due: "overdue" })),
+    openMaintenance: canMaint ? await countQuery(db, maintenanceQuery(actor, { open: true })) : 0,
+    completionToVerify: canMaint ? await countQuery(db, maintenanceQuery(actor, { status: "COMPLETION_SUBMITTED" })) : 0,
+  };
 }
 
 export async function getMaintenance(db: DB, actor: Actor, id: string): Promise<MaintRow> {

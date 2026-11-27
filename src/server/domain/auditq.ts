@@ -1,4 +1,5 @@
 /** Audit search and evidence export (M10). Read-only; restricted to audit.view / security.view. */
+import { pageQuery, splitSelect, type Page, type Paging } from "./paging";
 import type { DB } from "../db/connection";
 import { all, run } from "../db/connection";
 import { audit } from "./audit";
@@ -45,6 +46,20 @@ function build(f: AuditFilters, securityOnly: boolean) {
 
 const SELECT = `SELECT e.*, u.display_name AS actor_name, o.name AS org_name FROM audit_events e
   LEFT JOIN users u ON u.id = e.actor_id LEFT JOIN org_units o ON o.id = e.org_unit_id`;
+
+/** One page of the audit explorer with the true number of matching events. */
+export async function pageAudit(db: DB, actor: Actor, f: AuditFilters, p: Paging = {}): Promise<Page<AuditRow>> {
+  await requirePermission(db, actor, "audit.view");
+  const { sql, p: params } = build(f, false);
+  return pageQuery<AuditRow>(db, { ...splitSelect(SELECT), where: sql ? sql.replace(/^WHERE /, "") : "1=1", params, order: "e.seq DESC" }, p);
+}
+
+/** One page of security events with the true number of matching events. */
+export async function pageSecurityEvents(db: DB, actor: Actor, f: AuditFilters, p: Paging = {}): Promise<Page<AuditRow>> {
+  await requirePermission(db, actor, "security.view");
+  const { sql, p: params } = build(f, true);
+  return pageQuery<AuditRow>(db, { ...splitSelect(SELECT), where: sql ? sql.replace(/^WHERE /, "") : "1=1", params, order: "e.seq DESC" }, p);
+}
 
 export async function searchAudit(db: DB, actor: Actor, f: AuditFilters, limit = 200): Promise<AuditRow[]> {
   await requirePermission(db, actor, "audit.view");

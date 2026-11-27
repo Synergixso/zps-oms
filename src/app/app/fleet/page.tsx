@@ -1,9 +1,10 @@
+import { Pager } from "@/components/pager";
 import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
 import { hasPermission } from "@/server/domain/policy";
-import { listVehicles, VEHICLE_STATUSES, VEHICLE_STATUS_LABEL } from "@/server/domain/fleet";
+import { pageVehicles, VEHICLE_STATUSES, VEHICLE_STATUS_LABEL } from "@/server/domain/fleet";
 import { AccessDenied, Badge, ButtonLink, Card, Notice, PageHeader, Table, td, fmtDate, btnSecondary } from "@/components/ui";
 
 export const metadata = { title: "Fleet register" };
@@ -12,7 +13,8 @@ export default async function FleetPage({ searchParams }: { searchParams: Promis
   const actor = await requireActor();
   if (!await pageAllowed(actor, "fleet.view")) return <AccessDenied what="the fleet register" />;
   const sp = await searchParams;
-  const rows = await listVehicles(getDb(), actor, { q: sp.q?.slice(0, 40), status: sp.status, due: sp.due });
+  const list = await pageVehicles(getDb(), actor, { q: sp.q?.slice(0, 40), status: sp.status, due: sp.due, page: Number(sp.page) || 1 });
+  const rows = list.rows;
   const today = new Date().toISOString().slice(0, 10);
   return (
     <>
@@ -52,7 +54,7 @@ export default async function FleetPage({ searchParams }: { searchParams: Promis
           </div>
           <button type="submit" className={btnSecondary}>Apply</button>
           {(sp.q || sp.status || sp.due) && <Link href="/app/fleet" className="py-2 text-sm text-zp-blue hover:underline">Clear</Link>}
-          <p className="ml-auto self-center text-xs text-muted">{rows.length} vehicle(s)</p>
+          <p className="ml-auto self-center text-xs text-muted">{list.total} vehicle(s)</p>
         </form>
         <Table head={["Fleet ref", "Registration ref", "Vehicle", "Class", "Custody", "Status", "Next service", "Licence expiry"]} caption="Fleet register">
           {rows.map((v) => (
@@ -68,6 +70,7 @@ export default async function FleetPage({ searchParams }: { searchParams: Promis
             </tr>
           ))}
         </Table>
+        <Pager path="/app/fleet" params={sp} page={list.page} pages={list.pages} total={list.total} pageSize={list.pageSize} />
       </Card>
     </>
   );

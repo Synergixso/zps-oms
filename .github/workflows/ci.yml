@@ -52,6 +52,8 @@ jobs:
 
       - name: Type check
         run: npx tsc --noEmit
+      - name: Lint (ESLint, Next.js core-web-vitals + TypeScript rules, zero warnings)
+        run: npm run lint
 
       - name: Unit and integration tests (MariaDB 10.4)
         run: npm test

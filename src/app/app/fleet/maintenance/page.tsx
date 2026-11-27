@@ -1,9 +1,10 @@
+import { Pager } from "@/components/pager";
 import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
 import { hasPermission } from "@/server/domain/policy";
-import { approvalThreshold, listMaintenance, MAINT_LABEL, MAINT_STATUSES } from "@/server/domain/fleet";
+import { approvalThreshold, maintenanceStatusCounts, pageMaintenance, MAINT_LABEL, MAINT_STATUSES } from "@/server/domain/fleet";
 import { AccessDenied, Badge, ButtonLink, Card, PageHeader, Stat, Table, td, fmtDate, btnSecondary } from "@/components/ui";
 
 export const metadata = { title: "Fleet maintenance" };
@@ -13,9 +14,10 @@ export default async function MaintenancePage({ searchParams }: { searchParams: 
   if (!await pageAllowed(actor, "maintenance.view")) return <AccessDenied what="fleet maintenance" />;
   const sp = await searchParams;
   const db = getDb();
-  const all = await listMaintenance(db, actor);
-  const rows = await listMaintenance(db, actor, { status: sp.status, q: sp.q?.slice(0, 40) });
-  const n = (s: string[]) => all.filter((m) => s.includes(m.status)).length;
+  // Figures are SQL counts per status over the whole scope; the table is one page of the filtered register.
+  const [counts, list] = await Promise.all([maintenanceStatusCounts(db, actor), pageMaintenance(db, actor, { status: sp.status, q: sp.q?.slice(0, 40), page: Number(sp.page) || 1 })]);
+  const rows = list.rows;
+  const n = (s: string[]) => s.reduce((t, st) => t + (counts[st] ?? 0), 0);
   return (
     <>
       <PageHeader
@@ -59,6 +61,7 @@ export default async function MaintenancePage({ searchParams }: { searchParams: 
             </tr>
           ))}
         </Table>
+        <Pager path="/app/fleet/maintenance" params={sp} page={list.page} pages={list.pages} total={list.total} pageSize={list.pageSize} />
         <p className="border-t border-line px-4 py-2 text-xs text-muted">* Requires delegated approval. Cost figures are synthetic.</p>
       </Card>
     </>

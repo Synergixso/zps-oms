@@ -46,11 +46,14 @@ export function ContactForm({ defaultSubject }: { defaultSubject?: string }) {
   const subjectRef = useRef<HTMLSelectElement>(null);
   const fe = state?.fieldErrors ?? {};
 
+  // A new successful result resets the counter (state adjusted during render) and the form fields (DOM, in an effect).
+  const [seenState, setSeenState] = useState(state);
+  if (seenState !== state) {
+    setSeenState(state);
+    if (state?.ok) setCount(0);
+  }
   useEffect(() => {
-    if (state?.ok) {
-      formRef.current?.reset();
-      setCount(0);
-    }
+    if (state?.ok) formRef.current?.reset();
   }, [state]);
 
   // Quick links below the form change the subject without a page reload.
