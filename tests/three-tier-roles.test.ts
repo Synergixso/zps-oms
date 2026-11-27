@@ -13,6 +13,7 @@ import { headlineKpis } from "@/server/domain/overview";
 import { WORKSPACES, workspaceFor } from "@/server/domain/workspaces";
 import { listPersonnel } from "@/server/domain/personnel";
 import { NAV_ITEMS } from "@/lib/nav";
+import { ADMIN_RECORDS_ROLES } from "@/server/domain/workspace-config";
 import { actor, withDb } from "./helpers";
 
 const PERSONNEL_PERMS: Permission[] = ["personnel.view", "personnel.register", "personnel.edit", "personnel.verify", "assignment.view", "assignment.propose", "manpower.view", "roster.view"];
@@ -39,12 +40,17 @@ describe("27-role catalogue matrix", () => {
     expect(tech).toHaveLength(5);
     for (const r of tech) {
       expect(r.category).toBe("TECHNICAL");
-      for (const p of [...PERSONNEL_PERMS, "stores.approve", "stores.view", "request.view", "fleet.view"] as Permission[]) expect(r.permissions[p], `${r.code} ${p}`).toBeUndefined();
+      for (const p of [...PERSONNEL_PERMS, "stores.approve", "stores.view", "request.view", "fleet.view", "schedule.view", "schedule.manage", "correspondence.view", "correspondence.register", "correspondence.manage"] as Permission[]) expect(r.permissions[p], `${r.code} ${p}`).toBeUndefined();
     }
     // Only Superadmin configures the platform and tenants; HQ Tech operates it.
     expect(ROLES.filter((r) => r.permissions["platform.configure"]).map((r) => r.code)).toEqual(["SUPERADMIN"]);
     expect(ROLES.filter((r) => r.permissions["tenant.manage"]).map((r) => r.code)).toEqual(["SUPERADMIN"]);
     expect(ROLE_BY_CODE.HQ_TECH_ADMIN.permissions["platform.operate"]).toBe("NATIONAL");
+  });
+
+  it("the Administrative records section is configured exactly for roles holding scheduling or correspondence permissions", () => {
+    const holders = ROLES.filter((r) => Object.keys(r.permissions).some((p) => p.startsWith("schedule.") || p.startsWith("correspondence."))).map((r) => r.code).sort();
+    expect([...ADMIN_RECORDS_ROLES].sort()).toEqual(holders);
   });
 
   it("Principal Armourer (16) exists with non-sensitive administrative functions only", () => {

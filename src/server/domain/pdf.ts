@@ -13,6 +13,8 @@ interface RosterPdfInput {
   entries: RosterEntry[];
   statusLabel: string;
   printedBy: string;
+  /** Stamp for outputs while synthetic data is present (environment.ts); omitted in production with real data. Defaults to the synthetic stamp. */
+  stamp?: string;
 }
 
 const GREEN = "#1a7d34";
@@ -20,6 +22,7 @@ const NAVY = "#0d2149";
 const d = (s?: string | null) => (s ? new Date(s.length === 10 ? `${s}T00:00:00Z` : s).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Africa/Lusaka" }) : "—");
 
 export function rosterPdf(input: RosterPdfInput): Promise<Buffer> {
+  const stamp = input.stamp ?? "SYNTHETIC DEMONSTRATION DATA — NOT AN OFFICIAL DOCUMENT";
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: "A4", margin: 40, bufferPages: true, info: { Title: `Roster ${input.request.reference} v${input.version.version_no}`, Author: "ZPS-OMS", Subject: "Synthetic demonstration data" } });
     const chunks: Buffer[] = [];
@@ -35,7 +38,7 @@ export function rosterPdf(input: RosterPdfInput): Promise<Buffer> {
     if (fs.existsSync(crest)) doc.image(crest, left, 26, { fit: [86, 50] });
     doc.fillColor(NAVY).font("Helvetica-Bold").fontSize(13).text("ZAMBIA POLICE SERVICE — OPERATIONS MANAGEMENT SYSTEM", left + 96, 30, { width: width - 96 });
     doc.font("Helvetica-Bold").fontSize(11).fillColor("#000").text(`Personnel roster ${input.version.reference ?? input.request.reference} · Version ${input.version.version_no} (${input.statusLabel})`, left + 96, doc.y + 2, { width: width - 96 });
-    doc.font("Helvetica-Bold").fontSize(8).fillColor("#b91c1c").text("SYNTHETIC DEMONSTRATION DATA — NOT AN OFFICIAL DOCUMENT", left + 96, doc.y + 2);
+    if (stamp) doc.font("Helvetica-Bold").fontSize(8).fillColor("#b91c1c").text(stamp, left + 96, doc.y + 2);
     doc.moveTo(left, 84).lineTo(left + width, 84).lineWidth(1).strokeColor("#000").stroke();
 
     doc.fillColor("#000").fontSize(9).font("Helvetica");
@@ -97,7 +100,7 @@ export function rosterPdf(input: RosterPdfInput): Promise<Buffer> {
     const range = doc.bufferedPageRange();
     for (let i = range.start; i < range.start + range.count; i++) {
       doc.switchToPage(i);
-      doc.font("Helvetica").fontSize(7.5).fillColor("#555").text(`Page ${i + 1} of ${range.count} · ZPS-OMS · SYNTHETIC`, left, doc.page.height - 30, { width, align: "center", lineBreak: false });
+      doc.font("Helvetica").fontSize(7.5).fillColor("#555").text(`Page ${i + 1} of ${range.count} · ZPS-OMS${stamp ? " · SYNTHETIC" : ""}`, left, doc.page.height - 30, { width, align: "center", lineBreak: false });
     }
     doc.end();
   });

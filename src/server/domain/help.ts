@@ -27,6 +27,8 @@ export const PAGE_HELP: Record<string, string> = {
   "/app/fleet": "The administrative vehicle register: documentation and service history (no location or movement data).",
   "/app/fleet/maintenance": "Vehicle maintenance requests from validation to workshop, completion and verification.",
   "/app/assets": "General non-sensitive assets: custody, transfers, inspections and stock-takes.",
+  "/app/calendar": "Administrative calendar: non-sensitive meetings, deadlines and review appointments, with review dates, contribution deadlines, your tasks and correspondence follow-ups from the registers you can see.",
+  "/app/correspondence": "Correspondence register: record incoming and outgoing administrative letters, assign an officer, track follow-up, attach checked PDF documents and file the record.",
   "/app/stores": "General stores: stock balances and the ledger of receipts, issues, returns and adjustments.",
   "/app/stores/requisitions": "Stores requisitions: raise one for your unit, decide (if delegated) or issue (store keepers).",
   "/app/reports": "Management reports for your scope: customise columns, save views, export to Excel or CSV, schedule delivery.",

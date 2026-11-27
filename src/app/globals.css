@@ -123,4 +123,24 @@ body {
     max-width: 180mm;
     margin: 0 auto;
   }
+  /* Paper cannot scroll: regions that scroll sideways on screen print in full, and tables give up
+     their on-screen minimum width and wrap within the A4 printable width (e2e/print.spec.ts). */
+  .overflow-x-auto,
+  .overflow-x-scroll {
+    overflow: visible !important;
+  }
+  table {
+    min-width: 0 !important;
+  }
+  /* Text shortened with an ellipsis on screen prints in full. */
+  .truncate,
+  .line-clamp-1,
+  .line-clamp-2,
+  .line-clamp-3 {
+    overflow: visible !important;
+    white-space: normal !important;
+    text-overflow: clip !important;
+    -webkit-line-clamp: unset !important;
+    display: block;
+  }
 }

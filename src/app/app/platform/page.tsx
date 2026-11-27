@@ -1,3 +1,5 @@
+import { RELEASE, STAGE_LABEL } from "@/server/lib/release";
+import { environmentNotice } from "@/server/lib/environment";
 import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
 import { getDb, one } from "@/server/db/connection";
@@ -17,6 +19,7 @@ export default async function Platform() {
   const actor = await requireActor();
   if (!(await pageAllowed(actor, "platform.view"))) return <AccessDenied what="platform administration" />;
   const db = getDb();
+  const env = await environmentNotice(db);
   const t0 = performance.now();
   await one(db, "SELECT 1 AS ok");
   const ms = Math.round((performance.now() - t0) * 10) / 10;
@@ -79,6 +82,20 @@ export default async function Platform() {
           </Table>
         </Card>
 
+        <Card title="Release and approval status" subtitle="Engineering stage and institutional decisions are recorded separately (DEC-069)">
+          <DL items={[
+            ["Version", RELEASE.version], ["Software stage", `${STAGE_LABEL[RELEASE.stage]} (since ${RELEASE.stageDate})`], ["Environment", env.label],
+            ["Project proposal", RELEASE.institutional.proposal.label], ["Institutional review", RELEASE.institutional.institutionalReview.label],
+            ["Institutional approval", RELEASE.institutional.institutionalApproval.label], ["Technical approval", RELEASE.institutional.technicalApproval.label],
+            ["Production deployment", RELEASE.institutional.deploymentAuthorisation.label],
+          ]} />
+          {RELEASE.nextStageBlockers.length > 0 && (
+            <div className="mt-3">
+              <p className="text-xs font-semibold text-ink-2">Before the next stage</p>
+              <ul className="mt-1 list-disc space-y-0.5 pl-5 text-xs text-ink-2">{RELEASE.nextStageBlockers.map((b) => <li key={b}>{b}</li>)}</ul>
+            </div>
+          )}
+        </Card>
         <Card title="Database" subtitle="Technical metadata only">
           <DL items={[
             ["Engine", `MySQL / MariaDB ${p.dbVersion} (XAMPP)`], ["Database", p.dbName], ["Tables", String(p.tables)], ["Size", kb(p.sizeBytes)],

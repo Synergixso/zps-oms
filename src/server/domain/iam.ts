@@ -5,6 +5,8 @@
  * - Role assignment = role + org unit + validity window + justification.
  * - Auditor (and other requiresExpiry) roles must be time-limited.
  */
+import { identifierField } from "../lib/identifiers";
+import { isProduction } from "../lib/environment";
 import { z } from "zod";
 import type { DB } from "../db/connection";
 import { all, one, run, tx } from "../db/connection";
@@ -113,7 +115,7 @@ export async function userDetail(db: DB, actor: Actor, userId: string) {
 }
 
 export const provisionSchema = z.object({
-  username: z.string().trim().regex(/^demo\.[a-z0-9.]{3,40}$/, "Synthetic usernames must start with 'demo.' (lower-case letters, digits, dots)."),
+  username: identifierField("username"),
   displayName: z.string().trim().min(3).max(80).refine((v) => /synthetic|demo/i.test(v), "Display names must be clearly synthetic (include 'Demo' or 'Synthetic')."),
   positionTitle: z.string().trim().min(3).max(80),
 });
@@ -124,7 +126,7 @@ export async function provisionUser(db: DB, actor: Actor, input: z.input<typeof 
   if (await one(db, "SELECT id FROM users WHERE username = ?", d.username)) throw conflict("Username already exists. Shared or duplicate accounts are not permitted.");
   const id = newId("usr");
   await tx(db, async (db) => {
-    await run(db, "INSERT INTO users (id, username, display_name, position_title, status, created_at) VALUES (?,?,?,?, 'ACTIVE', ?)", id, d.username, d.displayName, d.positionTitle, nowIso());
+    await run(db, "INSERT INTO users (id, username, display_name, position_title, status, synthetic, created_at) VALUES (?,?,?,?, 'ACTIVE', ?, ?)", id, d.username, d.displayName, d.positionTitle, isProduction() ? 0 : 1, nowIso());
     await assignMissingUserRefs(db);
     await audit(db, { actorId: actor.userId, action: "iam.user.provision", category: "IAM", entityType: "user", entityId: id, details: { username: d.username } });
   });

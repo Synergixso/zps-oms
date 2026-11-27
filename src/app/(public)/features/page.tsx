@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Icon } from "@/components/icons";
 import type { IconName } from "@/lib/nav";
 import { HeroEyebrow, PhotoHero } from "@/components/photo-hero";
@@ -31,57 +30,60 @@ const ACCENT: Record<Tone, string> = {
 };
 
 const MODULES: Array<{ icon: IconName; title: string; body: string; tone: Tone }> = [
-  { icon: "target", title: "Operations Management", body: "Plan, deploy, monitor and evaluate police operations in real time.", tone: "green" },
-  { icon: "building", title: "Provincial Divisions", body: "Manage the 10 Provincial Police Divisions, their formations and performance.", tone: "blue" },
-  { icon: "sitemap", title: "Divisional Units", body: "Administer authorised units (Mobile Unit, Paramilitary, Protective, Airport, TAZARA, etc.).", tone: "purple" },
-  { icon: "users", title: "Personnel Management", body: "Maintain personnel records, posting, leave, training and deployment.", tone: "navy" },
-  { icon: "car", title: "Fleet & Transport", body: "Track, allocate and manage police vehicles, drivers, fuel and service schedules.", tone: "green" },
-  { icon: "box", title: "Assets & Equipment", body: "Manage inventory, allocation, maintenance and accountability of police assets and equipment.", tone: "orange" },
-  { icon: "tools", title: "Maintenance Management", body: "Log, assign, track and approve vehicle and equipment maintenance.", tone: "red" },
-  { icon: "clipboardCheck", title: "Requests & Approvals", body: "Digitise operational and administrative requests with a structured approval workflow.", tone: "purple" },
-  { icon: "bars", title: "Reports & Analytics", body: "Generate operational, fleet, asset and personnel reports with real-time insights and dashboards.", tone: "blue" },
+  { icon: "building", title: "Organisation & Tenants", body: "National HQ, ten Provincial Divisions, District Commands, Stations, Posts and Formations in one hierarchy, with access scoped to each level.", tone: "blue" },
+  { icon: "users", title: "Personnel Registry", body: "One record per officer: rank, home unit, verification, duplicate checks and a complete history.", tone: "navy" },
+  { icon: "clipboardCheck", title: "Manpower Requests", body: "Request personnel, distribute requirements to units and receive their contributions without retyping lists.", tone: "green" },
+  { icon: "list", title: "Roster Builder", body: "Consolidate contributions into versioned, approved rosters with PDF, print and Excel output.", tone: "purple" },
+  { icon: "sitemap", title: "Assignments & Transfers", body: "Administrative duty-area assignments, tenure, renewals and transfers, with every earlier record preserved.", tone: "orange" },
+  { icon: "stamp", title: "Approvals & Workflows", body: "Configurable approval chains with delegated authority, deadlines, escalation and separation of duties.", tone: "red" },
+  { icon: "car", title: "Fleet & Transport", body: "The administrative vehicle register: documentation, maintenance requests and service history.", tone: "green" },
+  { icon: "box", title: "Assets & Stores", body: "Non-sensitive assets and general stores: custody, issues, returns, inspections and reconciliation.", tone: "blue" },
+  { icon: "mail", title: "Calendar & Correspondence", body: "Administrative deadlines, meetings and review dates, and a register of incoming and outgoing correspondence.", tone: "purple" },
+  { icon: "bars", title: "Reports & Dashboards", body: "Role-specific dashboards and reports calculated from the live records, exportable to Excel and PDF.", tone: "navy" },
+  { icon: "bell", title: "Notifications & Tasks", body: "In-application reminders, task lists and approval queues for every role.", tone: "orange" },
+  { icon: "shieldCheck", title: "Audit & Security", body: "A tamper-evident audit trail, role-based access and organisational scope enforced on the server.", tone: "green" },
 ];
 
 const ROLES: Array<{ icon: IconName; title: string; subtitle: string; access: string; iconColor: string; pill: string }> = [
   {
     icon: "starShield",
-    title: "Superadmin",
-    subtitle: "(ZPS HQ)",
-    access: "Full system access and configuration",
+    title: "National Headquarters",
+    subtitle: "(Tier 1)",
+    access: "IG, DIG Operations and Operations HQ: national oversight, decisions within delegations, national reports",
     iconColor: "text-[#16823b]",
     pill: "bg-[#e6f4ea] text-[#14532d]",
   },
   {
-    icon: "star",
-    title: "CRM Administrator",
-    subtitle: "(Operations)",
-    access: "Operations, approvals, reports and analytics",
+    icon: "building",
+    title: "Divisions & Formations",
+    subtitle: "(Tier 2)",
+    access: "Commanders and staff officers: manpower, rosters, assignments, transfers and stores in their Division or Formation",
     iconColor: "text-[#1f5bc4]",
-    pill: "bg-[#e7effc] text-[#1e3a8a]",
+    pill: "bg-[#e7effc] text-[#173f8a]",
   },
   {
-    icon: "users",
-    title: "Divisional",
-    subtitle: "Commander",
-    access: "Manage unit operations, personnel and assets",
+    icon: "sitemap",
+    title: "District Commands",
+    subtitle: "(Tier 3)",
+    access: "Officer Commanding and Operations Officers: district personnel, contributions, assignments and stores",
     iconColor: "text-[#6a4bd1]",
-    pill: "bg-[#e6f4ea] text-[#14532d]",
+    pill: "bg-[#efeafd] text-[#4b2fa6]",
   },
   {
-    icon: "users",
-    title: "Division Staff Ops",
-    subtitle: "(Operations Staff)",
-    access: "Support operations, fleet and equipment management",
-    iconColor: "text-[#f08a1c]",
-    pill: "bg-[#fdf1df] text-[#7c4a03]",
+    icon: "home",
+    title: "Police Stations",
+    subtitle: "(Tier 3)",
+    access: "Officer-in-Charge, Station Inspector and Station Administrator: station personnel, requests and stores",
+    iconColor: "text-[#a84a05]",
+    pill: "bg-[#fdf0e6] text-[#8a3d04]",
   },
   {
-    icon: "user",
-    title: "General User",
-    subtitle: "(Authorised Staff)",
-    access: "Access to assigned modules and data",
-    iconColor: "text-[#1f5bc4]",
-    pill: "bg-[#e7effc] text-[#1e3a8a]",
+    icon: "gear",
+    title: "Technical Administrators",
+    subtitle: "(all tiers)",
+    access: "Accounts, configuration and system health only: no personnel records or business approvals",
+    iconColor: "text-[#0d2149]",
+    pill: "bg-[#e8ecf3] text-[#0d2149]",
   },
 ];
 
@@ -115,16 +117,15 @@ export default function Features() {
               <span className="hidden h-[3px] w-24 rounded-full bg-zp-green sm:block" aria-hidden />
             </div>
             <p className="mx-auto mt-2 max-w-3xl text-[16px] text-[#1f2d45] md:text-[17px]">
-              A comprehensive set of integrated modules for end-to-end police operations management.
+              Integrated modules for end-to-end Operations administration, from the personnel registry to approved rosters and reports.
             </p>
           </div>
 
           <ul className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {MODULES.map((m) => (
               <li key={m.title}>
-                <Link
-                  href="/modules"
-                  className={`group flex h-full items-start gap-4 rounded-2xl border border-l-4 border-[#e3e9f2] bg-white p-5 shadow-[0_4px_16px_rgba(13,33,73,0.07)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(13,33,73,0.13)] ${ACCENT[m.tone]}`}
+                <div
+                  className={`flex h-full items-start gap-4 rounded-2xl border border-l-4 border-[#e3e9f2] bg-white p-5 shadow-[0_4px_16px_rgba(13,33,73,0.07)] ${ACCENT[m.tone]}`}
                 >
                   <span
                     className={`flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-2xl text-white shadow-[0_8px_18px_-6px_rgba(13,33,73,0.5)] ${TILE[m.tone]}`}
@@ -132,15 +133,10 @@ export default function Features() {
                     <Icon name={m.icon} className="h-9 w-9" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="flex items-start justify-between gap-3">
-                      <span className="text-[20px] font-extrabold leading-tight tracking-tight text-[#0d1b3e]">{m.title}</span>
-                      <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#c9d3e1] text-[#0d1b3e] transition group-hover:border-zp-green group-hover:bg-zp-green group-hover:text-white">
-                        <Icon name="chevron" className="h-4 w-4" />
-                      </span>
-                    </span>
-                    <span className="mt-1.5 block text-[14.5px] leading-snug text-[#1f2d45]">{m.body}</span>
+                    <h3 className="text-[20px] font-extrabold leading-tight tracking-tight text-[#0d1b3e]">{m.title}</h3>
+                    <p className="mt-1.5 text-[14.5px] leading-snug text-[#1f2d45]">{m.body}</p>
                   </span>
-                </Link>
+                </div>
               </li>
             ))}
           </ul>

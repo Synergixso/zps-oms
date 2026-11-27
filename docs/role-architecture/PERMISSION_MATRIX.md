@@ -93,6 +93,11 @@ Approval authority is never a role permission: it needs an active delegation (do
 | `assignment.receive` |  |  |  | N |  |  |
 | `disposition.change` |  |  |  | N |  |  |
 | `stores.view` |  |  | N | N |  |  |
+| `schedule.view` |  | N | N | N | N |  |
+| `schedule.manage` |  |  |  | N | N |  |
+| `correspondence.view` |  | N | N | N | N |  |
+| `correspondence.register` |  |  |  | N | N |  |
+| `correspondence.manage` |  |  | N | N | N |  |
 | `contact.view` | N |  |  | N |  |  |
 | `contact.manage` | N |  |  | N |  |  |
 
@@ -157,6 +162,11 @@ R01 Superadmin · R02 Inspector General of Police (IG) · R03 Deputy Inspector G
 | `stores.manage` |  |  |  |  |  |  |  |  | S |  |  |
 | `stores.requisition` |  |  |  | S |  |  |  | S |  |  |  |
 | `stores.approve` |  | S |  |  |  |  |  |  |  |  |  |
+| `schedule.view` |  | S | S | S | S | S | S | S | S |  | S |
+| `schedule.manage` |  |  |  | S | S |  |  | S |  |  |  |
+| `correspondence.view` |  | S | S | S | S | S |  | S |  |  |  |
+| `correspondence.register` |  |  |  | S | S |  |  | S |  |  |  |
+| `correspondence.manage` |  | S | S | S |  |  |  |  |  |  |  |
 
 R07 Divisional/Unit System Administrator (Tech) · R08 Formation Commanding Officer · R09 Deputy Division Commander · R10 Division Senior Staff Officer – Operations (Staff I) · R11 Deputy Division Staff Officer – Operations (Staff II) · R12 Company Commander · R13 Section Head · R14 Formation Operations Staff Administrator · R15 Divisional Quarter Masters Stores Officer · R16 Divisional Principal Armourer · R17 Divisional MTO Officer-in-Charge
 
@@ -201,6 +211,11 @@ R07 Divisional/Unit System Administrator (Tech) · R08 Formation Commanding Offi
 | `stores.manage` |  |  |  |  |  | S |  |  |  | S |
 | `stores.requisition` |  |  |  | S |  |  |  |  |  | S |
 | `stores.approve` |  | S |  |  |  |  |  | S |  |  |
+| `schedule.view` |  | S | S | S | S | S |  | S | S | S |
+| `schedule.manage` |  |  |  | S | S |  |  |  | S | S |
+| `correspondence.view` |  | S | S | S | S |  |  | S | S | S |
+| `correspondence.register` |  |  |  | S | S |  |  |  | S | S |
+| `correspondence.manage` |  | S | S | S |  |  |  | S |  |  |
 
 R18 District System Administrator (Tech) · R19 Officer Commanding — District · R20 Deputy OC — District · R21 Operations Officer — District · R22 Deputy Operations Officer — District · R23 Stores Officer — District · R24 Police Station System Administrator · R25 Officer-in-Charge — Police Station GD · R26 Station Inspector — Police Station GD · R27 Police Station Administrator (Stores and Admin)
 

@@ -2,6 +2,7 @@
  * M04 — Fleet Register and Maintenance Management (administrative only).
  * Deliberately excluded: GPS, live location, routes, mission purpose, crew, deployment history.
  */
+import { identifierField } from "../lib/identifiers";
 import { z } from "zod";
 import type { DB } from "../db/connection";
 import { all, one, run, tx } from "../db/connection";
@@ -66,8 +67,8 @@ export async function getVehicle(db: DB, actor: Actor, id: string): Promise<Vehi
 }
 
 export const vehicleSchema = z.object({
-  fleetRef: z.string().trim().regex(/^SYN-FLT-\d{4}$/, "Fleet reference must follow the synthetic pattern SYN-FLT-0000."),
-  registrationRef: z.string().trim().regex(/^SYN-REG-[A-Z0-9]{3,8}$/, "Registration reference must be a synthetic placeholder (SYN-REG-…). Real registrations are not permitted."),
+  fleetRef: identifierField("fleetRef"),
+  registrationRef: identifierField("registration"),
   make: z.string().trim().min(2).max(40),
   model: z.string().trim().min(1).max(40),
   vehicleClass: z.enum(["Saloon", "Utility (light)", "Station wagon", "Minibus", "Truck (general)"]),

@@ -33,7 +33,7 @@ Desktop sidebar 260 px; sticky 62 px top bar; content max 1480 px; 4/8/12/16/24 
 Empty states explain what is absent; validation errors appear per field and in a summary; access denial is explicit and states that it was recorded; out-of-scope records return a neutral 404 (existence not disclosed); pending buttons show "Working…".
 
 ## Accessibility (WCAG 2.2 AA target)
-Skip link; landmarks (`header`, `nav`, `main`, `footer`); `aria-current` on navigation; labelled inputs with `aria-invalid` + `aria-describedby`; visible `:focus-visible` outline; drawer closes on Escape; reduced-motion respected. Automated axe-core scan and reflow/200 % zoom test pass (`docs/evidence/accessibility.md`, `docs/evidence/reflow.md`); form controls never exceed their container and card headers wrap at narrow widths. **Not yet done:** screen-reader walkthrough and keyboard-only audit (KNOWN_LIMITATIONS).
+Skip link; landmarks (`header`, `nav`, `main`, `footer`); `aria-current` on navigation; labelled inputs with `aria-invalid` + `aria-describedby`; visible `:focus-visible` outline; drawer closes on Escape; reduced-motion respected. Automated axe-core scan, reflow/200 % zoom/tablet test and A4 print test pass (`docs/evidence/print.md`; when printing, sideways-scrolling regions print in full and the public site navigation is hidden) (`docs/evidence/accessibility.md`, `docs/evidence/reflow.md`); form controls never exceed their container and card headers wrap at narrow widths. **Not yet done:** screen-reader walkthrough and keyboard-only audit (KNOWN_LIMITATIONS).
 
 ## Landing page and public chrome (v0.1.3 — owner-approved design, DEC-025)
 The landing page implements the owner-approved A4 portrait design exactly in content and composition:

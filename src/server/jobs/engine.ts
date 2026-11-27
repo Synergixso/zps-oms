@@ -337,6 +337,66 @@ export const JOBS: JobDef[] = [
     },
   },
   {
+    name: "schedule.event-reminders",
+    title: "Administrative calendar reminders",
+    description: "Reminds the creator of each scheduled administrative event N days before it (schedule.reminder_days), once per event, and lists events whose date has passed without being completed.",
+    run: async (db) => {
+      const t = today();
+      const days = await setting(db, "schedule.reminder_days", 1);
+      const due = await all<{ id: string; title: string; event_date: string; start_time: string | null; created_by: string; unit_name: string }>(db,
+        `SELECT e.id, e.title, e.event_date, e.start_time, e.created_by, o.name AS unit_name FROM admin_calendar_events e JOIN org_units o ON o.id = e.org_unit_id
+          WHERE e.status = 'SCHEDULED' AND e.event_date BETWEEN ? AND ?`, t, addDays(t, days));
+      let n = 0;
+      for (const e of due) {
+        if (await notify(db, e.created_by, `Coming up: ${e.title}`, `${e.unit_name} · ${e.event_date}${e.start_time ? ` at ${e.start_time}` : ""}.`, `/app/calendar/${e.id}`, { category: "GENERAL", dedupeKey: `event-reminder:${e.id}` })) n++;
+      }
+      // Past events still marked scheduled: ask the creator to complete or cancel them (one task per event).
+      const stale = await all<{ id: string; title: string; event_date: string; created_by: string }>(db,
+        "SELECT id, title, event_date, created_by FROM admin_calendar_events WHERE status = 'SCHEDULED' AND event_date < ?", t);
+      for (const e of stale) await createTask(db, { userId: e.created_by, title: `Record the outcome of “${e.title}” (${e.event_date})`, link: `/app/calendar/${e.id}`, dueDate: t, sourceKey: `event-outcome:${e.id}` });
+      // Close outcome tasks for events that have since been completed or cancelled.
+      for (const r of await all<{ source_key: string }>(db, "SELECT t.source_key FROM administrative_tasks t JOIN admin_calendar_events e ON CONCAT('event-outcome:', e.id) = t.source_key WHERE t.status = 'OPEN' AND e.status <> 'SCHEDULED'")) await closeTasks(db, r.source_key);
+      return { processed: n, message: `${due.length} event(s) within ${days} day(s); ${stale.length} past event(s) awaiting an outcome` };
+    },
+  },
+  {
+    name: "correspondence.follow-ups",
+    title: "Correspondence follow-ups and retention review",
+    description: "Reminds the assigned officer when a correspondence follow-up date is reached (and the manager when it is overdue), and flags closed or filed records older than correspondence.retention_years for retention review. Nothing is deleted automatically.",
+    run: async (db) => {
+      const t = today();
+      const due = await all<{ id: string; reference: string; subject: string; follow_up_date: string; assigned_to: string | null; org_unit_id: string }>(db,
+        "SELECT id, reference, subject, follow_up_date, assigned_to, org_unit_id FROM correspondence WHERE status NOT IN ('CLOSED','FILED') AND follow_up_date IS NOT NULL AND follow_up_date <= ?", t);
+      let n = 0;
+      for (const c of due) {
+        const overdue = c.follow_up_date < t;
+        if (c.assigned_to) {
+          if (await notify(db, c.assigned_to, `${overdue ? "Overdue" : "Follow up today"}: ${c.reference}`, c.subject, `/app/correspondence/${c.id}`, { category: "GENERAL", dedupeKey: `corr-follow:${c.id}:${c.follow_up_date}:${overdue ? "o" : "d"}` })) n++;
+          await createTask(db, { userId: c.assigned_to, title: `Follow up correspondence ${c.reference}`, link: `/app/correspondence/${c.id}`, dueDate: c.follow_up_date, sourceKey: `corr-follow:${c.id}:${c.follow_up_date}` });
+        }
+        if (overdue || !c.assigned_to) {
+          for (const u of await usersWithPermissionAt(db, "correspondence.manage", c.org_unit_id)) {
+            await notify(db, u, `${c.assigned_to ? "Follow-up overdue" : "Unassigned correspondence due"}: ${c.reference}`, c.subject, `/app/correspondence/${c.id}`, { category: "GENERAL", dedupeKey: `corr-overdue:${c.id}:${c.follow_up_date}` });
+          }
+        }
+      }
+      // Close follow-up tasks for records that are closed, filed or rescheduled.
+      for (const r of await all<{ source_key: string }>(db, "SELECT source_key FROM administrative_tasks WHERE status = 'OPEN' AND source_key LIKE 'corr-follow:%'")) {
+        const [, id, date] = r.source_key.split(":");
+        const c = await one<{ status: string; follow_up_date: string | null }>(db, "SELECT status, follow_up_date FROM correspondence WHERE id = ?", id);
+        if (!c || ["CLOSED", "FILED"].includes(c.status) || c.follow_up_date !== date) await closeTasks(db, r.source_key);
+      }
+      const years = await setting(db, "correspondence.retention_years", 7);
+      const cutoff = `${Number(t.slice(0, 4)) - years}${t.slice(4)}`;
+      const old = await all<{ id: string; reference: string; org_unit_id: string }>(db,
+        "SELECT id, reference, org_unit_id FROM correspondence WHERE status IN ('CLOSED','FILED') AND updated_at < ? LIMIT 200", cutoff);
+      for (const c of old) for (const u of await usersWithPermissionAt(db, "correspondence.manage", c.org_unit_id)) {
+        await createTask(db, { userId: u, title: `Retention review: ${c.reference} is older than ${years} years`, link: `/app/correspondence/${c.id}`, sourceKey: `corr-retention:${c.id}:${u}` });
+      }
+      return { processed: n, message: `${due.length} follow-up(s) due or overdue; ${old.length} record(s) due for retention review` };
+    },
+  },
+  {
     name: "system.housekeeping",
     title: "Session and log housekeeping",
     description: "Removes expired sessions and sign-in attempt records older than 90 days.",

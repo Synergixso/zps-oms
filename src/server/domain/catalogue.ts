@@ -104,6 +104,13 @@ export const PERMISSIONS = {
   "stores.manage": "Maintain store items; record receipts, issues, returns and adjustments",
   "stores.requisition": "Raise and submit stores requisitions for own unit",
   "stores.approve": "Approve or reject stores requisitions (requires a business role; never self-approval)",
+  // Module 16 — administrative scheduling (non-sensitive; no locations, patrols or deployments) (DEC-068)
+  "schedule.view": "View the administrative calendar: events and dated items of units in scope",
+  "schedule.manage": "Schedule, cancel and complete non-sensitive administrative events",
+  // Module 17 — administrative correspondence (DEC-068)
+  "correspondence.view": "View the administrative correspondence register (RESTRICTED records need correspondence.manage)",
+  "correspondence.register": "Register incoming and outgoing correspondence and attach screened PDF documents",
+  "correspondence.manage": "Assign, file and manage correspondence, including RESTRICTED records",
   // Public Contact page inbox
   "contact.view": "View messages submitted through the public Contact page",
   "contact.manage": "Mark public contact messages as handled",
@@ -193,7 +200,7 @@ export const ROLES: RoleDef[] = [
     category: "BUSINESS", dashboard: "NATIONAL_EXECUTIVE", dashboardTitle: "Inspector General Executive Dashboard",
     description: "National executive oversight of authorised ZPS-OMS management information. Consolidated summaries, not individual personnel records; decisions only where a delegation is configured.",
     assignableTo: HQ,
-    permissions: { "dashboard.national.view": N, "org.view": N, "manpower.view": N, "report.view": N, "report.export": N, "workflow.view": U, "audit.view": N, "audit.export": N },
+    permissions: { "schedule.view": N, "correspondence.view": N, "dashboard.national.view": N, "org.view": N, "manpower.view": N, "report.view": N, "report.export": N, "workflow.view": U, "audit.view": N, "audit.export": N },
   },
   {
     code: "DIG_OPERATIONS", no: 3, tier: 1, level: "NATIONAL",
@@ -201,7 +208,7 @@ export const ROLES: RoleDef[] = [
     category: "BUSINESS", dashboard: "NATIONAL_EXECUTIVE", dashboardTitle: "DIG Operations National Executive Dashboard",
     description: "National Operations administration, coordination and oversight; approves within configured delegations. No platform technical configuration.",
     assignableTo: HQ,
-    permissions: {
+    permissions: { "schedule.view": N, "correspondence.view": N, "correspondence.manage": N,
       "dashboard.national.view": N, "org.view": N, "request.view": U, "report.view": N, "report.export": N, "workflow.view": U, "audit.view": N,
       ...P.oversight(N), "roster.review": N, "roster.export": N, "fleet.view": N, "asset.view": N, "stores.view": N,
     },
@@ -212,7 +219,7 @@ export const ROLES: RoleDef[] = [
     category: "BUSINESS", dashboard: "NATIONAL_COORDINATION", dashboardTitle: "Commissioner Operations Headquarters Dashboard",
     description: "Senior administration and coordination of Operations Headquarters business processes. Approval authority only through configured delegations.",
     assignableTo: HQ,
-    permissions: {
+    permissions: { "schedule.view": N, "schedule.manage": N, "correspondence.view": N, "correspondence.register": N, "correspondence.manage": N,
       "dashboard.national.view": N, "org.view": N, ...P.requests(U), "request.view": N, "request.assign": N, "request.progress": U, "request.close": N,
       "fleet.view": N, "maintenance.view": N, "asset.view": N, "stores.view": N, "report.view": N, "report.export": N, "workflow.view": U, "workflow.configure": N, "contact.view": N, "contact.manage": N,
       ...P.oversight(N), "personnel.export": N, "manpower.create": U, "manpower.review": N, "roster.build": N, "roster.review": N, "roster.export": N,
@@ -225,7 +232,7 @@ export const ROLES: RoleDef[] = [
     category: "BUSINESS", dashboard: "OPS_STAFF_WORKSPACE", dashboardTitle: "Deputy Commissioner Operations HQ Dashboard",
     description: "Day-to-day administrative coordination and processing within Operations Headquarters; recommends or approves only where delegated.",
     assignableTo: HQ,
-    permissions: {
+    permissions: { "schedule.view": N, "schedule.manage": N, "correspondence.view": N, "correspondence.register": N, "correspondence.manage": N,
       "dashboard.national.view": N, "org.view": N, "report.view": N, "report.export": N,
       ...P.oversight(N), ...P.personnelAdmin(N), "personnel.verify": N, "personnel.export": N, "manpower.create": U, "manpower.review": N,
       "roster.build": N, "roster.review": N, "roster.export": N, "assignment.propose": N, "assignment.transfer": N, "assignment.renew": N,
@@ -256,7 +263,7 @@ export const ROLES: RoleDef[] = [
     category: "BUSINESS", dashboard: "FORMATION_COMMAND", dashboardTitle: "Formation Command Headquarters",
     description: "Oversight of the assigned Division or Formation and everything under it. Approves only within configured delegations; no access to unrelated formations or Provinces.",
     assignableTo: DIV_OR_FORMATION,
-    permissions: {
+    permissions: { "schedule.view": S, "correspondence.view": S, "correspondence.manage": S,
       "dashboard.division.view": U, "dashboard.formation.view": U, "org.view": N, "request.view": U, "request.assign": U, "request.close": U, "request.reopen": U,
       "fleet.view": U, "maintenance.view": U, "asset.view": S, "stores.view": S, "stores.approve": S, "report.view": S, "report.export": S,
       ...P.oversight(S), "roster.review": S,
@@ -268,7 +275,7 @@ export const ROLES: RoleDef[] = [
     category: "BUSINESS", dashboard: "DIVISION_COMMAND", dashboardTitle: "Deputy Division Commander Dashboard",
     description: "Supports the commanding officer: monitors performance, reviews outstanding matters and Staff I/II workflows; approves only where separately delegated.",
     assignableTo: DIV_OR_FORMATION,
-    permissions: { "dashboard.division.view": U, "org.view": N, "request.view": U, "report.view": S, "report.export": S, ...P.oversight(S), "roster.review": S, "roster.export": S, "personnel.export": S, "stores.view": S },
+    permissions: { "schedule.view": S, "correspondence.view": S, "correspondence.manage": S, "dashboard.division.view": U, "org.view": N, "request.view": U, "report.view": S, "report.export": S, ...P.oversight(S), "roster.review": S, "roster.export": S, "personnel.export": S, "stores.view": S },
   },
   {
     code: "DIVISION_STAFF_I", no: 10, tier: 2, level: "DIVISION_FORMATION",
@@ -276,7 +283,7 @@ export const ROLES: RoleDef[] = [
     category: "BUSINESS", dashboard: "DIVISION_STAFF_OPS", dashboardTitle: "Division Senior Staff Officer – Operations",
     description: "Coordinates Divisional Operations administration: manpower requirements, contributions, rosters, assignments, transfers, tenure and renewals; supervises Staff II. No approval outside delegations.",
     assignableTo: DIV_OR_FORMATION,
-    permissions: {
+    permissions: { "schedule.view": S, "schedule.manage": S, "correspondence.view": S, "correspondence.register": S, "correspondence.manage": S,
       "dashboard.division.view": U, "org.view": N, ...P.requests(U), "request.progress": U, "fleet.view": U, "maintenance.view": U, "maintenance.create": U, "asset.view": U,
       "report.view": S, "report.export": S, ...P.oversight(S), ...P.contributor(S), ...P.personnelAdmin(S), "personnel.verify": S, "personnel.export": S,
       "manpower.create": U, "manpower.review": S, "roster.build": S, "roster.export": S, "area.manage": S,
@@ -289,7 +296,7 @@ export const ROLES: RoleDef[] = [
     category: "BUSINESS", dashboard: "ASSIGNMENT_ADMIN", dashboardTitle: "Deputy Division Staff Officer – Operations",
     description: "Assists Staff I: prepares personnel information, compiles draft lists, verifies submissions, prepares transfer and renewal documentation. No Staff I approval authority.",
     assignableTo: DIV_OR_FORMATION,
-    permissions: {
+    permissions: { "schedule.view": S, "schedule.manage": S, "correspondence.view": S, "correspondence.register": S,
       "dashboard.division.view": U, "org.view": N, ...P.personnelAdmin(S), "personnel.verify": S, ...P.contributor(S), "manpower.create": U, "roster.build": S,
       "area.view": S, "assignment.view": S, "assignment.propose": S, "assignment.transfer": S, "assignment.renew": S, "report.view": S,
     },
@@ -300,7 +307,7 @@ export const ROLES: RoleDef[] = [
     category: "BUSINESS", dashboard: "UNIT_COMMAND", dashboardTitle: "Company Command Administration",
     description: "Company administration: personnel register, contributions and submissions for the company and its platoons and sections. No access to other companies.",
     assignableTo: ["COMPANY"],
-    permissions: { "dashboard.unit.view": U, ...P.contributor(S), ...P.personnelAdmin(S), "assignment.view": S, "report.view": S },
+    permissions: { "schedule.view": S, "correspondence.view": S, "dashboard.unit.view": U, ...P.contributor(S), ...P.personnelAdmin(S), "assignment.view": S, "report.view": S },
   },
   {
     code: "SECTION_HEAD", no: 13, tier: 2, level: "DIVISION_FORMATION",
@@ -308,7 +315,7 @@ export const ROLES: RoleDef[] = [
     category: "BUSINESS", dashboard: "UNIT_COMMAND", dashboardTitle: "Section Administration Dashboard",
     description: "Section administrative records: selects personnel from the registry, prepares and verifies manpower contributions, tracks requests.",
     assignableTo: ["SECTION", "PLATOON", "DETACHMENT", "DEPARTMENT"],
-    permissions: { "dashboard.unit.view": U, ...P.contributor(S), ...P.personnelAdmin(S) },
+    permissions: { "schedule.view": S, "dashboard.unit.view": U, ...P.contributor(S), ...P.personnelAdmin(S) },
   },
   {
     code: "FORMATION_OPS_STAFF_ADMIN", no: 14, tier: 2, level: "DIVISION_FORMATION",
@@ -316,7 +323,7 @@ export const ROLES: RoleDef[] = [
     category: "BUSINESS", dashboard: "FORMATION_ADMIN", dashboardTitle: "Formation Operations Staff Administration",
     description: "Formation-level Operations administration: contributions, rosters, assignment documentation and subordinate submissions. No commanding-officer approval authority.",
     assignableTo: ["FORMATION"],
-    permissions: {
+    permissions: { "schedule.view": S, "schedule.manage": S, "correspondence.view": S, "correspondence.register": S,
       "dashboard.formation.view": U, "org.view": N, ...P.requests(U), "request.progress": U, "fleet.view": U, "maintenance.view": U, "maintenance.create": U, "asset.view": U, "report.view": S,
       ...P.oversight(S), ...P.personnelAdmin(S), ...P.contributor(S), "manpower.create": U, "manpower.review": S, "roster.build": S, "roster.export": S,
       "assignment.propose": S, "assignment.transfer": S, "stores.requisition": S,
@@ -328,7 +335,7 @@ export const ROLES: RoleDef[] = [
     category: "FUNCTIONAL", dashboard: "STORES", dashboardTitle: "Divisional Quarter Masters and Stores Administration",
     description: "General stores and non-sensitive assets: receipts, issue and return, requisitions, custody and reconciliation. Firearms, ammunition and sensitive equipment are excluded.",
     assignableTo: DIV_OR_FORMATION,
-    permissions: { ...P.storesOps(S), "asset.dispose": S, "report.view": U, "report.export": U },
+    permissions: { "schedule.view": S, ...P.storesOps(S), "asset.dispose": S, "report.view": U, "report.export": U },
   },
   {
     code: "PRINCIPAL_ARMOURER", no: 16, tier: 2, level: "DIVISION_FORMATION",
@@ -344,7 +351,7 @@ export const ROLES: RoleDef[] = [
     category: "FUNCTIONAL", dashboard: "FLEET", dashboardTitle: "Divisional Motor Transport Administration",
     description: "General fleet administration: vehicle register, documentation, maintenance, workshop referrals and service history. No GPS, movement or deployment information.",
     assignableTo: DIV_OR_FORMATION,
-    permissions: { "fleet.view": U, "fleet.manage": U, "maintenance.view": U, "maintenance.create": U, "maintenance.process": U, "maintenance.verify": U, "service.record": U, "report.view": U, "report.export": U },
+    permissions: { "schedule.view": S, "fleet.view": U, "fleet.manage": U, "maintenance.view": U, "maintenance.create": U, "maintenance.process": U, "maintenance.verify": U, "service.record": U, "report.view": U, "report.export": U },
   },
   // ── TIER 3 — DISTRICT COMMANDS AND POLICE STATIONS ───────────────────────
   {
@@ -360,7 +367,7 @@ export const ROLES: RoleDef[] = [
     category: "BUSINESS", dashboard: "DISTRICT_COMMAND", dashboardTitle: "District Command Dashboard",
     description: "District oversight: stations and posts, personnel, contributions, assignments and stores. Approves only within configured delegations; no access to other Districts.",
     assignableTo: ["DISTRICT"],
-    permissions: { "dashboard.district.view": U, "org.view": N, ...P.oversight(S), ...P.contributor(S), "personnel.verify": S, "report.view": S, "stores.view": S, "stores.approve": S, "asset.view": S },
+    permissions: { "schedule.view": S, "correspondence.view": S, "correspondence.manage": S, "dashboard.district.view": U, "org.view": N, ...P.oversight(S), ...P.contributor(S), "personnel.verify": S, "report.view": S, "stores.view": S, "stores.approve": S, "asset.view": S },
   },
   {
     code: "DEPUTY_OC_DISTRICT", no: 20, tier: 3, level: "DISTRICT_STATION",
@@ -368,7 +375,7 @@ export const ROLES: RoleDef[] = [
     category: "BUSINESS", dashboard: "DISTRICT_COMMAND", dashboardTitle: "Deputy District Commander Dashboard",
     description: "Assists the District Commander; reviews subordinate submissions and processes delegated matters. Does not inherit the OC's approvals.",
     assignableTo: ["DISTRICT"],
-    permissions: { "dashboard.district.view": U, "org.view": N, ...P.oversight(S), ...P.contributor(S), "assignment.propose": S, "report.view": S },
+    permissions: { "schedule.view": S, "correspondence.view": S, "correspondence.manage": S, "dashboard.district.view": U, "org.view": N, ...P.oversight(S), ...P.contributor(S), "assignment.propose": S, "report.view": S },
   },
   {
     code: "OPS_OFFICER_DISTRICT", no: 21, tier: 3, level: "DISTRICT_STATION",
@@ -376,7 +383,7 @@ export const ROLES: RoleDef[] = [
     category: "BUSINESS", dashboard: "DISTRICT_COMMAND", dashboardTitle: "District Operations Officer Workspace",
     description: "District Operations administration: manpower requests, station contributions, district lists, assignment records and reviews. No tactical deployment, patrol scheduling or tracking.",
     assignableTo: ["DISTRICT"],
-    permissions: {
+    permissions: { "schedule.view": S, "schedule.manage": S, "correspondence.view": S, "correspondence.register": S, "correspondence.manage": S,
       "dashboard.district.view": U, "org.view": N, ...P.oversight(S), ...P.contributor(S), ...P.personnelAdmin(S), "personnel.verify": S, "manpower.create": U, "manpower.review": S,
       "roster.build": S, "assignment.propose": S, "assignment.transfer": S, "assignment.receive": S, "disposition.change": S, "report.view": S, "stores.requisition": S,
     },
@@ -387,14 +394,14 @@ export const ROLES: RoleDef[] = [
     category: "BUSINESS", dashboard: "PERSONNEL_ADMIN", dashboardTitle: "Deputy District Operations Workspace",
     description: "Assists the Operations Officer: prepares submissions, verifies contributions, maintains workflow records. No Operations Officer approval authority.",
     assignableTo: ["DISTRICT"],
-    permissions: { "dashboard.district.view": U, "org.view": N, ...P.personnelAdmin(S), "personnel.export": S, ...P.contributor(S), "roster.build": S, "area.view": S, "assignment.view": S, "assignment.propose": S, "assignment.transfer": S, "report.view": S },
+    permissions: { "schedule.view": S, "schedule.manage": S, "correspondence.view": S, "correspondence.register": S, "dashboard.district.view": U, "org.view": N, ...P.personnelAdmin(S), "personnel.export": S, ...P.contributor(S), "roster.build": S, "area.view": S, "assignment.view": S, "assignment.propose": S, "assignment.transfer": S, "report.view": S },
   },
   {
     code: "STORES_OFFICER_DISTRICT", no: 23, tier: 3, level: "DISTRICT_STATION",
     name: "Stores Officer — District", backOffice: "District Stores Administration", context: "District Command stores",
     category: "FUNCTIONAL", dashboard: "STORES", dashboardTitle: "District Stores Administration",
     description: "General stores records, requisitions, receipts and issues, and non-sensitive asset custody for the District. Sensitive equipment is excluded.",
-    assignableTo: ["DISTRICT"], permissions: { ...P.storesOps(S), "report.view": U },
+    assignableTo: ["DISTRICT"], permissions: { "schedule.view": S, ...P.storesOps(S), "report.view": U },
   },
   {
     code: "STATION_TECH_ADMIN", no: 24, tier: 3, level: "DISTRICT_STATION",
@@ -409,7 +416,7 @@ export const ROLES: RoleDef[] = [
     category: "BUSINESS", dashboard: "STATION", dashboardTitle: "Police Station General Duties Administration",
     description: "Station-level general duties administrative oversight: personnel, contributions, submissions; approves specifically delegated matters.",
     assignableTo: STATION_OR_POST,
-    permissions: { "dashboard.station.view": U, "org.view": N, ...P.oversight(S), ...P.contributor(S), "personnel.verify": S, "report.view": S, "stores.view": S, "stores.approve": S, "asset.view": S },
+    permissions: { "schedule.view": S, "correspondence.view": S, "correspondence.manage": S, "dashboard.station.view": U, "org.view": N, ...P.oversight(S), ...P.contributor(S), "personnel.verify": S, "report.view": S, "stores.view": S, "stores.approve": S, "asset.view": S },
   },
   {
     code: "STATION_INSPECTOR_GD", no: 26, tier: 3, level: "DISTRICT_STATION",
@@ -417,14 +424,14 @@ export const ROLES: RoleDef[] = [
     category: "BUSINESS", dashboard: "STATION", dashboardTitle: "Station Inspector Operations Administration",
     description: "Supports Station administration: personnel register, contributions and submissions; delegated supervisory functions only. Does not inherit OIC approvals.",
     assignableTo: STATION_OR_POST,
-    permissions: { "dashboard.station.view": U, "org.view": N, ...P.personnelAdmin(S), ...P.contributor(S), "assignment.view": S, "report.view": S },
+    permissions: { "schedule.view": S, "schedule.manage": S, "correspondence.view": S, "correspondence.register": S, "dashboard.station.view": U, "org.view": N, ...P.personnelAdmin(S), ...P.contributor(S), "assignment.view": S, "report.view": S },
   },
   {
     code: "STATION_ADMIN_STORES", no: 27, tier: 3, level: "DISTRICT_STATION",
     name: "Police Station Administrator (Stores and Admin)", backOffice: "Police Station Stores and Administration", context: "Police Station",
     category: "FUNCTIONAL", dashboard: "STORES", dashboardTitle: "Police Station Stores and Administration",
     description: "Station administrative records, general stores and non-sensitive assets: issue and return, requisitions, reconciliation. No sensitive equipment, firearms or ammunition.",
-    assignableTo: STATION_OR_POST, permissions: { ...P.storesOps(S), "stores.requisition": S, ...P.requests(U), "report.view": U },
+    assignableTo: STATION_OR_POST, permissions: { "schedule.view": S, "schedule.manage": S, "correspondence.view": S, "correspondence.register": S, ...P.storesOps(S), "stores.requisition": S, ...P.requests(U), "report.view": U },
   },
 ];
 

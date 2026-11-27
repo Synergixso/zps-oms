@@ -14,7 +14,7 @@ const OBJECTIVES: Array<{ icon: IconName; label: string; color: string }> = [
   { icon: "gear", label: "Enhance Operational Coordination", color: "text-[#16823b]" },
   { icon: "layers", label: "Improve Resource Management", color: "text-[#1f5bc4]" },
   { icon: "shieldCheck", label: "Strengthen Accountability and Compliance", color: "text-[#6a4bd1]" },
-  { icon: "bars", label: "Provide Real-time Operational Insight", color: "text-[#133f91]" },
+  { icon: "bars", label: "Provide Accurate, Up-to-date Management Information", color: "text-[#133f91]" },
   { icon: "users", label: "Support Effective Decision-making", color: "text-[#16823b]" },
 ];
 

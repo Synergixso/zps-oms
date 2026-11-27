@@ -1,3 +1,4 @@
+import { identifierHint, identifierRule } from "@/server/lib/identifiers";
 import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
@@ -89,7 +90,7 @@ export default async function StoresPage({ searchParams }: { searchParams: Promi
           <Card title="Add a store item" subtitle="Approved general-stores categories only">
             <ActionForm action={createStoreItemAction}>
               <Select label="Store" name="orgUnitId" required options={manageUnits} defaultValue={manageUnits[0].value} />
-              <TextField label="Item code" name="code" required placeholder="SYN-STO-0000" maxLength={16} />
+              <TextField label="Item code" name="code" required placeholder={identifierRule("storeCode").synthetic ? "SYN-STO-0000" : undefined} hint={identifierHint("storeCode")} maxLength={24} />
               <Select label="Category" name="categoryCode" required placeholder="Select" options={cats.map((c) => ({ value: c.code, label: c.name }))} />
               <TextField label="Item name" name="name" required maxLength={120} />
               <TextField label="Unit of measure" name="unitOfMeasure" required placeholder="each, ream, box…" maxLength={20} />

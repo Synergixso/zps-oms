@@ -12,7 +12,7 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-export type IconName = "home" | "inbox" | "file" | "building" | "truck" | "wrench" | "box" | "chart" | "users" | "key" | "shield" | "search" | "server" | "flow" | "bell" | "help" | "check" | "layers" | "arrow" | "user" | "lock" | "map" | "eye" | "car" | "play" | "network" | "tools" | "shieldCheck" | "bars" | "gear" | "target" | "scale" | "handshake" | "starShield" | "sitemap" | "clipboardCheck" | "star" | "chevron" | "monitorNet" | "laptop" | "checkCircle" | "userCircle" | "bank" | "phone" | "mail" | "headset" | "globe" | "pin" | "send" | "userPlus" | "info" | "chat" | "list" | "fileEdit" | "docSearch" | "stamp" | "gauge" | "database" | "chartMonitor" | "arrowUp" | "arrowDown";
+export type IconName = "home" | "inbox" | "file" | "building" | "truck" | "wrench" | "box" | "chart" | "users" | "key" | "shield" | "search" | "server" | "flow" | "bell" | "help" | "check" | "layers" | "arrow" | "user" | "lock" | "map" | "eye" | "car" | "play" | "network" | "tools" | "shieldCheck" | "bars" | "gear" | "target" | "scale" | "handshake" | "starShield" | "sitemap" | "clipboardCheck" | "star" | "chevron" | "monitorNet" | "laptop" | "checkCircle" | "userCircle" | "bank" | "phone" | "mail" | "headset" | "globe" | "pin" | "send" | "userPlus" | "info" | "chat" | "list" | "fileEdit" | "docSearch" | "stamp" | "gauge" | "database" | "chartMonitor" | "arrowUp" | "arrowDown" | "calendar";
 
 export const NAV: NavGroup[] = [
   {
@@ -44,6 +44,8 @@ export const NAV: NavGroup[] = [
       { href: "/app/assets", label: "General assets", icon: "box", any: ["asset.view"] },
       { href: "/app/stores", label: "Stores and stock", icon: "database", any: ["stores.view"] },
       { href: "/app/stores/requisitions", label: "Stores requisitions", icon: "clipboardCheck", any: ["stores.view", "stores.requisition"] },
+      { href: "/app/calendar", label: "Administrative calendar", icon: "calendar", any: ["schedule.view"] },
+      { href: "/app/correspondence", label: "Correspondence", icon: "mail", any: ["correspondence.view", "correspondence.register"] },
       { href: "/app/reports", label: "Reports", icon: "chart", any: ["report.view"] },
       { href: "/app/messages", label: "Contact messages", icon: "mail", any: ["contact.view"] },
     ],

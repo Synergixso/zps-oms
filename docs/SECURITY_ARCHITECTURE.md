@@ -34,8 +34,8 @@ Browser ──(HTTPS in prod; cookie)──> Next.js server
 - CSV export: formula-injection guard (`=+-@` prefixed with `'`), quoted fields, synthetic banner.
 - Prohibited-term screening for asset text (excluded equipment classes).
 
-## 6. HTTP hardening (`next.config.ts`)
-CSP `default-src 'self'` (no remote scripts/fonts/images; `frame-ancestors 'none'`; `form-action 'self'`), `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, restrictive `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `poweredByHeader: false`, `robots: noindex`. CSRF: server-action origin check + explicit same-origin check on export routes. `script-src` still permits `'unsafe-inline'` for Next.js bootstrap — replace with nonces before production.
+## 6. HTTP hardening (`src/proxy.ts`, `next.config.ts`)
+Pages: per-request nonce CSP from `src/proxy.ts` (`src/server/lib/csp.ts`): `script-src 'self' 'nonce-…' 'strict-dynamic'` (no `'unsafe-inline'`; `'unsafe-eval'` in development only), `style-src 'self' 'unsafe-inline'` (React style attributes; styles cannot run code), `object-src 'none'`, `frame-ancestors 'none'`, `form-action 'self'`, `base-uri 'self'`, no remote scripts, fonts or images. Every page renders per request so its scripts carry the nonce. API responses: `default-src 'none'`. Verified by `tests/csp.test.ts` and `e2e/csp.spec.ts` (injected inline script and inline event handler are refused; no violations on normal pages) (DEC-067). Other headers: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, restrictive `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `poweredByHeader: false`, `robots: noindex`. CSRF: server-action origin check + explicit same-origin check on export routes.
 
 ## 7. Audit
 Append-only (DB triggers), hash-chained, verifiable; secrets redacted by key name; no application permission writes or edits audit rows; evidence export is itself audited.
@@ -44,7 +44,7 @@ Append-only (DB triggers), hash-chained, verifiable; secrets redacted by key nam
 None exist in the prototype. `.env*` git-ignored. No credentials in seed data or logs.
 
 ## 9. Not yet implemented (production prerequisites)
-Rate limiting (no reverse proxy locally), MFA/IdP, CSP nonces, encryption at rest, WORM audit storage, centralised logging/SIEM, time synchronisation (NTP) on hosts, backup/restore automation, dependency scanning in CI, penetration test, DPIA. See THREAT_MODEL.md and KNOWN_LIMITATIONS.md.
+Rate limiting (no reverse proxy locally), MFA/IdP, encryption at rest, WORM audit storage, centralised logging/SIEM, time synchronisation (NTP) on hosts, penetration test, DPIA. (Backup/restore automation, CI dependency scanning and CSP nonces are now in place.) See THREAT_MODEL.md and KNOWN_LIMITATIONS.md.
 
 ## 10. Legal and policy review (not legal advice)
 To be assessed by the Service's Legal Directorate / DPO / Technical Services: Data Protection Act 2021; Cyber Security Act 2025; Cyber Crimes Act 2025; Electronic Government Act 2021; Public Procurement Act 2020 (if procurement later); SMART Zambia Institute guidelines; Zambia Police Act and standing orders.

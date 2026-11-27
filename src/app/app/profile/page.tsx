@@ -1,4 +1,7 @@
-import { requireActor } from "@/server/auth/session";
+import { cookies } from "next/headers";
+import { SESSION_COOKIE, requireActor } from "@/server/auth/session";
+import { myAccountActivity } from "@/server/domain/account-activity";
+import { AccountActivity } from "@/components/account-activity";
 import { all, getDb } from "@/server/db/connection";
 import { PERMISSIONS, ROLE_BY_CODE, type Permission } from "@/server/domain/catalogue";
 import { scopeFor } from "@/server/domain/policy";
@@ -12,6 +15,8 @@ export const metadata = { title: "My profile and access" };
 export default async function Profile({ searchParams }: { searchParams: Promise<{ reason?: string }> }) {
   const actor = await requireActor();
   const { reason } = await searchParams;
+  const activity = await myAccountActivity(getDb(), actor, (await cookies()).get(SESSION_COOKIE)?.value);
+  const synthetic = Number((await all<{ s: number }>(getDb(), "SELECT synthetic AS s FROM users WHERE id = ?", actor.userId))[0]?.s ?? 0) === 1;
   const dels = await all<{ domain: string; org_name: string; category_code: string | null; valid_to: string | null; approval_ref: string }>(
     getDb(),
     "SELECT d.*, o.name AS org_name FROM delegations d JOIN org_units o ON o.id = d.org_unit_id WHERE d.user_id = ? AND d.revoked_at IS NULL",
@@ -23,7 +28,7 @@ export default async function Profile({ searchParams }: { searchParams: Promise<
     <>
       <PageHeader eyebrow="My account" title={actor.displayName} description="Your identity, active role assignments, delegations and effective permissions as evaluated by the server right now." />
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card title="Identity"><DL items={[["Display name", actor.displayName], ["Position title", actor.positionTitle], ["Account type", "Synthetic demonstration account"], ["Authentication", "Username and password (scrypt)"]]} /></Card>
+        <Card title="Identity"><DL items={[["Display name", actor.displayName], ["Position title", actor.positionTitle], ["Account type", synthetic ? "Synthetic demonstration account" : "Service account"], ["Authentication", "Username and password (scrypt)"]]} /></Card>
         <Card title="Change password" subtitle={`At least ${PASSWORD_MIN_LENGTH} characters, using three of: lower-case, upper-case, digits, symbols`}>
           {reason === "change-password" && <div className="mb-3"><Notice tone="warn" title="Password change required">You signed in with a temporary password. Choose a new password now.</Notice></div>}
           <ActionForm action={changePasswordAction} resetOnSuccess>
@@ -42,6 +47,9 @@ export default async function Profile({ searchParams }: { searchParams: Promise<
         <Card title="Effective permissions" bodyClass="p-0">
           <Table head={["Permission", "Scope"]}>{effective.map(([p, s]) => <tr key={p}><td className={td}><span className="font-mono text-xs">{p}</span><span className="block text-xs text-muted">{PERMISSIONS[p]}</span></td><td className={td}>{s.national ? "National" : s.units.map((u) => orgName[u]).join(", ")}</td></tr>)}</Table>
         </Card>
+      </div>
+      <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        <AccountActivity sessions={activity.sessions} history={activity.history} canEnd back="profile" userId={actor.userId} />
       </div>
     </>
   );

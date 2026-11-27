@@ -1,3 +1,4 @@
+import { isProduction } from "../lib/environment";
 import "server-only";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -11,7 +12,8 @@ import { applyDueAssignmentEvents } from "../domain/assignments";
 export const SESSION_COOKIE = "zps_session";
 
 /** Local review aid: list the synthetic accounts on the sign-in page. Off in production unless explicitly enabled. */
-export const SHOW_DEMO_ACCOUNTS = process.env.ZPS_SHOW_DEMO_ACCOUNTS === "1" || (process.env.NODE_ENV !== "production" && process.env.ZPS_SHOW_DEMO_ACCOUNTS !== "0");
+// Never in a production environment, whatever ZPS_SHOW_DEMO_ACCOUNTS says (DEC-069).
+export const SHOW_DEMO_ACCOUNTS = !isProduction() && (process.env.ZPS_SHOW_DEMO_ACCOUNTS === "1" || (process.env.NODE_ENV !== "production" && process.env.ZPS_SHOW_DEMO_ACCOUNTS !== "0"));
 
 export async function getActor(): Promise<Actor | null> {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;

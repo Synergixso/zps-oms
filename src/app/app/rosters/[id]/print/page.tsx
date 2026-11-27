@@ -1,3 +1,4 @@
+import { environmentNotice } from "@/server/lib/environment";
 import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
 import { loadOr404 } from "@/server/auth/guard";
@@ -12,6 +13,7 @@ export default async function RosterPrint({ params }: { params: Promise<{ id: st
   const { id } = await params;
   const actor = await requireActor();
   const r = await loadOr404(() => exportRoster(getDb(), actor, id, "print"));
+  const env = await environmentNotice(getDb());
   const groups = new Map<string, typeof r.entries>();
   for (const e of r.entries) groups.set(e.home_unit_name, [...(groups.get(e.home_unit_name) ?? []), e]);
   let n = 0;
@@ -26,7 +28,7 @@ export default async function RosterPrint({ params }: { params: Promise<{ id: st
         <div>
           <p className="text-[15px] font-bold tracking-wide">ZAMBIA POLICE SERVICE — OPERATIONS MANAGEMENT SYSTEM</p>
           <p className="text-[13px] font-semibold">Personnel roster · {r.request.reference} · Version {r.version.version_no} ({ROSTER_STATUS_LABEL[r.version.status]})</p>
-          <p className="text-[11px] font-bold uppercase text-red-700">Synthetic demonstration data — not an official document</p>
+          {env.outputStamp && <p className="text-[11px] font-bold uppercase text-red-700">{env.outputStamp}</p>}
         </div>
       </header>
       <table className="mt-3 w-full text-[12px]">

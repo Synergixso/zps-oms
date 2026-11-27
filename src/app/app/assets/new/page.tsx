@@ -1,3 +1,4 @@
+import { identifierHint, identifierRule } from "@/server/lib/identifiers";
 import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
 import { ASSET_CATEGORIES } from "@/server/domain/catalogue";
@@ -20,7 +21,7 @@ export default async function NewAsset() {
       <Card className="max-w-3xl">
         <ActionForm action={registerAssetAction}>
           <div className="grid gap-4 sm:grid-cols-2">
-            <TextField label="Asset tag" name="assetTag" required placeholder="SYN-AST-00000" hint="Synthetic pattern SYN-AST-00000" />
+            <TextField label="Asset tag" name="assetTag" required placeholder={identifierRule("assetTag").synthetic ? "SYN-AST-00000" : undefined} hint={identifierHint("assetTag")} />
             <Select label="Category (approved allowlist)" name="categoryCode" required placeholder="Select a category" options={ASSET_CATEGORIES.map((c) => ({ value: c.code, label: c.name }))} />
             <TextField label="Description" name="description" required maxLength={120} />
             <Select label="Condition" name="condition" defaultValue="GOOD" options={CONDITIONS.map((c) => ({ value: c, label: c.charAt(0) + c.slice(1).toLowerCase() }))} />

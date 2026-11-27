@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: { default: "ZPS-OMS", template: "%s · ZPS-OMS" },
-  description: "Zambia Police Service Operations Management System — local synthetic-data prototype for institutional review.",
+  description: "Zambia Police Service Operations Management System — Operations personnel, manpower and administration management.",
   robots: { index: false, follow: false },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Every page renders per request so Next.js can stamp its scripts with the request's CSP nonce
+  // (src/proxy.ts, DEC-067). Pre-rendered pages would carry no nonce and their scripts would be blocked.
+  await connection();
   return (
     <html lang="en-GB">
       <body className="min-h-screen antialiased">

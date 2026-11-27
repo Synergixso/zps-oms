@@ -27,13 +27,16 @@ $env:ZPS_INSECURE_COOKIE = "1"; npm start   # cookie 'Secure' flag needs HTTPS; 
 |---|---|---|
 | `DATABASE_URL` | — (required) | MySQL connection for the app, database `zps_oms_*` |
 | `DATABASE_URL_TEST` | — | Test database (`zps_oms_test`); Playwright derives `zps_oms_e2e` from it |
-| `ZPS_SHOW_DEMO_ACCOUNTS` | on in development, off in production | `1` forces / `0` hides the synthetic account list on the sign-in page |
+| `ZPS_SHOW_DEMO_ACCOUNTS` | on in development, off in production | `1` forces / `0` hides the synthetic account list on the sign-in page; never shown when `ZPS_ENVIRONMENT=production` |
 | `ZPS_INSECURE_COOKIE` | unset | `1` = omit `Secure` cookie flag under `npm start` on plain HTTP localhost |
 | `NEXT_DIST_DIR` | `.next` | Build folder (the Playwright server uses `.next-e2e`) |
 | `ZPS_BACKUP_DIR` | `./backups` | Folder for platform backups (git-ignored) |
 | `MYSQLDUMP_PATH` | `C:\xampp\mysql\bin\mysqldump.exe` (Windows) / `mysqldump` | Backup tool |
 | `MYSQL_CLIENT_PATH` | `C:\xampp\mysql\bin\mysql.exe` (Windows) / `mysql` | Client used by restore drills |
 | `ZPS_AUTOMATION` | on | `off` disables the in-process automation scheduler |
+| `ZPS_ENVIRONMENT` | `development` | `development`, `test` or `production` (DEC-069): environment labels, demo account list, identifier formats, production baseline seed |
+| `ZPS_SETUP_TOKEN` | unset | One-time token (≥ 24 characters) for `/setup`, which creates the first Superadmin on an empty database; remove after use |
+| `ZPS_FORMAT_*` | unset | Production identifier formats (`SERVICE_NUMBER`, `VEHICLE_REGISTRATION`, `FLEET_REF`, `ASSET_TAG`, `STORE_CODE`, `USERNAME`); see `DEPLOYMENT_READINESS.md` |
 
 All application and migration connections run in **strict SQL mode** (`src/server/db/sql-mode.ts`, DEC-061), whatever the server default; XAMPP ships non-strict.
 
@@ -61,6 +64,6 @@ Stop the server, run `npm run db:reset` (drops and recreates the local `zps_oms_
 1. Technical Services selects hosting, IdP/MFA and database (DEC-005/006/023).
 2. Add the approved IdP / MFA adapter alongside password sign-in (`src/server/actions/auth.ts`) and enable the SSO button on the login page.
 3. Create a dedicated least-privilege MySQL user for the application and enable TLS to the database.
-4. Put a TLS-terminating reverse proxy with rate limiting in front; add CSP nonces.
+4. Put a TLS-terminating reverse proxy with rate limiting in front. The application already sends a per-request nonce Content-Security-Policy (DEC-067): the proxy must pass the `Content-Security-Policy` response header through unchanged and must not cache HTML pages (each carries its own nonce).
 5. Ship audit events off-host to WORM storage; configure NTP.
 6. Run security testing, DPIA and accreditation before any real data.

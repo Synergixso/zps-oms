@@ -48,7 +48,7 @@ const Q = {
   transfers: { href: "/app/transfers", label: "Transfers", any: ["assignment.view"] as Permission[] },
 };
 
-export const WORKSPACE_CONFIG: Omit<Workspace, "backOffice">[] = [
+const BASE_CONFIG: Omit<Workspace, "backOffice">[] = [
   // ── Tier 1 ──
   { role: "SUPERADMIN", purpose: "Platform configuration, tenants, organisation structure and access administration. No personnel records or business approvals.",
     kpis: ["tenants", "divisions", "orgUnits", "usersActive", "jobFailures", "orgChangesPending"],
@@ -145,6 +145,19 @@ export const WORKSPACE_CONFIG: Omit<Workspace, "backOffice">[] = [
     nav: [OVERVIEW, { label: "Stores and assets", items: ["/app/stores", "/app/stores/requisitions", "/app/assets"] }, { label: "Administration", items: ["/app/requests"] }, REPORTS],
     quick: [Q.requisition, Q.stores, Q.request] },
 ];
+
+/**
+ * Modules 16 and 17: the "Administrative records" section for roles holding schedule.* or correspondence.*
+ * (technical roles and role 16 hold neither). Kept equal to the catalogue by tests/three-tier-roles.test.ts;
+ * the layout also filters each entry by permission.
+ */
+export const ADMIN_RECORDS_ROLES: RoleCode[] = [
+  "INSPECTOR_GENERAL", "DIG_OPERATIONS", "COMMISSIONER_OPS_HQ", "DEPUTY_COMMISSIONER_OPS_HQ", "FORMATION_COMMANDING_OFFICER", "DEPUTY_DIVISION_COMMANDER",
+  "DIVISION_STAFF_I", "DIVISION_STAFF_II", "COMPANY_COMMANDER", "SECTION_HEAD", "FORMATION_OPS_STAFF_ADMIN", "QM_STORES_OFFICER", "MTO_OIC",
+  "OC_DISTRICT", "DEPUTY_OC_DISTRICT", "OPS_OFFICER_DISTRICT", "DEPUTY_OPS_OFFICER_DISTRICT", "STORES_OFFICER_DISTRICT", "OIC_STATION_GD", "STATION_INSPECTOR_GD", "STATION_ADMIN_STORES",
+];
+const ADMIN_RECORDS = { label: "Administrative records", items: ["/app/calendar", "/app/correspondence"] };
+export const WORKSPACE_CONFIG: Omit<Workspace, "backOffice">[] = BASE_CONFIG.map((w) => (ADMIN_RECORDS_ROLES.includes(w.role) ? { ...w, nav: [...w.nav, ADMIN_RECORDS] } : w));
 
 /** Tile labels as shown on dashboards (alternatives separated by " / "); a test keeps them equal to overview.ts. */
 export const KPI_LABELS: Record<string, string> = {

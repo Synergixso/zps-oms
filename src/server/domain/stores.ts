@@ -10,6 +10,7 @@
  *    or REJECTED / CANCELLED. Approval = stores.approve + a STORES delegation + a BUSINESS role at the
  *    delegating unit (policy.approvalUnitFor); never the requester. Issue is done by the store keeper.
  */
+import { identifierField } from "../lib/identifiers";
 import { z } from "zod";
 import type { DB } from "../db/connection";
 import { all, one, run, tx } from "../db/connection";
@@ -146,7 +147,7 @@ export async function itemTransactions(db: DB, actor: Actor, id: string): Promis
 
 export const itemSchema = z.object({
   orgUnitId: z.string().min(1),
-  code: z.string().trim().regex(/^SYN-STO-\d{4,6}$/, "Item code must follow the synthetic pattern SYN-STO-0000."),
+  code: identifierField("storeCode"),
   categoryCode: z.string().min(1, "Select a category."),
   name: z.string().trim().min(3, "Enter the item name.").max(120),
   unitOfMeasure: z.string().trim().min(1, "Enter the unit of measure.").max(20),

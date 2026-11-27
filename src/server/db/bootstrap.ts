@@ -10,6 +10,9 @@ import { all, createPool, one, run, tx, type DB } from "./connection";
 import { migrate } from "./migrate";
 import { seedDatabase } from "./seed";
 import { seedPhase3 } from "./seed-phase3";
+import { seedAdminRecords } from "./seed-admin-records";
+import { seedReferenceBaseline } from "./seed-baseline";
+import { isProduction } from "../lib/environment";
 import { RETIRED_ROLE_CODES, ROLE_BY_CODE, ROLES, type RoleCode } from "../domain/catalogue";
 import { seedThreeTier } from "./seed-three-tier";
 import { REPORTS } from "../domain/reports";
@@ -19,6 +22,7 @@ export const SEED_STEPS: Array<[name: string, fn: (db: DB) => Promise<void>]> = 
   ["001_base", seedDatabase],
   ["002_personnel_manpower", seedPhase3],
   ["003_three_tier_roles", seedThreeTier],
+  ["012_calendar_correspondence", seedAdminRecords],
 ];
 
 /** Upserts every catalogue role and rewrites its informational permission rows. */
@@ -49,6 +53,14 @@ export async function syncCatalogue(db: DB) {
 
 /** Runs missing synthetic seed steps. Returns the names applied. */
 export async function runSeedSteps(db: DB): Promise<string[]> {
+  if (isProduction()) {
+    // Production: the reference baseline only (national tenant, HQ unit, catalogues). Never synthetic data.
+    const done = new Set((await all<{ name: string }>(db, "SELECT name FROM seed_steps")).map((r) => r.name));
+    if (done.has("000_reference_baseline")) return [];
+    await seedReferenceBaseline(db);
+    await run(db, "INSERT INTO seed_steps (name, applied_at) VALUES ('000_reference_baseline', ?)", new Date().toISOString());
+    return ["000_reference_baseline"];
+  }
   const users = Number((await one<{ c: number }>(db, "SELECT COUNT(*) AS c FROM users"))?.c ?? 0);
   const real = Number((await one<{ c: number }>(db, "SELECT COUNT(*) AS c FROM users WHERE synthetic = 0"))?.c ?? 0);
   if (real > 0) return [];

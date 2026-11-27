@@ -9,7 +9,7 @@
 | MFA | Schema fields reserved (`mfa_enabled`, `mfa_secret`); enabled with the approved identity provider |
 | Authorisation | Deny by default; role + organisational scope resolved server-side per request; delegation-based approval; separation of duties; 404 for out-of-scope records; denials audited (`RBAC_PERMISSIONS.md`, `MULTI_TENANCY.md`) |
 | Input / output | Zod validation in the domain; parameterised SQL; React output encoding; CSV formula neutralisation; prohibited tactical and location vocabulary refused in requests and areas |
-| Headers | CSP, X-Frame-Options DENY, nosniff, no-referrer, restrictive Permissions-Policy, COOP; `poweredByHeader` off |
+| Headers | Per-request nonce CSP for pages (`script-src` with `'strict-dynamic'`, no `'unsafe-inline'`), `default-src 'none'` for API responses (DEC-067), X-Frame-Options DENY, nosniff, no-referrer, restrictive Permissions-Policy, COOP; `poweredByHeader` off |
 | Audit | Hash-chained, append-only `audit_events`; secrets redacted; chain verification for auditors |
 | Exports | Permission- and scope-checked per row; every export audited |
 | Data | Synthetic only (`demo.` users, "Demo" names, `SYN-` service numbers); credentials only in `.env.local` |

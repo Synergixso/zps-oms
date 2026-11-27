@@ -26,11 +26,11 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** Provincial Division or Unit/Formation (commanding officer) — assignable at: provincial division, formation
 - **Purpose:** Oversight of the assigned Division or Formation and everything under it. Approves only within configured delegations; no access to unrelated formations or Provinces.
 - **Workspace purpose line:** Command oversight of your Division or Formation and everything under it.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Administration (`/app/requests`, `/app/fleet`, `/app/fleet/maintenance`, `/app/assets`, `/app/stores`, `/app/stores/requisitions`) · Reports (`/app/reports`) · Organisation (`/app/org`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Administration (`/app/requests`, `/app/fleet`, `/app/fleet/maintenance`, `/app/assets`, `/app/stores`, `/app/stores/requisitions`) · Reports (`/app/reports`) · Organisation (`/app/org`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `orgUnits`, `personnel`, `activeAssignments`, `contributionsDue`, `storesAwaitingDecision`, `pendingDecisions`
 - **Quick actions:** Review approvals, Open reports, Stores and stock
 - **Working panels:** dashboard kind `FORMATION_COMMAND`
-- **Permissions (20):** `dashboard.division.view` (U), `dashboard.formation.view` (U), `org.view` (N), `request.view` (U), `request.assign` (U), `request.close` (U), `request.reopen` (U), `fleet.view` (U), `maintenance.view` (U), `asset.view` (S), `report.view` (S), `report.export` (S), `personnel.view` (S), `manpower.view` (S), `roster.view` (S), `roster.review` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S)
+- **Permissions (23):** `dashboard.division.view` (U), `dashboard.formation.view` (U), `org.view` (N), `request.view` (U), `request.assign` (U), `request.close` (U), `request.reopen` (U), `fleet.view` (U), `maintenance.view` (U), `asset.view` (S), `report.view` (S), `report.export` (S), `personnel.view` (S), `manpower.view` (S), `roster.view` (S), `roster.review` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S)
 
 ### Role 09 — Deputy Division Commander
 
@@ -39,11 +39,11 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** Provincial Division or Unit/Formation (deputy) — assignable at: provincial division, formation
 - **Purpose:** Supports the commanding officer: monitors performance, reviews outstanding matters and Staff I/II workflows; approves only where separately delegated.
 - **Workspace purpose line:** Support to the commanding officer: performance, outstanding matters and Staff I/II workflows.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Administration (`/app/requests`, `/app/stores`) · Reports (`/app/reports`) · Organisation (`/app/org`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Administration (`/app/requests`, `/app/stores`) · Reports (`/app/reports`) · Organisation (`/app/org`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `orgUnits`, `personnel`, `activeAssignments`, `openManpower`, `reviewsDue`, `pendingDecisions`
 - **Quick actions:** Review approvals, Open reports, Transfers
 - **Working panels:** dashboard kind `DIVISION_COMMAND`
-- **Permissions (14):** `dashboard.division.view` (U), `org.view` (N), `request.view` (U), `report.view` (S), `report.export` (S), `personnel.view` (S), `personnel.export` (S), `manpower.view` (S), `roster.view` (S), `roster.review` (S), `roster.export` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S)
+- **Permissions (17):** `dashboard.division.view` (U), `org.view` (N), `request.view` (U), `report.view` (S), `report.export` (S), `personnel.view` (S), `personnel.export` (S), `manpower.view` (S), `roster.view` (S), `roster.review` (S), `roster.export` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S)
 
 ### Role 10 — Division Senior Staff Officer – Operations (Staff I)
 
@@ -52,11 +52,11 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** Provincial Division or Unit/Formation — assignable at: provincial division, formation
 - **Purpose:** Coordinates Divisional Operations administration: manpower requirements, contributions, rosters, assignments, transfers, tenure and renewals; supervises Staff II. No approval outside delegations.
 - **Workspace purpose line:** Divisional Operations administration: requirements, contributions, rosters, assignments, transfers and renewals.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Administration (`/app/requests`, `/app/fleet`, `/app/fleet/maintenance`, `/app/assets`, `/app/stores`, `/app/stores/requisitions`) · Reports (`/app/reports`) · Organisation (`/app/org`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Administration (`/app/requests`, `/app/fleet`, `/app/fleet/maintenance`, `/app/assets`, `/app/stores`, `/app/stores/requisitions`) · Reports (`/app/reports`) · Organisation (`/app/org`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `openManpower`, `contributionsToReview`, `rostersApproved`, `activeAssignments`, `reviewsDue`, `pendingDecisions`
 - **Quick actions:** New manpower request, Register personnel, New stores requisition, Open reports
 - **Working panels:** dashboard kind `DIVISION_STAFF_OPS`
-- **Permissions (35):** `dashboard.division.view` (U), `org.view` (N), `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U), `request.progress` (U), `fleet.view` (U), `maintenance.view` (U), `maintenance.create` (U), `asset.view` (U), `report.view` (S), `report.export` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `personnel.export` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `roster.export` (S), `area.view` (S), `area.manage` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.renew` (S), `assignment.receive` (S), `disposition.change` (S), `stores.requisition` (S)
+- **Permissions (40):** `dashboard.division.view` (U), `org.view` (N), `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U), `request.progress` (U), `fleet.view` (U), `maintenance.view` (U), `maintenance.create` (U), `asset.view` (U), `report.view` (S), `report.export` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `personnel.export` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `roster.export` (S), `area.view` (S), `area.manage` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.renew` (S), `assignment.receive` (S), `disposition.change` (S), `stores.requisition` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S), `correspondence.manage` (S)
 
 ### Role 11 — Deputy Division Staff Officer – Operations (Staff II)
 
@@ -65,11 +65,11 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** Provincial Division or Unit/Formation — assignable at: provincial division, formation
 - **Purpose:** Assists Staff I: prepares personnel information, compiles draft lists, verifies submissions, prepares transfer and renewal documentation. No Staff I approval authority.
 - **Workspace purpose line:** Preparation and verification support for Staff I: personnel information, draft lists and documentation.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Reports (`/app/reports`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Reports (`/app/reports`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `personnel`, `unverified`, `contributionsDue`, `activeAssignments`, `transfersOpen`, `myTasks`
 - **Quick actions:** Register personnel, New manpower request, Prepare contribution
 - **Working panels:** dashboard kind `ASSIGNMENT_ADMIN`
-- **Permissions (17):** `dashboard.division.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.create` (U), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.renew` (S)
+- **Permissions (21):** `dashboard.division.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.create` (U), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.renew` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S)
 
 ### Role 12 — Company Commander
 
@@ -78,11 +78,11 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** Company within a Unit/Formation — assignable at: company
 - **Purpose:** Company administration: personnel register, contributions and submissions for the company and its platoons and sections. No access to other companies.
 - **Workspace purpose line:** Company administration: personnel register, contributions and submissions for your company.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and contributions (`/app/personnel`, `/app/manpower/contributions`, `/app/manpower`, `/app/rosters`, `/app/assignments`) · Reports (`/app/reports`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and contributions (`/app/personnel`, `/app/manpower/contributions`, `/app/manpower`, `/app/rosters`, `/app/assignments`) · Reports (`/app/reports`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `personnel`, `available`, `activeAssignments`, `contributionsDue`, `pendingDecisions`, `myTasks`
 - **Quick actions:** Prepare contribution, Register personnel
 - **Working panels:** dashboard kind `UNIT_COMMAND`
-- **Permissions (9):** `dashboard.unit.view` (U), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `assignment.view` (S)
+- **Permissions (11):** `dashboard.unit.view` (U), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `assignment.view` (S), `schedule.view` (S), `correspondence.view` (S)
 
 ### Role 13 — Section Head
 
@@ -91,11 +91,11 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** Section (or department, detachment or platoon where configured) — assignable at: section, platoon, detachment, department
 - **Purpose:** Section administrative records: selects personnel from the registry, prepares and verifies manpower contributions, tracks requests.
 - **Workspace purpose line:** Section administrative records: personnel selection and manpower contributions.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and contributions (`/app/personnel`, `/app/manpower/contributions`, `/app/manpower`, `/app/rosters`, `/app/assignments`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and contributions (`/app/personnel`, `/app/manpower/contributions`, `/app/manpower`, `/app/rosters`, `/app/assignments`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `personnel`, `available`, `contributionsDue`, `myTasks`, `unread`
 - **Quick actions:** Prepare contribution, Register personnel
 - **Working panels:** dashboard kind `UNIT_COMMAND`
-- **Permissions (7):** `dashboard.unit.view` (U), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S)
+- **Permissions (8):** `dashboard.unit.view` (U), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `schedule.view` (S)
 
 ### Role 14 — Formation Operations Staff Administrator
 
@@ -104,11 +104,11 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** Unit/Formation — assignable at: formation
 - **Purpose:** Formation-level Operations administration: contributions, rosters, assignment documentation and subordinate submissions. No commanding-officer approval authority.
 - **Workspace purpose line:** Formation-level Operations administration and subordinate submissions.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Administration (`/app/requests`, `/app/fleet`, `/app/fleet/maintenance`, `/app/assets`, `/app/stores`, `/app/stores/requisitions`) · Reports (`/app/reports`) · Organisation (`/app/org`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Administration (`/app/requests`, `/app/fleet`, `/app/fleet/maintenance`, `/app/assets`, `/app/stores`, `/app/stores/requisitions`) · Reports (`/app/reports`) · Organisation (`/app/org`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `openManpower`, `contributionsDue`, `personnel`, `activeAssignments`, `pendingDecisions`, `myTasks`
 - **Quick actions:** New manpower request, Register personnel, New administrative request, New stores requisition
 - **Working panels:** dashboard kind `FORMATION_ADMIN`
-- **Permissions (28):** `dashboard.formation.view` (U), `org.view` (N), `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U), `request.progress` (U), `fleet.view` (U), `maintenance.view` (U), `maintenance.create` (U), `asset.view` (U), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `roster.export` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `stores.requisition` (S)
+- **Permissions (32):** `dashboard.formation.view` (U), `org.view` (N), `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U), `request.progress` (U), `fleet.view` (U), `maintenance.view` (U), `maintenance.create` (U), `asset.view` (U), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `roster.export` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `stores.requisition` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S)
 
 ### Role 15 — Divisional Quarter Masters Stores Officer
 
@@ -117,11 +117,11 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** Provincial Division or Unit/Formation stores — assignable at: provincial division, formation
 - **Purpose:** General stores and non-sensitive assets: receipts, issue and return, requisitions, custody and reconciliation. Firearms, ammunition and sensitive equipment are excluded.
 - **Workspace purpose line:** Divisional general stores and non-sensitive assets: stock, requisitions, custody and reconciliation.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Stores (`/app/stores`, `/app/stores/requisitions`) · Assets (`/app/assets`) · Reports (`/app/reports`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Stores (`/app/stores`, `/app/stores/requisitions`) · Assets (`/app/assets`) · Reports (`/app/reports`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `storesItems`, `storesLow`, `storesToIssue`, `assets`, `notInspected`, `reconciliationsOpen`
 - **Quick actions:** Stores and stock, Requisitions to issue, Asset reconciliation
 - **Working panels:** dashboard kind `STORES`
-- **Permissions (9):** `asset.view` (S), `asset.register` (S), `asset.custody` (S), `asset.inspect` (S), `asset.dispose` (S), `report.view` (U), `report.export` (U), `stores.view` (S), `stores.manage` (S)
+- **Permissions (10):** `asset.view` (S), `asset.register` (S), `asset.custody` (S), `asset.inspect` (S), `asset.dispose` (S), `report.view` (U), `report.export` (U), `stores.view` (S), `stores.manage` (S), `schedule.view` (S)
 
 ### Role 16 — Divisional Principal Armourer
 
@@ -143,9 +143,9 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** Provincial Division or Unit/Formation transport — assignable at: provincial division, formation
 - **Purpose:** General fleet administration: vehicle register, documentation, maintenance, workshop referrals and service history. No GPS, movement or deployment information.
 - **Workspace purpose line:** Divisional motor transport administration: vehicle register, documentation, maintenance and service history.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Motor transport (`/app/fleet`, `/app/fleet/maintenance`) · Reports (`/app/reports`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Motor transport (`/app/fleet`, `/app/fleet/maintenance`) · Reports (`/app/reports`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `vehicles`, `maintenanceOpen`, `serviceDue`, `pendingDecisions`, `myTasks`, `unread`
 - **Quick actions:** Vehicle register, Maintenance requests, Open reports
 - **Working panels:** dashboard kind `FLEET`
-- **Permissions (9):** `fleet.view` (U), `fleet.manage` (U), `maintenance.view` (U), `maintenance.create` (U), `maintenance.process` (U), `maintenance.verify` (U), `service.record` (U), `report.view` (U), `report.export` (U)
+- **Permissions (10):** `fleet.view` (U), `fleet.manage` (U), `maintenance.view` (U), `maintenance.create` (U), `maintenance.process` (U), `maintenance.verify` (U), `service.record` (U), `report.view` (U), `report.export` (U), `schedule.view` (S)
 

@@ -4,6 +4,7 @@
  * classes (firearms, ammunition, armoury, communications, tactical) are
  * not representable and descriptions are screened.
  */
+import { identifierField } from "../lib/identifiers";
 import { z } from "zod";
 import type { DB } from "../db/connection";
 import { all, one, run, tx } from "../db/connection";
@@ -89,7 +90,7 @@ function screen(text: string) {
 }
 
 export const assetSchema = z.object({
-  assetTag: z.string().trim().regex(/^SYN-AST-\d{5}$/, "Asset tag must follow the synthetic pattern SYN-AST-00000."),
+  assetTag: identifierField("assetTag"),
   categoryCode: z.string().min(1, "Select a category."),
   description: z.string().trim().min(3).max(120),
   condition: z.enum(CONDITIONS),

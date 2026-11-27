@@ -26,11 +26,11 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** National Headquarters — assignable at: service hq
 - **Purpose:** National executive oversight of authorised ZPS-OMS management information. Consolidated summaries, not individual personnel records; decisions only where a delegation is configured.
 - **Workspace purpose line:** National executive summaries of authorised management information, with audit oversight.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · National summaries (`/app/manpower`, `/app/reports`) · Organisation (`/app/org`, `/app/org/changes`) · Oversight (`/app/audit`, `/app/audit/history`, `/app/workflows`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · National summaries (`/app/manpower`, `/app/reports`) · Organisation (`/app/org`, `/app/org/changes`) · Oversight (`/app/audit`, `/app/audit/history`, `/app/workflows`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `divisions`, `orgUnits`, `nationalPersonnel`, `nationalAssignments`, `openManpower`, `pendingDecisions`
 - **Quick actions:** Open reports, Review approvals, Audit explorer
 - **Working panels:** dashboard kind `NATIONAL_EXECUTIVE`
-- **Permissions (8):** `dashboard.national.view` (N), `org.view` (N), `report.view` (N), `report.export` (N), `audit.view` (N), `audit.export` (N), `workflow.view` (U), `manpower.view` (N)
+- **Permissions (10):** `dashboard.national.view` (N), `org.view` (N), `report.view` (N), `report.export` (N), `audit.view` (N), `audit.export` (N), `workflow.view` (U), `manpower.view` (N), `schedule.view` (N), `correspondence.view` (N)
 
 ### Role 03 — Deputy Inspector General of Police - Operations (DIG Operations)
 
@@ -39,11 +39,11 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** Office of the DIG Operations, National Headquarters — assignable at: service hq
 - **Purpose:** National Operations administration, coordination and oversight; approves within configured delegations. No platform technical configuration.
 - **Workspace purpose line:** National Operations administration, coordination and oversight; decisions within configured delegations.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Administration (`/app/requests`, `/app/fleet`, `/app/assets`, `/app/stores`) · Reports (`/app/reports`) · Organisation (`/app/org`, `/app/org/changes`) · Oversight (`/app/audit`, `/app/audit/history`, `/app/workflows`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Administration (`/app/requests`, `/app/fleet`, `/app/assets`, `/app/stores`) · Reports (`/app/reports`) · Organisation (`/app/org`, `/app/org/changes`) · Oversight (`/app/audit`, `/app/audit/history`, `/app/workflows`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `divisions`, `personnel`, `activeAssignments`, `openManpower`, `reviewsDue`, `pendingDecisions`
 - **Quick actions:** Review approvals, Open reports, Transfers, Audit explorer
 - **Working panels:** dashboard kind `NATIONAL_EXECUTIVE`
-- **Permissions (17):** `dashboard.national.view` (N), `org.view` (N), `request.view` (U), `fleet.view` (N), `asset.view` (N), `report.view` (N), `report.export` (N), `audit.view` (N), `workflow.view` (U), `personnel.view` (N), `manpower.view` (N), `roster.view` (N), `roster.review` (N), `roster.export` (N), `area.view` (N), `assignment.view` (N), `stores.view` (N)
+- **Permissions (20):** `dashboard.national.view` (N), `org.view` (N), `request.view` (U), `fleet.view` (N), `asset.view` (N), `report.view` (N), `report.export` (N), `audit.view` (N), `workflow.view` (U), `personnel.view` (N), `manpower.view` (N), `roster.view` (N), `roster.review` (N), `roster.export` (N), `area.view` (N), `assignment.view` (N), `stores.view` (N), `schedule.view` (N), `correspondence.view` (N), `correspondence.manage` (N)
 
 ### Role 04 — Commissioner – Operations HQ
 
@@ -52,11 +52,11 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** Operations Headquarters — assignable at: service hq
 - **Purpose:** Senior administration and coordination of Operations Headquarters business processes. Approval authority only through configured delegations.
 - **Workspace purpose line:** Senior coordination of Operations Headquarters business processes.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Administration (`/app/requests`, `/app/fleet`, `/app/fleet/maintenance`, `/app/assets`, `/app/stores`, `/app/stores/requisitions`) · Reports (`/app/reports`) · Organisation (`/app/org`, `/app/org/changes`) · Configuration (`/app/workflows`, `/app/messages`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Administration (`/app/requests`, `/app/fleet`, `/app/fleet/maintenance`, `/app/assets`, `/app/stores`, `/app/stores/requisitions`) · Reports (`/app/reports`) · Organisation (`/app/org`, `/app/org/changes`) · Configuration (`/app/workflows`, `/app/messages`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `divisions`, `personnel`, `activeAssignments`, `openManpower`, `contributionsToReview`, `pendingDecisions`
 - **Quick actions:** New manpower request, Review approvals, New administrative request, Open reports
 - **Working panels:** dashboard kind `NATIONAL_COORDINATION`
-- **Permissions (37):** `dashboard.national.view` (N), `org.view` (N), `request.view` (N), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.assign` (N), `request.cancel` (U), `request.progress` (U), `request.close` (N), `fleet.view` (N), `maintenance.view` (N), `asset.view` (N), `report.view` (N), `report.export` (N), `workflow.view` (U), `workflow.configure` (N), `personnel.view` (N), `personnel.export` (N), `manpower.view` (N), `manpower.create` (U), `manpower.review` (N), `roster.view` (N), `roster.build` (N), `roster.review` (N), `roster.export` (N), `area.view` (N), `area.manage` (N), `assignment.view` (N), `assignment.propose` (N), `assignment.transfer` (N), `assignment.renew` (N), `assignment.receive` (N), `disposition.change` (N), `stores.view` (N), `contact.view` (N), `contact.manage` (N)
+- **Permissions (42):** `dashboard.national.view` (N), `org.view` (N), `request.view` (N), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.assign` (N), `request.cancel` (U), `request.progress` (U), `request.close` (N), `fleet.view` (N), `maintenance.view` (N), `asset.view` (N), `report.view` (N), `report.export` (N), `workflow.view` (U), `workflow.configure` (N), `personnel.view` (N), `personnel.export` (N), `manpower.view` (N), `manpower.create` (U), `manpower.review` (N), `roster.view` (N), `roster.build` (N), `roster.review` (N), `roster.export` (N), `area.view` (N), `area.manage` (N), `assignment.view` (N), `assignment.propose` (N), `assignment.transfer` (N), `assignment.renew` (N), `assignment.receive` (N), `disposition.change` (N), `stores.view` (N), `schedule.view` (N), `schedule.manage` (N), `correspondence.view` (N), `correspondence.register` (N), `correspondence.manage` (N), `contact.view` (N), `contact.manage` (N)
 
 ### Role 05 — Deputy Commissioner – Operations HQ
 
@@ -65,11 +65,11 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** Operations Headquarters — assignable at: service hq
 - **Purpose:** Day-to-day administrative coordination and processing within Operations Headquarters; recommends or approves only where delegated.
 - **Workspace purpose line:** Day-to-day coordination and processing within Operations Headquarters.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Reports (`/app/reports`) · Organisation (`/app/org`, `/app/org/changes`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Reports (`/app/reports`) · Organisation (`/app/org`, `/app/org/changes`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `openManpower`, `contributionsToReview`, `rostersApproved`, `personnel`, `unverified`, `pendingDecisions`
 - **Quick actions:** New manpower request, Register personnel, Review approvals, Open reports
 - **Working panels:** dashboard kind `OPS_STAFF_WORKSPACE`
-- **Permissions (21):** `dashboard.national.view` (N), `org.view` (N), `report.view` (N), `report.export` (N), `personnel.view` (N), `personnel.register` (N), `personnel.edit` (N), `personnel.verify` (N), `personnel.export` (N), `manpower.view` (N), `manpower.create` (U), `manpower.review` (N), `roster.view` (N), `roster.build` (N), `roster.review` (N), `roster.export` (N), `area.view` (N), `assignment.view` (N), `assignment.propose` (N), `assignment.transfer` (N), `assignment.renew` (N)
+- **Permissions (26):** `dashboard.national.view` (N), `org.view` (N), `report.view` (N), `report.export` (N), `personnel.view` (N), `personnel.register` (N), `personnel.edit` (N), `personnel.verify` (N), `personnel.export` (N), `manpower.view` (N), `manpower.create` (U), `manpower.review` (N), `roster.view` (N), `roster.build` (N), `roster.review` (N), `roster.export` (N), `area.view` (N), `assignment.view` (N), `assignment.propose` (N), `assignment.transfer` (N), `assignment.renew` (N), `schedule.view` (N), `schedule.manage` (N), `correspondence.view` (N), `correspondence.register` (N), `correspondence.manage` (N)
 
 ### Role 06 — System Administrator – HQ Tech
 

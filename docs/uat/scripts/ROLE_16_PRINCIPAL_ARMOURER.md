@@ -15,7 +15,7 @@
 | # | Action | Expected result | Result | Notes / defect ref |
 |--:|---|---|---|---|
 | 1 | Sign in as `demo.cen.staff` with the published development password. | Dashboard titled “Divisional Armourer Administration”; heading shows Tier 2 · Role 16. | ☐ Pass ☐ Fail | |
-| 2 | Check the side navigation sections. | Sections: Overview (Dashboard, My tasks, Approvals & queues); Administration (Administrative requests) — entries the role is not permitted to open are hidden. | ☐ Pass ☐ Fail | |
+| 2 | Check the side navigation sections. | Sections: Overview (Dashboard, My tasks, Approvals & queues); Administration (Administrative requests). No other sections appear. | ☐ Pass ☐ Fail | |
 | 3 | Check the headline figures. | Tiles for: My open requests, My open tasks, Unread notifications — figures for your scope only. | ☐ Pass ☐ Fail | |
 | 4 | Use each quick action once. | Quick actions: New administrative request — each opens the right page. | ☐ Pass ☐ Fail | |
 | 5 | Create and submit an administrative request. | Request submitted; you cannot approve your own request. | ☐ Pass ☐ Fail | |

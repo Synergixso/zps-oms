@@ -15,7 +15,7 @@
 | # | Action | Expected result | Result | Notes / defect ref |
 |--:|---|---|---|---|
 | 1 | Sign in as `demo.security.admin` with the published development password. | Dashboard titled “Headquarters Technical Administration Dashboard”; heading shows Tier 1 · Role 06. | ☐ Pass ☐ Fail | |
-| 2 | Check the side navigation sections. | Sections: Overview (Dashboard, My tasks, Approvals & queues); Technical operations (System health, Security events); Accounts and access (Users & access, Roles & permissions, Access reviews); Organisation (Organisation directory) — entries the role is not permitted to open are hidden. | ☐ Pass ☐ Fail | |
+| 2 | Check the side navigation sections. | Sections: Overview (Dashboard, My tasks); Technical operations (System health, Security events); Accounts and access (Users & access, Roles & permissions, Access reviews); Organisation (Organisation directory). No other sections appear. | ☐ Pass ☐ Fail | |
 | 3 | Check the headline figures. | Tiles for: Active user accounts / Accounts in my scope, Active sessions, Locked accounts, Failed sign-ins (24 h), Denied actions (24 h), Automation failures (24 h) — figures for your scope only. | ☐ Pass ☐ Fail | |
 | 4 | Use each quick action once. | Quick actions: Account support, Security events, System health — each opens the right page. | ☐ Pass ☐ Fail | |
 | 5 | Users & access: issue a temporary password to an account in your unit. | Password shown once; the user must change it at next sign-in. | ☐ Pass ☐ Fail | |

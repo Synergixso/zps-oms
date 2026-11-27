@@ -85,6 +85,11 @@ Approval authority is never a role permission: it needs an active delegation (do
 | `stores.manage` |  |  |  |  |  |  |  |  |  |  |  |  |  |  | S |  |  |  |  |  |  |  | S |  |  |  | S |
 | `stores.requisition` |  |  |  |  |  |  |  |  |  | S |  |  |  | S |  |  |  |  |  |  | S |  |  |  |  |  | S |
 | `stores.approve` |  |  |  |  |  |  |  | S |  |  |  |  |  |  |  |  |  |  | S |  |  |  |  |  | S |  |  |
+| `schedule.view` |  | N | N | N | N |  |  | S | S | S | S | S | S | S | S |  | S |  | S | S | S | S | S |  | S | S | S |
+| `schedule.manage` |  |  |  | N | N |  |  |  |  | S | S |  |  | S |  |  |  |  |  |  | S | S |  |  |  | S | S |
+| `correspondence.view` |  | N | N | N | N |  |  | S | S | S | S | S |  | S |  |  |  |  | S | S | S | S |  |  | S | S | S |
+| `correspondence.register` |  |  |  | N | N |  |  |  |  | S | S |  |  | S |  |  |  |  |  |  | S | S |  |  |  | S | S |
+| `correspondence.manage` |  |  | N | N | N |  |  | S | S | S |  |  |  |  |  |  |  |  | S | S | S |  |  |  | S |  |  |
 | `contact.view` | N |  |  | N |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `contact.manage` | N |  |  | N |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 

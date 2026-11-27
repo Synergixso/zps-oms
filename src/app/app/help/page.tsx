@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
 import { getDb } from "@/server/db/connection";
 import { helpCentre } from "@/server/domain/help";
-import { Badge, Card, Notice, PageHeader, fmtDate } from "@/components/ui";
+import { Card, Notice, PageHeader, fmtDate } from "@/components/ui";
 
 export const metadata = { title: "Help" };
 
@@ -13,7 +13,7 @@ const FAQS: Array<[string, string]> = [
   ["How do I correct a returned request?", "Open it, correct the fields, save, then submit it again. Its history is kept."],
   ["Can a closed record be changed?", "No. Closed matters can only be reopened through the controlled reopening action with a justification; nothing is overwritten."],
   ["Where do my scheduled reports go?", "Into Reports → My deliveries, with a notification. Nothing is e-mailed. Deliveries are kept for 30 days."],
-  ["What must never be entered?", "Real personal data, service numbers, vehicle registrations, operational, tactical, intelligence, case or armoury information. This is a synthetic prototype."],
+  ["What must never be entered?", "Operational, tactical, intelligence, investigation, informant or armoury information, in any environment. In development and test environments, also no real personal data, service numbers or vehicle registrations: those environments hold synthetic data only."],
 ];
 
 export default async function Help() {
@@ -23,7 +23,7 @@ export default async function Help() {
   return (
     <>
       <PageHeader eyebrow="Help" title={h.role ? `Your workspace: ${h.role.backOffice}` : "Using ZPS-OMS"}
-        description={h.role ? `${h.role.name} · Tier ${h.role.tier} · Role ${String(h.role.no).padStart(2, "0")}${h.role.unit ? ` · ${h.role.unit}` : ""}` : "Guidance for the local synthetic prototype."} />
+        description={h.role ? `${h.role.name} · Tier ${h.role.tier} · Role ${String(h.role.no).padStart(2, "0")}${h.role.unit ? ` · ${h.role.unit}` : ""}` : "Guidance for using ZPS-OMS."} />
       {h.role && (
         <div className="mb-4 space-y-3">
           <Notice tone="info" title="What this workspace is for">{h.role.purpose}</Notice>
@@ -73,7 +73,7 @@ export default async function Help() {
             ) : <p className="text-sm text-muted">Contact System Administrator – HQ Tech.</p>}
             <p className="mt-3 text-xs text-muted">They can issue a temporary password, clear a lockout or end your sessions. Role changes go through HQ.</p>
           </Card>
-          <Card title="See also"><p className="text-sm"><Link href="/app/profile" className="text-zp-blue hover:underline">My profile and access</Link> · <Badge status="ACTIVE" label="Synthetic data only" /></p></Card>
+          <Card title="See also"><p className="text-sm"><Link href="/app/profile" className="text-zp-blue hover:underline">My profile and access</Link></p></Card>
         </div>
       </div>
     </>

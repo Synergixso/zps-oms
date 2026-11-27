@@ -12,13 +12,8 @@ import type { DB } from "../db/connection";
 import { one } from "../db/connection";
 import { listMigrationFiles } from "../db/migrate";
 
-const VERSION = (() => {
-  try {
-    return JSON.parse(fs.readFileSync(path.join(process.cwd(), "package.json"), "utf8")).version as string;
-  } catch {
-    return "unknown";
-  }
-})();
+import { VERSION } from "./version";
+import { RELEASE } from "../lib/release";
 
 export interface Health {
   status: "ok" | "degraded" | "down";
@@ -28,7 +23,7 @@ export interface Health {
 }
 
 export function liveness() {
-  return { status: "ok" as const, version: VERSION, time: new Date().toISOString() };
+  return { status: "ok" as const, version: VERSION, stage: RELEASE.stage, time: new Date().toISOString() };
 }
 
 export async function readiness(db: DB): Promise<Health> {

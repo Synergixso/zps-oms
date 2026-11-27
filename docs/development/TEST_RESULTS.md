@@ -2,15 +2,17 @@
 
 Run on 26 November 2026, Windows 11, Node.js 22.23.4, XAMPP MariaDB 10.4.32, Microsoft Edge (Playwright channel `msedge`). All data synthetic.
 
-| Check | Command | Result (v0.8.2) |
+| Check | Command | Result (v0.9.0) — full detail in `END_TO_END_TEST_RESULTS.md` |
 |---|---|---|
 | TypeScript (strict) | `npx tsc --noEmit` | Clean |
-| Unit + integration (real MySQL `zps_oms_test`, strict SQL mode) | `npm test` | **130 / 130 passed**, 18 files (the per-file table below dates from v0.3 and lists the original suites) |
-| End-to-end (Edge, `zps_oms_e2e`, port 3200) | `npm run test:e2e` | **10 / 10 passed**: 8 journeys, accessibility scan, reflow check |
+| Unit + integration (real MySQL `zps_oms_test`, strict SQL mode) | `npm test` | **149 / 149 passed**, 24 files (the per-file table below dates from v0.3 and lists the original suites) |
+| End-to-end (Edge, `zps_oms_e2e`, port 3200) | `npm run test:e2e` | **15 / 15**: 8 journeys, accessibility (dashboards and v0.9.0 pages), reflow/tablet, A4 print, CSP, public site, calendar/correspondence/sessions |
 | Accessibility (axe-core 4.14.1, WCAG 2.0/2.1/2.2 A and AA) | part of `npm run test:e2e` | **0 violations**, 62 page views (`docs/evidence/accessibility.md`) |
-| Reflow and zoom (SC 1.4.10 / 1.4.4) | part of `npm run test:e2e` | **0 overflowing pages**: 115 pages at 320 px and 640 px, 230 checks (`docs/evidence/reflow.md`) |
-| Load and page weight (production build, port 3300) | `npm run test:load -- http://localhost:3300` | **PASS** (provisional budgets, DEC-066): 0 server errors at 1/10/25 users; back-office p95 919 ms at 10 users; HTML ≤ 24.1 KB gzip (`docs/evidence/load-test.md`) |
-| Route audit (dev server, port 3100) | `npm run audit:routes` | **83 routes × 54 accounts, 0 server errors** (`docs/evidence/route-audit.md`) |
+| Reflow, zoom and tablet (SC 1.4.10 / 1.4.4) | part of `npm run test:e2e` | **0 overflowing pages**: 116 pages at 320, 640, 768 and 1024 px (`docs/evidence/reflow.md`) |
+| A4 print | part of `npm run test:e2e` | **0 findings**, 7 pages, all A4 portrait (`docs/evidence/print.md`) |
+| Content Security Policy | `tests/csp.test.ts`, `e2e/csp.spec.ts` | Passed: fresh nonce per request; no violations on normal pages; stored-XSS simulation refused |
+| Load and page weight (production build, port 3300) | `npm run test:load -- http://localhost:3300` | **PASS** (provisional budgets, DEC-066): 0 server errors at 1/10/25 users; back-office p95 972 ms at 10 users (v0.9.0 run; 1.1–1.2 s in the v0.8.3 runs, DEC-067); HTML ≤ 24.1 KB gzip (`docs/evidence/load-test.md`) |
+| Route audit (dev server, port 3100) | `npm run audit:routes` | **87 routes × 54 accounts, 0 server errors** (`docs/evidence/route-audit.md`) |
 | Audit chain | `npm run verify:audit` | 0 content breaks, 0 link breaks |
 | Production build | `npm run build` | Succeeds, 0 warnings |
 

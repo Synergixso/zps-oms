@@ -11,6 +11,7 @@ import fs from "node:fs";
 import mysql from "mysql2/promise";
 import { ROLES, type Permission, type RoleDef } from "../src/server/domain/catalogue.ts";
 import { KPI_LABELS, WORKSPACE_CONFIG } from "../src/server/domain/workspace-config.ts";
+import { NAV } from "../src/lib/nav.ts";
 
 let url = process.env.DATABASE_URL;
 if (!url && fs.existsSync(".env.local")) for (const l of fs.readFileSync(".env.local", "utf8").split(/\r?\n/)) { const m = l.match(/^DATABASE_URL=(.*)$/); if (m) url = m[1].trim(); }
@@ -23,18 +24,17 @@ await db.end();
 const nn = (n: number) => String(n).padStart(2, "0");
 const words = (k: string) => k.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase()).replace(/24h/, " (24 h)").replace(/30d/, " (30 days)");
 const has = (r: RoleDef, p: Permission) => !!r.permissions[p];
-const NAV_LABEL: Record<string, string> = {
-  "/app": "Dashboard", "/app/tasks": "My tasks", "/app/approvals": "Approvals & queues", "/app/personnel": "Personnel register", "/app/manpower": "Manpower requests",
-  "/app/manpower/contributions": "Unit contributions", "/app/rosters": "Rosters", "/app/assignments": "Assignment register", "/app/transfers": "Transfers", "/app/areas": "Operational areas",
-  "/app/requests": "Administrative requests", "/app/fleet": "Fleet register", "/app/fleet/maintenance": "Fleet maintenance", "/app/assets": "General assets", "/app/stores": "Stores and stock",
-  "/app/stores/requisitions": "Stores requisitions", "/app/reports": "Reports", "/app/messages": "Contact messages", "/app/org": "Organisation directory", "/app/org/changes": "Structure changes",
-  "/app/org/tenants": "Tenant management", "/app/admin/users": "Users & access", "/app/admin/roles": "Roles & permissions", "/app/admin/reviews": "Access reviews", "/app/audit": "Audit explorer",
-  "/app/audit/history": "Record history", "/app/security": "Security events", "/app/workflows": "Workflow definitions", "/app/platform": "System health",
-};
+// Navigation names come from the application's own navigation (src/lib/nav.ts), filtered by the role's permissions.
+const NAV_ITEMS = Object.fromEntries(NAV.flatMap((g) => g.items).map((it) => [it.href, it]));
+const holds = (r: RoleDef, any: Permission[]) => any.length === 0 || any.some((p) => has(r, p));
 
 /** Functional steps derived from the role's permissions (what the role must be able to do). */
 function functional(r: RoleDef): Array<[string, string]> {
   const s: Array<[string, string]> = [];
+  if (has(r, "schedule.manage")) s.push(["Schedule an administrative meeting for your unit (Administrative calendar → Schedule an event); then try a title such as “Patrol planning”.", "The meeting appears in the calendar for your unit and the levels above; the operational title is refused."]);
+  else if (has(r, "schedule.view")) s.push(["Open the Administrative calendar.", "Events, review dates and deadlines for your scope only; no option to schedule."]);
+  if (has(r, "correspondence.register")) s.push(["Register an incoming letter and attach a small PDF.", "A CORR- reference is generated; the PDF is checked and listed; registering the same letter reference again is refused."]);
+  if (has(r, "correspondence.manage")) s.push(["Assign a registered letter to an officer of your unit, then close and file it with a filing reference.", "The officer is notified; only officers of your unit or below are offered; the history shows each step."]);
   if (has(r, "personnel.register")) s.push(["Register a synthetic officer in your unit (Personnel register → Register).", "Record saved as unverified; duplicate service numbers are refused."]);
   if (has(r, "personnel.verify")) s.push(["Verify a record registered by another officer.", "Status becomes verified; you cannot verify a record you registered."]);
   if (has(r, "manpower.create")) s.push(["Raise a manpower request and submit it.", "Request is submitted and appears in the approver's queue; you cannot approve it."]);
@@ -81,7 +81,7 @@ for (const r of ROLES) {
   const file = `ROLE_${nn(r.no)}_${r.code}.md`;
   const steps: Array<[string, string]> = [
     [`Sign in as ${accounts[0] ? `\`${accounts[0].username}\`` : "the role's account"} with the published development password.`, `Dashboard titled “${r.backOffice}”; heading shows Tier ${r.tier} · Role ${nn(r.no)}.`],
-    ["Check the side navigation sections.", `Sections: ${w.nav.map((g) => `${g.label} (${g.items.map((h) => NAV_LABEL[h] ?? h).join(", ")})`).join("; ")} — entries the role is not permitted to open are hidden.`],
+    ["Check the side navigation sections.", `Sections: ${w.nav.map((g) => ({ label: g.label, items: g.items.map((h) => NAV_ITEMS[h]).filter((it) => it && holds(r, it.any)) })).filter((g) => g.items.length).map((g) => `${g.label} (${g.items.map((it) => it.label).join(", ")})`).join("; ")}. No other sections appear.`],
     ["Check the headline figures.", `Tiles for: ${w.kpis.map((k) => KPI_LABELS[k] ?? words(k)).join(", ")} — figures for your scope only.`],
     ["Use each quick action once.", `Quick actions: ${w.quick.map((q) => q.label).join(", ") || "none"} — each opens the right page.`],
     ...functional(r),

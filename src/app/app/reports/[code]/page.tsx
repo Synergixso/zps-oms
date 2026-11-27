@@ -1,3 +1,4 @@
+import { environmentNotice } from "@/server/lib/environment";
 import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
 import { loadOr404 } from "@/server/auth/guard";
@@ -26,13 +27,14 @@ export default async function ReportView({ params, searchParams }: { params: Pro
   const shaped = shapeRows(def, rows, chosen, sort, dir);
   const canExport = hasPermission(actor, "report.export");
   const sel = "mt-1 block w-full rounded-md border border-line-2 bg-white px-2 py-1.5 text-sm";
+  const env = await environmentNotice(getDb());
   return (
     <>
       <p className="no-print mb-2 text-sm"><Link href="/app/reports" className="text-zp-blue hover:underline">← Reports</Link></p>
       <PageHeader eyebrow={def.code} title={saved?.name ?? def.name} description={saved ? `Saved view of “${def.name}”. ${def.description}` : def.description} />
       {sp.error && <p role="alert" className="mb-3 rounded-md border border-err/30 bg-err-bg px-3 py-2 text-sm text-err">{sp.error}</p>}
       <div className="grid gap-4 lg:grid-cols-4">
-        <Card className="lg:col-span-3" bodyClass="p-0" title={`${shaped.rows.length} row(s)`} subtitle="Live database figures within your reporting scope · SYNTHETIC DEMONSTRATION DATA">
+        <Card className="lg:col-span-3" bodyClass="p-0" title={`${shaped.rows.length} row(s)`} subtitle={`Live database figures within your reporting scope${env.outputStamp ? ` · ${env.outputStamp}` : ""}`}>
           <Table head={shaped.cols.map((f) => f.replace(/_/g, " "))} empty="No data in your reporting scope.">
             {shaped.rows.map((r, i) => (
               <tr key={i}>{shaped.cols.map((f) => <td key={f} className={`${td} ${typeof r[f] === "number" ? "tabular-nums" : ""}`}>{String(r[f] ?? "")}</td>)}</tr>

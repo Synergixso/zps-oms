@@ -119,7 +119,7 @@ test("roster: accept a contribution, build the roster from registry records, pri
   await expect(page.getByText("valid").first()).toBeVisible();
   const rosterUrl = page.url();
   await page.goto(`${rosterUrl}/print`);
-  await expect(page.getByText("Synthetic demonstration data — not an official document")).toBeVisible();
+  await expect(page.getByText(/Synthetic demonstration data — not an official record/i)).toBeVisible();
   const csv = await page.request.get(`${rosterUrl}/export`);
   expect(csv.status()).toBe(200);
   expect(csv.headers()["content-type"]).toContain("text/csv");

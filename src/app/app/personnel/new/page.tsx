@@ -1,3 +1,4 @@
+import { identifierHint, identifierRule } from "@/server/lib/identifiers";
 import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
 import { pageAllowed } from "@/server/auth/guard";
@@ -23,10 +24,10 @@ export default async function NewPersonnel() {
         <Card title="Officer details" className="lg:col-span-2">
           <ActionForm action={registerPersonnelAction}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <TextField label="Service number" name="serviceNumber" required placeholder="SYN-123456" hint="Development uses synthetic numbers only: SYN- followed by 6 digits." maxLength={10} />
+              <TextField label="Service number" name="serviceNumber" required placeholder={identifierRule("serviceNumber").synthetic ? "SYN-123456" : undefined} hint={identifierHint("serviceNumber")} maxLength={20} />
               <Select label="Rank" name="rankCode" required placeholder="Select rank" options={rankList.map((r) => ({ value: r.code, label: r.name }))} />
               <TextField label="Surname" name="surname" required maxLength={60} />
-              <TextField label="First name(s)" name="firstNames" required maxLength={80} hint="Synthetic records should include 'Demo'." />
+              <TextField label="First name(s)" name="firstNames" required maxLength={80} hint={identifierRule("serviceNumber").synthetic ? "Synthetic records should include 'Demo'." : undefined} />
               <Select label="Home unit" name="homeUnitId" required placeholder="Select home unit" options={unitOptions(units)} />
               <Select label="Employment status" name="employmentStatus" defaultValue="SERVING" options={EMPLOYMENT_STATUSES.map((s) => ({ value: s, label: EMPLOYMENT_LABEL[s] }))} />
             </div>

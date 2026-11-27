@@ -19,13 +19,7 @@ import { JOBS, runAllJobs, runJob } from "../jobs/engine";
 import { createPool } from "../db/connection";
 import { verifyAuditChain } from "./audit";
 
-const VERSION = (() => {
-  try {
-    return JSON.parse(fs.readFileSync(path.join(process.cwd(), "package.json"), "utf8")).version as string;
-  } catch {
-    return "unknown";
-  }
-})();
+import { VERSION } from "./version";
 
 export async function maintenanceMode(db: DB): Promise<boolean> {
   return (await one<{ value: string }>(db, "SELECT value FROM app_settings WHERE `key` = 'platform.maintenance_mode'"))?.value === "ON";
@@ -75,6 +69,8 @@ const EDITABLE: Record<string, (v: string) => boolean> = {
   "backup.max_age_hours": (v) => /^\d+$/.test(v) && +v >= 1 && +v <= 720,
   "request.sla_days": (v) => /^\d+$/.test(v) && +v >= 1 && +v <= 90,
   "backup.restore_drill_days": (v) => /^\d+$/.test(v) && +v >= 1 && +v <= 90,
+  "schedule.reminder_days": (v) => /^\d+$/.test(v) && +v >= 1 && +v <= 14,
+  "correspondence.files_enabled": (v) => v === "0" || v === "1",
 };
 export const EDITABLE_SETTINGS = Object.keys(EDITABLE);
 

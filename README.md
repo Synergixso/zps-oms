@@ -3,7 +3,7 @@
 > **National Operations Personnel, Manpower and Administration Management Platform**
 > Developed by Synergix Solutions · Designed and developed by SPOM Technical Services Section Team
 
-**Status: v0.7.0 — local synthetic-data prototype prepared for institutional review and user acceptance testing.** This is not an authorised production police system, and it is not connected to any Zambia Police Service network or data. Every person, service number, roster and reference in this repository and its seed data is synthetic.
+**Status: v0.9.0 — software stage *Production candidate*; institutional approval: *Awaiting Formal Institutional Approval*; production deployment: not authorised** (`docs/development/PRODUCTION_READINESS_REPORT.md`, `docs/development/INSTITUTIONAL_APPROVAL_STATUS.md`). The application is not connected to any Zambia Police Service network or data. Every person, service number, roster and reference in this repository and its development seed data is synthetic.
 
 ---
 
@@ -205,8 +205,8 @@ Every account is synthetic: `demo.*` usernames and "Demo" names. The development
 | Demo A Company Administrative Officer (`demo.mu.acoy.admin`) | Select eligible officers for a contribution and submit |
 
 ## 11. Testing and verification evidence
-- **Domain and integration tests** (`npm test`, 130 tests in strict SQL mode) cover access control, tenant isolation, the 27-role matrix, context switching, scoped technical administration, stores, workflows and decision chains, separation of duties, scheduled delivery, Excel export, backups and restore drills, audit-chain concurrency, migrations and the seed.
-- **Playwright** (`npm run test:e2e`, Microsoft Edge): 8 journeys, the axe-core accessibility scan (`docs/evidence/accessibility.md`) and the reflow/200 % zoom check (`docs/evidence/reflow.md`).
+- **Domain and integration tests** (`npm test`, 148 tests in strict SQL mode) cover access control, tenant isolation, the 27-role matrix, context switching, scoped technical administration, stores, workflows and decision chains, separation of duties, scheduled delivery, Excel export, backups and restore drills, audit-chain concurrency, migrations and the seed.
+- **Playwright** (`npm run test:e2e`, Microsoft Edge): 8 journeys, the axe-core accessibility scan (`docs/evidence/accessibility.md`), the reflow/200 % zoom/tablet check (`docs/evidence/reflow.md`), the A4 print check (`docs/evidence/print.md`) and the Content Security Policy check.
 - **Load and page-weight baseline** (`npm run test:load -- http://localhost:3100` against `npm run start`) — `docs/evidence/load-test.md`.
 - **Route audit** (`npm run audit:routes`): every route against every user — `docs/evidence/route-audit.md`. **Phone-width review** (`npm run review:mobile`) — `docs/evidence/mobile/`.
 - **CI**: `.github/workflows/ci.yml` (type check, tests on MariaDB 10.4, dependency audit, build).

@@ -15,7 +15,7 @@
 | # | Action | Expected result | Result | Notes / defect ref |
 |--:|---|---|---|---|
 | 1 | Sign in as `demo.org.registry` with the published development password. | Dashboard titled “ZPS-OMS Superadmin Dashboard”; heading shows Tier 1 · Role 01. | ☐ Pass ☐ Fail | |
-| 2 | Check the side navigation sections. | Sections: Overview (Dashboard, My tasks, Approvals & queues); Platform (System health, Tenant management, Workflow definitions); Organisation (Organisation directory, Structure changes); Access (Users & access, Roles & permissions, Access reviews, Security events); Public site (Contact messages) — entries the role is not permitted to open are hidden. | ☐ Pass ☐ Fail | |
+| 2 | Check the side navigation sections. | Sections: Overview (Dashboard, My tasks); Platform (System health, Tenant management, Workflow definitions); Organisation (Organisation directory, Structure changes); Access (Users & access, Roles & permissions, Access reviews, Security events); Public site (Contact messages). No other sections appear. | ☐ Pass ☐ Fail | |
 | 3 | Check the headline figures. | Tiles for: Tenants, Provincial Divisions, Organisation units / Units in my command, Active user accounts / Accounts in my scope, Automation failures (24 h), Structure changes pending — figures for your scope only. | ☐ Pass ☐ Fail | |
 | 4 | Use each quick action once. | Quick actions: Account support, Tenants, Propose structure change, System health, Security events — each opens the right page. | ☐ Pass ☐ Fail | |
 | 5 | Users & access: issue a temporary password to an account in your unit. | Password shown once; the user must change it at next sign-in. | ☐ Pass ☐ Fail | |

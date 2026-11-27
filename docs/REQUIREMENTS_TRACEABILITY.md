@@ -41,11 +41,15 @@ Status key: **Implemented** (code + automated test) · **Implemented (manual)** 
 | M10-03 | PRD §7.9 | No secret logging | key redaction; no secrets exist | review | Implemented |
 | M10-04 | PRD §7.9 | Audit search & export | `/app/audit`, export route | Manual | Implemented (manual) |
 | M11-01 | Prompt F | Health, DB, config, release | `/app/platform` | route audit | Partial (no backup/job monitoring) |
-| M07, M08 | Prompt F | Scheduling, correspondence | — | — | Not implemented (later phase) |
+| M16 (M07) | Directive 27 Nov §6 | Administrative scheduling and availability | `schedule.ts`, `/app/calendar`, job `schedule.event-reminders` | `scheduling-correspondence` tests; `e2e/admin-records.spec.ts`; route audit | Implemented and verified (DEC-068) |
+| M17 (M08) | Directive 27 Nov §6 | Administrative correspondence management | `correspondence.ts`, `/app/correspondence`, job `correspondence.follow-ups` | `scheduling-correspondence` tests; `e2e/admin-records.spec.ts`; route audit | Implemented and verified; production document storage needs malware scanning (DEC-068) |
+| M02-S | Directive 27 Nov §6 | Session management and authentication history | `account-activity.ts`, profile and account pages | `account-activity` tests; `e2e/admin-records.spec.ts` | Implemented and verified |
+| REL | Directive 27 Nov §2, §15 | Release lifecycle, institutional status, environments, production baseline | `lib/release.ts`, `lib/environment.ts`, `lib/identifiers.ts`, `seed-baseline.ts`, `/setup` | `release`, `identifiers`, `production-setup` tests | Implemented and verified (DEC-069) |
+| WEB-M | Directive 27 Nov §3 | Public Modules page removed; navigation order | `public-chrome.tsx`, redirect in `next.config.ts` | `e2e/public-site.spec.ts` | Implemented and verified |
 | NFR-002 | PRD §12 | p95 targets after load model; low bandwidth | paged notification centre; small server-rendered pages (≤ 25 KB gzip HTML) | `npm run test:load`: 0 server errors at 1/10/25 users; back-office p95 ≈ 0.9 s at 10 users (local) | Baseline met against provisional budgets (DEC-066); production targets need the Service load model |
 | NFR-003 | PRD §12 | Scalability | scoped, indexed queries; paged lists | load baseline at 25 users (throughput ≈ 18–20 req/s, single Node process, 4 CPUs) | Baseline only; capacity test on target infrastructure required |
-| NFR-005 | PRD §12 | Security testing | threat model, negative tests | — | Partial (no pen test) |
-| NFR-006 | PRD §12 | WCAG 2.2 AA | semantic, labelled, focus; label-in-name; contrast; keyboard-reachable scroll regions; phone-width review | axe-core scan, 62 page views, 0 violations; reflow at 320 px and 200 % zoom, 115 pages, 0 overflows; phone review 27/27 | Automated rules and reflow met; manual review (keyboard, screen reader) still required |
+| NFR-005 | PRD §12 | Security testing | threat model (T1–T21), negative tests, nonce CSP (DEC-067), CI dependency audit | access-control tests; `tests/csp.test.ts`; `e2e/csp.spec.ts` stored-XSS simulation | Partial (no penetration test) |
+| NFR-006 | PRD §12 | WCAG 2.2 AA | semantic, labelled, focus; label-in-name; contrast; keyboard-reachable scroll regions; phone-width review | axe-core scan, 62 page views, 0 violations; reflow at 320 px, 200 % zoom and tablet widths, 116 pages, 0 overflows; A4 print 7 pages, 0 findings; phone review 27/27 | Automated rules and reflow met; manual review (keyboard, screen reader) still required |
 | NFR-008 | PRD §12 | Typed contracts, modular, tested | TS strict, Zod, 34 tests | tsc, vitest | Implemented |
 | NFR-010 | PRD §12 | Auditability | audit + histories | TS-13 | Implemented |
 | NFR-012 | PRD §12 | Africa/Lusaka, ZMW | formatting helpers | Manual | Implemented (manual) |

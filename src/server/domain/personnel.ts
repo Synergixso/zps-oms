@@ -10,6 +10,7 @@
  *   permitted unit set (UNIT / SUBTREE / NATIONAL).
  * - Every change is written to personnel_history and the audit trail.
  */
+import { identifierField } from "../lib/identifiers";
 import { z } from "zod";
 import type { DB } from "../db/connection";
 import { all, one, run, tx } from "../db/connection";
@@ -150,7 +151,8 @@ export async function personnelDetail(db: DB, actor: Actor, id: string) {
 }
 
 export const registerSchema = z.object({
-  serviceNumber: z.string().trim().toUpperCase().regex(SYNTHETIC_SERVICE_NO, "Development records must use a synthetic service number: SYN- followed by 6 digits."),
+  // Synthetic SYN- numbers outside production; the Service's configured format in production (lib/identifiers.ts).
+  serviceNumber: identifierField("serviceNumber", { upper: true }),
   surname: z.string().trim().min(2, "Enter the surname.").max(60),
   firstNames: z.string().trim().min(2, "Enter the first name(s).").max(80),
   rankCode: z.string().min(1, "Select a rank."),

@@ -22,20 +22,20 @@ const TONE: Record<Tone, string> = {
 };
 
 const CAPABILITIES: Array<{ icon: IconName; title: string; body: string; tone: Tone }> = [
-  { icon: "users", title: "Operations Management", body: "Coordinate and monitor operations, tasks and readiness in real time.", tone: "green" },
+  { icon: "users", title: "Operations Administration", body: "Coordinate manpower requests, rosters, assignments and approvals across the Service.", tone: "green" },
   { icon: "building", title: "Provincial Divisions", body: "Manage and oversee the ten Provincial Police Divisions nationwide.", tone: "blue" },
   { icon: "layers", title: "Divisional Units", body: "Administer formations such as Mobile Unit, Paramilitary Battalion, Protective Unit, Airport and TAZARA.", tone: "purple" },
-  { icon: "car", title: "Fleet & Transport", body: "Track vehicles, utilisation, maintenance and service status.", tone: "green" },
-  { icon: "box", title: "Assets & Equipment", body: "Maintain an accurate inventory and accountability of operational assets.", tone: "blue" },
+  { icon: "car", title: "Fleet & Transport", body: "Keep the administrative vehicle register, maintenance requests and service history.", tone: "green" },
+  { icon: "box", title: "Assets & Stores", body: "Maintain accountability for non-sensitive assets and general stores.", tone: "blue" },
   { icon: "tools", title: "Maintenance Management", body: "Log, approve and monitor equipment and vehicle maintenance requests.", tone: "orange" },
-  { icon: "bars", title: "Reports & Analytics", body: "Generate operational, resource and compliance reports for decision making.", tone: "navy" },
+  { icon: "bars", title: "Reports & Analytics", body: "Generate personnel, manpower, resource and compliance reports for decision making.", tone: "navy" },
   { icon: "shieldCheck", title: "Access & Security", body: "Role-based access, audit trails and compliance with Police Service standards.", tone: "green" },
 ];
 
 const TRUST: Array<[IconName, string]> = [
   ["shield", "Secure"],
   ["layers", "Integrated"],
-  ["bars", "Real-time"],
+  ["bars", "Up to date"],
   ["network", "Centralised"],
 ];
 

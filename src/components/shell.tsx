@@ -21,7 +21,7 @@ const STORE = "zps.nav.collapsed";
 export interface ShellUser { name: string; role: string; initials: string }
 export interface ShellContext { id: string; role: string; unit: string; active: boolean }
 
-export function SideNav({ groups, crest, user, version }: { groups: NavGroup[]; crest: React.ReactNode; user: ShellUser; version: string }) {
+export function SideNav({ groups, crest, user, version, environment }: { groups: NavGroup[]; crest: React.ReactNode; user: ShellUser; version: string; environment: { banner: boolean; label: string; environment: string } }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -106,8 +106,8 @@ export function SideNav({ groups, crest, user, version }: { groups: NavGroup[]; 
         })}
       </div>
       <div className="border-t border-white/10 px-4 py-3 text-[11px]">
-        <p className="flex items-center gap-2 font-semibold text-white/85"><span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden />ZPS-OMS v{version} (Dev)</p>
-        <p className="mt-0.5 text-amber-200/90">Synthetic data · not an authorised operational system</p>
+        <p className="flex items-center gap-2 font-semibold text-white/85"><span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden />ZPS-OMS v{version}{environment.environment !== "production" ? ` (${environment.environment === "test" ? "Test" : "Dev"})` : ""}</p>
+        {environment.banner && <p className="mt-0.5 text-amber-200/90">{environment.environment === "production" ? "Synthetic data present" : "Synthetic data · not for Service information"}</p>}
       </div>
     </nav>
   );
@@ -146,7 +146,7 @@ const LABELS: Record<string, string> = {
   transfers: "Transfers", areas: "Operational areas", requests: "Requests", fleet: "Fleet", maintenance: "Maintenance", assets: "Assets", reconciliation: "Reconciliation",
   reports: "Reports", org: "Organisation", changes: "Structure changes", tenants: "Tenants", admin: "Administration", users: "Users", roles: "Roles", reviews: "Access reviews",
   audit: "Audit", history: "Record history", security: "Security", workflows: "Workflows", platform: "Platform", notifications: "Notifications", tasks: "My tasks",
-  stores: "Stores", requisitions: "Requisitions", profile: "My profile", help: "Help", messages: "Contact messages", search: "Search", new: "New", review: "Review", print: "Print",
+  stores: "Stores", requisitions: "Requisitions", profile: "My profile", help: "Help", messages: "Contact messages", search: "Search", new: "New", review: "Review", print: "Print", calendar: "Administrative calendar", correspondence: "Correspondence", setup: "Setup",
 };
 
 /** Breadcrumbs derived from the path (record ids are shown as “Record”). */

@@ -123,7 +123,7 @@ export default async function RequestDetail({ params }: { params: Promise<{ id: 
               </div>
             )}
           </Card>
-          <Card title="Approval route" subtitle="Demonstration-only routing (not an approved delegation matrix)">
+          <Card title="Approval route" subtitle="Provisional routing: delegations await institutional validation (DEC-008)">
             <ol className="space-y-2 text-sm">
               {steps.map((s, i) => {
                 const done = r.status === "UNDER_REVIEW" ? s.level < r.current_level : ["APPROVED", "IN_PROGRESS", "COMPLETED", "CLOSED"].includes(r.status);

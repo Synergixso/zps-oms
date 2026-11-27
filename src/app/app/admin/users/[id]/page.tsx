@@ -5,6 +5,8 @@ import { all, getDb } from "@/server/db/connection";
 import { REQUEST_CATEGORIES, ROLES, ROLE_BY_CODE } from "@/server/domain/catalogue";
 import { hasPermission } from "@/server/domain/policy";
 import { userDetail, userInScope } from "@/server/domain/iam";
+import { userAccountActivity } from "@/server/domain/account-activity";
+import { AccountActivity } from "@/components/account-activity";
 import { assignRoleAction, grantDelegationAction, issueTemporaryPasswordAction, revokeAssignmentAction, revokeDelegationAction, setUserStatusAction, unlockAccountAction } from "@/server/actions/iam";
 import { AccessDenied, Badge, Card, DL, Notice, PageHeader, Table, td, fmtDate } from "@/components/ui";
 import { ActionForm, Hidden, Select, Submit, TextField } from "@/components/forms";
@@ -20,6 +22,7 @@ export default async function UserDetail({ params }: { params: Promise<{ id: str
   const self = id === actor.userId;
   // Account support is scoped: the domain re-checks, this only decides which controls are shown.
   const support = hasPermission(actor, "user.support") && await userInScope(db, actor, "user.support", id, "all");
+  const activity = await userAccountActivity(db, actor, id);
   const orgs = await all<{ id: string; name: string; unit_type: string }>(db, "SELECT id, name, unit_type FROM org_units WHERE status='ACTIVE' ORDER BY unit_type, name");
   const now = new Date().toISOString();
   const active = (a: { revoked_at: string | null; valid_to: string | null }) => !a.revoked_at && (!a.valid_to || a.valid_to > now);
@@ -132,6 +135,9 @@ export default async function UserDetail({ params }: { params: Promise<{ id: str
             </Card>
           )}
         </div>
+      </div>
+      <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        <AccountActivity sessions={activity.sessions} history={activity.history} canEnd={support && !self} back="admin" userId={user.id} />
       </div>
     </>
   );

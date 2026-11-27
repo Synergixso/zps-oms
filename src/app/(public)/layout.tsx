@@ -19,7 +19,10 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               <span className="mt-1 inline-block rounded-full bg-zp-green px-3 py-0.5 text-[11px] font-bold tracking-wider text-white sm:text-[12px] xl:text-[13px]">ZPS-OMS</span>
             </span>
           </Link>
-          <PublicNav />
+          {/* Site navigation is for the screen; printouts keep the crest and title. */}
+          <div className="no-print contents">
+            <PublicNav />
+          </div>
         </div>
       </header>
       <main id="main" className="flex-1">

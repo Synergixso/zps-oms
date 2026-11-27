@@ -1,3 +1,4 @@
+import { environmentNotice } from "@/server/lib/environment";
 import { NextResponse, type NextRequest } from "next/server";
 import { requireActor } from "@/server/auth/session";
 import { getDb } from "@/server/db/connection";
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
       ...rows.map((r) => [r.personnel_ref, r.service_number, r.surname, r.first_names, r.rank_name, r.home_unit_name, EMPLOYMENT_LABEL[r.employment_status], DISPOSITIONS[r.disposition_status], r.verification_status].map(csv).join(",")),
     ];
     return new NextResponse("﻿" + lines.join("\r\n"), {
-      headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="zps-oms-personnel-SYNTHETIC-${new Date().toISOString().slice(0, 10)}.csv"`, "Cache-Control": "no-store" },
+      headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="zps-oms-personnel${(await environmentNotice(getDb())).synthetic ? "-SYNTHETIC" : ""}-${new Date().toISOString().slice(0, 10)}.csv"`, "Cache-Control": "no-store" },
     });
   } catch (e) {
     if (e instanceof DomainError) return new NextResponse("Not authorised to export personnel records.", { status: 403 });

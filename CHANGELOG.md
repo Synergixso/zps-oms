@@ -2,6 +2,33 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.9.0] — 2026-11-27 — Full-system completion directive: Modules 16 and 17, production readiness
+### Added
+- **Module 16 — administrative scheduling** (`/app/calendar`): non-sensitive events (meetings, deadlines, review appointments, administrative training, records inspections) with no location field and operational-term screening; month agenda merging events with assignment review dates, contribution deadlines, own tasks and correspondence follow-ups, all scoped server-side; reminders and outcome tasks (job `schedule.event-reminders`).
+- **Module 17 — administrative correspondence** (`/app/correspondence`): incoming/outgoing register with `CORR-` references, duplicate check, assignment to officers of the unit or below, status flow to filing, follow-up dates, RESTRICTED handling, full history; PDF documents with a structural screen (scripts, launch actions, embedded files, encryption, compressed streams), SHA-256 integrity and audited sandboxed download; follow-up reminders and retention-review flags (job `correspondence.follow-ups`). Migration 012; permissions `schedule.*`, `correspondence.*` (DEC-068).
+- **Module 02 — sessions and sign-in history** on the profile and account pages; per-session revocation.
+- **Release lifecycle and institutional status** (`src/server/lib/release.ts`, platform console, `/api/health` stage): eight stages; approvals cannot be recorded without evidence; institutional approval shown as *Awaiting Formal Institutional Approval* (DEC-069).
+- **Environments** (`ZPS_ENVIRONMENT`): labels from configuration; production refuses synthetic identifiers and accepts only the Service's configured formats; production seeds the reference baseline only; first Superadmin via token-protected `/setup`.
+- Reports: `FINAL_COMPLETION_AUDIT`, `PRODUCTION_READINESS_REPORT`, `FULL_MODULE_COMPLETION_MATRIX`, `ROLE_DASHBOARD_COMPLETION_MATRIX` and `PERMISSION_VERIFICATION_REPORT` (generated, `npm run docs:completion`), `SECURITY_AUDIT`, `END_TO_END_TEST_RESULTS`, `DEPLOYMENT_READINESS`, `INSTITUTIONAL_APPROVAL_STATUS`.
+- Tests: `scheduling-correspondence`, `account-activity`, `release`, `identifiers`, `production-setup`; Playwright `admin-records`, `public-site`.
+### Changed
+- Public website: the Modules page is removed and `/modules` redirects permanently to `/features`; navigation is Home, About, Features, Technical Team, How It Works, Contact, Login. Public text corrected to describe what is implemented (no "real-time operations", tracking, fuel, leave or training claims; role panel shows the three-tier structure).
+- Hard-coded "synthetic"/"prototype" labels replaced by environment-driven labels; outputs (print, PDF, exports) carry the synthetic stamp only while synthetic data is present.
+### Fixed
+- A fresh production database would have been seeded with synthetic accounts (S1); application-created accounts were always flagged synthetic (S2); the demo account list could be forced on in production (S3); the page CSP replaced the stricter download policy (S5) (`SECURITY_AUDIT.md`).
+
+## [0.8.3] — 2026-11-27 — Nonce CSP, A4 print and tablet tests
+### Security
+- Content Security Policy now uses a fresh nonce per request with `'strict-dynamic'`; `'unsafe-inline'` removed from `script-src` (DEC-067, THREAT_MODEL T21). API responses get `default-src 'none'`. All pages render per request so their scripts carry the nonce; measured cost is within the DEC-066 budget.
+- `tests/csp.test.ts` and `e2e/csp.spec.ts`: nonce uniqueness, policy text, per-request nonce, no violations on normal pages, and a stored-XSS simulation (inline script and `onerror` handler in the server HTML) that the browser refuses.
+### Added
+- `e2e/print.spec.ts`: A4 print check of the roster print view, a report, the dashboard and four public pages (layout at the 180 mm printable width, chrome hidden, nothing cut off, PDF is A4 portrait); report `docs/evidence/print.md`.
+- Reflow test also covers tablet portrait (768 px) and landscape (1024 px, sidebar shown).
+### Fixed (found by the print check)
+- Public pages printed the site navigation; it is now hidden on paper.
+- Tables inside sideways-scrolling regions were cut off on paper (modules catalogue); scroll regions now print in full and tables wrap to the page width.
+- Text shortened with an ellipsis on screen (dashboard activity) was cut off on paper; it now prints in full.
+
 ## [0.8.2] — 2026-11-26 — Reflow, performance baseline, limitations refresh
 ### Added
 - `e2e/reflow.spec.ts`: WCAG 2.2 SC 1.4.10 / 1.4.4 check of 8 public pages and 107 distinct back-office pages (from every role's navigation) at 320 px and 640 px; report `docs/evidence/reflow.md`.

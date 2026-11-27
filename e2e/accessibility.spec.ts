@@ -36,7 +36,7 @@ test.describe.configure({ mode: "serial" });
 
 test("WCAG 2.2 AA: public pages, sign-in, and every role's dashboard and Help page", async ({ page }) => {
   test.setTimeout(900_000);
-  for (const path of ["/", "/about", "/features", "/modules", "/how-it-works", "/technical-team", "/contact", "/login"]) {
+  for (const path of ["/", "/about", "/features", "/technical-team", "/how-it-works", "/contact", "/login"]) {
     await page.goto(path);
     await scan(page, path, "public");
   }
@@ -56,7 +56,7 @@ test("WCAG 2.2 AA: public pages, sign-in, and every role's dashboard and Help pa
   // Evidence report: one row per rule, with where it occurred.
   const byRule = new Map<string, Finding[]>();
   for (const f of findings) byRule.set(f.id, [...(byRule.get(f.id) ?? []), f]);
-  const md = ["# Accessibility scan (axe-core, WCAG 2.0/2.1/2.2 A and AA)", "", `Generated ${new Date().toISOString()} · ${scanned} page views scanned (8 public pages; dashboard and Help page for one account per role, 27 roles). Synthetic data only.`, "",
+  const md = ["# Accessibility scan (axe-core, WCAG 2.0/2.1/2.2 A and AA)", "", `Generated ${new Date().toISOString()} · ${scanned} page views scanned (7 public pages; dashboard and Help page for one account per role, 27 roles). Synthetic data only.`, "",
     `**Violations: ${findings.length}**`, ""];
   if (byRule.size) {
     md.push("| Rule | Impact | Description | Occurrences | Example page / role | Example element |", "|---|---|---|--:|---|---|");
