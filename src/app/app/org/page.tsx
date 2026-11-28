@@ -34,10 +34,10 @@ export default async function OrgDirectory({ searchParams }: { searchParams: Pro
   ];
   return (
     <>
-      <PageHeader eyebrow="M01 · Organisation registry" title="Organisation directory" description="Configurable, effective-dated directory. Names and reporting relationships are provisional until validated against the current approved DIG Operations establishment." />
+      <PageHeader eyebrow="M01 · Organisation registry" title="Organisation directory" description="Configurable, effective-dated directory. Established units are recorded from the Service's confirmed information; units marked synthetic are development examples." />
       <div className="mb-4">
         <Notice tone="warn" title="Source-of-truth precedence">
-          Current approved internal establishment › signed internal directives › official public pages and organograms › developer assumptions. Sub-units shown are synthetic examples.
+          Confirmed institutional instructions from the authorised ZPS stakeholders › approved project requirements › approved establishment and documented arrangements › project documentation › software. Kamfinsa Mobile Unit Companies and Detachments are established (directive of 28 Nov 2026); Districts, Stations, Posts and units marked synthetic are development examples.
         </Notice>
       </div>
       <form className="mb-4 flex flex-wrap items-end gap-3">
@@ -54,13 +54,15 @@ export default async function OrgDirectory({ searchParams }: { searchParams: Pro
       <div className="space-y-4">
         {groups.map(([label, rows]) => (
           <Card key={label} title={`${label} (${rows.length})`} bodyClass="p-0">
-            <Table head={["Name", "Code", "Type", "Reports to / administered by", "Status", "Effective from"]}>
+            <Table head={["Name", "Code", "Type", "Duty station", "Reports to / administered by", "Record", "Status", "Effective from"]}>
               {rows.map((u) => (
                 <tr key={u.id} className="hover:bg-slate-50">
                   <td className={td}><span className={`inline-block ${indent(u.depth, 18)}`}>{u.depth > 0 && <span className="mr-1 text-muted" aria-hidden>└</span>}<Link href={`/app/org/${u.id}`} className="font-semibold text-zp-blue hover:underline">{u.name}</Link></span></td>
                   <td className={`${td} font-mono text-xs`}>{u.code}</td>
                   <td className={`${td} text-ink-2`}>{UNIT_TYPE_LABEL[u.unit_type]}</td>
+                  <td className={`${td} text-ink-2`}>{u.duty_station ?? "—"}</td>
                   <td className={td}>{u.parent_name ?? "—"}</td>
+                  <td className={`${td} text-xs text-ink-2`}>{u.synthetic ? "Synthetic" : "Established"}</td>
                   <td className={td}><Badge status={u.status} /></td>
                   <td className={`${td} text-muted`}>{fmtDate(u.effective_from)}</td>
                 </tr>

@@ -20,7 +20,7 @@ describe("database migrations", () => {
     const first = await bootstrap(url);
     expect(first.applied).toEqual(listMigrationFiles().map((m) => m.name));
     expect(first.seeded).toBe(true);
-    expect(first.seedSteps).toEqual(["001_base", "002_personnel_manpower", "003_three_tier_roles", "012_calendar_correspondence", "013_liaison_roles", "014_command_structure"]);
+    expect(first.seedSteps).toEqual(["001_base", "002_personnel_manpower", "003_three_tier_roles", "012_calendar_correspondence", "013_liaison_roles", "014_command_structure", "016_kmu_establishment", "017_kmu_corrections", "018_company_commander_route", "019_portfolios"]);
     const second = await bootstrap(url);
     expect(second).toEqual({ applied: [], seeded: false, seedSteps: [] });
     const pool = createPool(url);
@@ -30,7 +30,10 @@ describe("database migrations", () => {
     } finally {
       await pool.end();
     }
-  });
+    // Targeted budget for this test only: it provisions a complete database twice (17 migrations, then every seed step).
+    // Measured 28 Nov 2026 on the XAMPP MariaDB 10.4 host: ~19 s unloaded, ~34 s under full-suite / route-audit load
+    // (migrate 9.7–11.1 s; seed step 002 13.4 s). The suite default (30 s) stays for every other test.
+  }, 120_000);
 
   it("refuses to run when an applied migration file has been edited", async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "zps-mig-"));

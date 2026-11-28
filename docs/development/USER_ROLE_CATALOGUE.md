@@ -24,7 +24,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Back office:** Inspector General Executive Dashboard
 - **Organisational context:** National Headquarters — assignable at: service hq
 - **Purpose:** National executive oversight of authorised ZPS-OMS management information. Consolidated summaries, not individual personnel records; decisions only where a delegation is configured.
-- **Permissions (11):** `dashboard.national.view` (N), `org.view` (N), `report.view` (N), `report.export` (N), `audit.view` (N), `audit.export` (N), `workflow.view` (U), `manpower.view` (N), `schedule.view` (N), `correspondence.view` (N), `command.structure.view` (N)
+- **Permissions (14):** `dashboard.national.view` (N), `org.view` (N), `report.view` (N), `report.export` (N), `audit.view` (N), `audit.export` (N), `workflow.view` (U), `manpower.view` (N), `schedule.view` (N), `correspondence.view` (N), `training.view` (N), `opsadmin.view` (N), `secservice.view` (N), `command.structure.view` (N)
 
 ### Role 03 — Deputy Inspector General of Police - Operations (DIG Operations)
 
@@ -32,7 +32,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Back office:** DIG Operations National Executive Dashboard
 - **Organisational context:** Office of the DIG Operations, National Headquarters — assignable at: service hq
 - **Purpose:** National Operations administration, coordination and oversight; approves within configured delegations. No platform technical configuration.
-- **Permissions (21):** `dashboard.national.view` (N), `org.view` (N), `request.view` (U), `fleet.view` (N), `asset.view` (N), `report.view` (N), `report.export` (N), `audit.view` (N), `workflow.view` (U), `personnel.view` (N), `manpower.view` (N), `roster.view` (N), `roster.review` (N), `roster.export` (N), `area.view` (N), `assignment.view` (N), `stores.view` (N), `schedule.view` (N), `correspondence.view` (N), `correspondence.manage` (N), `command.structure.view` (N)
+- **Permissions (26):** `dashboard.national.view` (N), `org.view` (N), `request.view` (U), `fleet.view` (N), `asset.view` (N), `report.view` (N), `report.export` (N), `audit.view` (N), `workflow.view` (U), `personnel.view` (N), `manpower.view` (N), `roster.view` (N), `roster.review` (N), `roster.export` (N), `area.view` (N), `assignment.view` (N), `stores.view` (N), `schedule.view` (N), `correspondence.view` (N), `correspondence.manage` (N), `training.view` (N), `opsadmin.view` (N), `opsadmin.manage` (N), `secservice.view` (N), `secservice.manage` (N), `command.structure.view` (N)
 
 ### Role 04 — Commissioner – Operations HQ
 
@@ -40,7 +40,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Back office:** Commissioner Operations Headquarters Dashboard
 - **Organisational context:** Operations Headquarters — assignable at: service hq
 - **Purpose:** Senior administration and coordination of Operations Headquarters business processes. Approval authority only through configured delegations.
-- **Permissions (44):** `dashboard.national.view` (N), `org.view` (N), `request.view` (N), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.assign` (N), `request.cancel` (U), `request.progress` (U), `request.close` (N), `fleet.view` (N), `maintenance.view` (N), `asset.view` (N), `report.view` (N), `report.export` (N), `workflow.view` (U), `workflow.configure` (N), `personnel.view` (N), `personnel.export` (N), `manpower.view` (N), `manpower.create` (U), `manpower.review` (N), `roster.view` (N), `roster.build` (N), `roster.review` (N), `roster.export` (N), `area.view` (N), `area.manage` (N), `assignment.view` (N), `assignment.propose` (N), `assignment.transfer` (N), `assignment.renew` (N), `assignment.receive` (N), `disposition.change` (N), `stores.view` (N), `schedule.view` (N), `schedule.manage` (N), `correspondence.view` (N), `correspondence.register` (N), `correspondence.manage` (N), `command.structure.view` (N), `command.structure.manage` (N), `contact.view` (N), `contact.manage` (N)
+- **Permissions (51):** `dashboard.national.view` (N), `org.view` (N), `request.view` (N), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.assign` (N), `request.cancel` (U), `request.progress` (U), `request.close` (N), `fleet.view` (N), `maintenance.view` (N), `asset.view` (N), `report.view` (N), `report.export` (N), `workflow.view` (U), `workflow.configure` (N), `personnel.view` (N), `personnel.export` (N), `manpower.view` (N), `manpower.create` (U), `manpower.review` (N), `roster.view` (N), `roster.build` (N), `roster.review` (N), `roster.export` (N), `area.view` (N), `area.manage` (N), `assignment.view` (N), `assignment.propose` (N), `assignment.transfer` (N), `assignment.renew` (N), `assignment.receive` (N), `disposition.change` (N), `stores.view` (N), `schedule.view` (N), `schedule.manage` (N), `correspondence.view` (N), `correspondence.register` (N), `correspondence.manage` (N), `training.view` (N), `training.need.submit` (N), `training.nominate` (N), `opsadmin.view` (N), `opsadmin.manage` (N), `secservice.view` (N), `secservice.manage` (N), `command.structure.view` (N), `command.structure.manage` (N), `contact.view` (N), `contact.manage` (N)
 
 ### Role 05 — Deputy Commissioner – Operations HQ
 
@@ -48,7 +48,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Back office:** Deputy Commissioner Operations HQ Dashboard
 - **Organisational context:** Operations Headquarters — assignable at: service hq
 - **Purpose:** Day-to-day administrative coordination and processing within Operations Headquarters; recommends or approves only where delegated.
-- **Permissions (27):** `dashboard.national.view` (N), `org.view` (N), `report.view` (N), `report.export` (N), `personnel.view` (N), `personnel.register` (N), `personnel.edit` (N), `personnel.verify` (N), `personnel.export` (N), `manpower.view` (N), `manpower.create` (U), `manpower.review` (N), `roster.view` (N), `roster.build` (N), `roster.review` (N), `roster.export` (N), `area.view` (N), `assignment.view` (N), `assignment.propose` (N), `assignment.transfer` (N), `assignment.renew` (N), `schedule.view` (N), `schedule.manage` (N), `correspondence.view` (N), `correspondence.register` (N), `correspondence.manage` (N), `command.structure.view` (N)
+- **Permissions (32):** `dashboard.national.view` (N), `org.view` (N), `report.view` (N), `report.export` (N), `personnel.view` (N), `personnel.register` (N), `personnel.edit` (N), `personnel.verify` (N), `personnel.export` (N), `manpower.view` (N), `manpower.create` (U), `manpower.review` (N), `roster.view` (N), `roster.build` (N), `roster.review` (N), `roster.export` (N), `area.view` (N), `assignment.view` (N), `assignment.propose` (N), `assignment.transfer` (N), `assignment.renew` (N), `schedule.view` (N), `schedule.manage` (N), `correspondence.view` (N), `correspondence.register` (N), `correspondence.manage` (N), `training.view` (N), `training.nominate` (N), `opsadmin.view` (N), `opsadmin.manage` (N), `secservice.view` (N), `command.structure.view` (N)
 
 ### Role 06 — System Administrator – HQ Tech
 
@@ -82,7 +82,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Back office:** Formation Command Headquarters
 - **Organisational context:** Provincial Division or Unit/Formation (commanding officer) — assignable at: provincial division, formation
 - **Purpose:** Oversight of the assigned Division or Formation and everything under it. Approves only within configured delegations; no access to unrelated formations or Provinces.
-- **Permissions (24):** `dashboard.division.view` (U), `dashboard.formation.view` (U), `org.view` (N), `request.view` (U), `request.assign` (U), `request.close` (U), `request.reopen` (U), `fleet.view` (U), `maintenance.view` (U), `asset.view` (S), `report.view` (S), `report.export` (S), `personnel.view` (S), `manpower.view` (S), `roster.view` (S), `roster.review` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S), `command.structure.view` (S)
+- **Permissions (33):** `dashboard.division.view` (U), `dashboard.formation.view` (U), `org.view` (N), `request.view` (U), `request.assign` (U), `request.close` (U), `request.reopen` (U), `fleet.view` (U), `maintenance.view` (U), `asset.view` (S), `report.view` (S), `report.export` (S), `personnel.view` (S), `manpower.view` (S), `roster.view` (S), `roster.review` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S), `training.view` (S), `training.need.submit` (S), `training.nominate` (S), `training.recommend` (S), `training.deliver` (S), `opsadmin.view` (S), `opsadmin.manage` (S), `secservice.view` (S), `secservice.manage` (S), `command.structure.view` (S)
 
 ### Role 10 — Deputy Division Commander
 
@@ -90,7 +90,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Back office:** Deputy Division Commander Dashboard
 - **Organisational context:** Provincial Division or Unit/Formation (deputy) — assignable at: provincial division, formation
 - **Purpose:** Supports the commanding officer: monitors performance, reviews outstanding matters and Staff I/II workflows; approves only where separately delegated.
-- **Permissions (18):** `dashboard.division.view` (U), `org.view` (N), `request.view` (U), `report.view` (S), `report.export` (S), `personnel.view` (S), `personnel.export` (S), `manpower.view` (S), `roster.view` (S), `roster.review` (S), `roster.export` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S), `command.structure.view` (S)
+- **Permissions (22):** `dashboard.division.view` (U), `org.view` (N), `request.view` (U), `report.view` (S), `report.export` (S), `personnel.view` (S), `personnel.export` (S), `manpower.view` (S), `roster.view` (S), `roster.review` (S), `roster.export` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S), `training.view` (S), `training.recommend` (S), `opsadmin.view` (S), `secservice.view` (S), `command.structure.view` (S)
 
 ### Role 11 — Division Senior Staff Officer – Operations (Staff I)
 
@@ -98,7 +98,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Back office:** Division Senior Staff Officer – Operations
 - **Organisational context:** Provincial Division or Unit/Formation — assignable at: provincial division, formation
 - **Purpose:** Coordinates Divisional Operations administration: manpower requirements, contributions, rosters, assignments, transfers, tenure and renewals; supervises Staff II. No approval outside delegations.
-- **Permissions (41):** `dashboard.division.view` (U), `org.view` (N), `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U), `request.progress` (U), `fleet.view` (U), `maintenance.view` (U), `maintenance.create` (U), `asset.view` (U), `report.view` (S), `report.export` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `personnel.export` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `roster.export` (S), `area.view` (S), `area.manage` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.renew` (S), `assignment.receive` (S), `disposition.change` (S), `stores.requisition` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S), `correspondence.manage` (S), `command.structure.view` (S)
+- **Permissions (48):** `dashboard.division.view` (U), `org.view` (N), `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U), `request.progress` (U), `fleet.view` (U), `maintenance.view` (U), `maintenance.create` (U), `asset.view` (U), `report.view` (S), `report.export` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `personnel.export` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `roster.export` (S), `area.view` (S), `area.manage` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.renew` (S), `assignment.receive` (S), `disposition.change` (S), `stores.requisition` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S), `correspondence.manage` (S), `training.view` (S), `training.need.submit` (S), `training.nominate` (S), `opsadmin.view` (S), `opsadmin.manage` (S), `secservice.view` (S), `secservice.manage` (S), `command.structure.view` (S)
 
 ### Role 12 — Deputy Division Staff Officer – Operations (Staff II)
 
@@ -106,7 +106,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Back office:** Deputy Division Staff Officer – Operations
 - **Organisational context:** Provincial Division or Unit/Formation — assignable at: provincial division, formation
 - **Purpose:** Assists Staff I: prepares personnel information, compiles draft lists, verifies submissions, prepares transfer and renewal documentation. No Staff I approval authority.
-- **Permissions (22):** `dashboard.division.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.create` (U), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.renew` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S), `command.structure.view` (S)
+- **Permissions (27):** `dashboard.division.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.create` (U), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.renew` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S), `training.view` (S), `training.nominate` (S), `opsadmin.view` (S), `opsadmin.manage` (S), `secservice.view` (S), `command.structure.view` (S)
 
 ### Role 13 — Company Commander
 
@@ -114,7 +114,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Back office:** Company Command Administration
 - **Organisational context:** Company within a Unit/Formation — assignable at: company
 - **Purpose:** Company administration: personnel register, contributions and submissions for the company and its platoons and sections. No access to other companies.
-- **Permissions (11):** `dashboard.unit.view` (U), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `assignment.view` (S), `schedule.view` (S), `correspondence.view` (S)
+- **Permissions (14):** `dashboard.unit.view` (U), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `assignment.view` (S), `schedule.view` (S), `correspondence.view` (S), `training.view` (S), `training.need.submit` (S), `training.nominate` (S)
 
 ### Role 14 — Section Head
 
@@ -122,7 +122,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Back office:** Section Administration Dashboard
 - **Organisational context:** Section (or department, detachment or platoon where configured) — assignable at: section, platoon, detachment, department
 - **Purpose:** Section administrative records: selects personnel from the registry, prepares and verifies manpower contributions, tracks requests.
-- **Permissions (8):** `dashboard.unit.view` (U), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `schedule.view` (S)
+- **Permissions (10):** `dashboard.unit.view` (U), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `schedule.view` (S), `training.view` (S), `training.nominate` (S)
 
 ### Role 15 — Formation Operations Staff Administrator
 
@@ -130,7 +130,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Back office:** Formation Operations Staff Administration
 - **Organisational context:** Unit/Formation — assignable at: formation
 - **Purpose:** Formation-level Operations administration: contributions, rosters, assignment documentation and subordinate submissions. No commanding-officer approval authority.
-- **Permissions (33):** `dashboard.formation.view` (U), `org.view` (N), `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U), `request.progress` (U), `fleet.view` (U), `maintenance.view` (U), `maintenance.create` (U), `asset.view` (U), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `roster.export` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `stores.requisition` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S), `command.structure.view` (S)
+- **Permissions (36):** `dashboard.formation.view` (U), `org.view` (N), `request.view` (U), `request.create` (U), `request.edit` (U), `request.submit` (U), `request.cancel` (U), `request.progress` (U), `fleet.view` (U), `maintenance.view` (U), `maintenance.create` (U), `asset.view` (U), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `roster.export` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `stores.requisition` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S), `training.view` (S), `training.deliver` (S), `opsadmin.view` (S), `command.structure.view` (S)
 
 ### Role 16 — Divisional Quarter Masters Stores Officer
 
@@ -180,7 +180,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Back office:** District Command Dashboard
 - **Organisational context:** District Command — assignable at: district
 - **Purpose:** District oversight: stations and posts, personnel, contributions, assignments and stores. Approves only within configured delegations; no access to other Districts.
-- **Permissions (17):** `dashboard.district.view` (U), `org.view` (N), `asset.view` (S), `report.view` (S), `personnel.view` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S), `command.structure.view` (S)
+- **Permissions (24):** `dashboard.district.view` (U), `org.view` (N), `asset.view` (S), `report.view` (S), `personnel.view` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S), `training.view` (S), `training.need.submit` (S), `training.nominate` (S), `training.recommend` (S), `opsadmin.view` (S), `opsadmin.manage` (S), `secservice.view` (S), `command.structure.view` (S)
 
 ### Role 22 — Deputy OC — District
 
@@ -188,7 +188,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Back office:** Deputy District Commander Dashboard
 - **Organisational context:** District Command — assignable at: district
 - **Purpose:** Assists the District Commander; reviews subordinate submissions and processes delegated matters. Does not inherit the OC's approvals.
-- **Permissions (14):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S), `command.structure.view` (S)
+- **Permissions (15):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S), `training.view` (S), `command.structure.view` (S)
 
 ### Role 23 — Operations Officer — District
 
@@ -196,7 +196,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Back office:** District Operations Officer Workspace
 - **Organisational context:** District Command — assignable at: district
 - **Purpose:** District Operations administration: manpower requests, station contributions, district lists, assignment records and reviews. No tactical deployment, patrol scheduling or tracking.
-- **Permissions (26):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.receive` (S), `disposition.change` (S), `stores.requisition` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S), `correspondence.manage` (S), `command.structure.view` (S)
+- **Permissions (30):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.receive` (S), `disposition.change` (S), `stores.requisition` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S), `correspondence.manage` (S), `training.view` (S), `opsadmin.view` (S), `opsadmin.manage` (S), `secservice.view` (S), `command.structure.view` (S)
 
 ### Role 24 — Deputy Operations Officer — District
 
@@ -228,7 +228,7 @@ Approval authority is never a role permission: it needs an active delegation (do
 - **Back office:** Police Station General Duties Administration
 - **Organisational context:** Police Station (and its posts) — assignable at: station, post
 - **Purpose:** Station-level general duties administrative oversight: personnel, contributions, submissions; approves specifically delegated matters.
-- **Permissions (16):** `dashboard.station.view` (U), `org.view` (N), `asset.view` (S), `report.view` (S), `personnel.view` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S)
+- **Permissions (18):** `dashboard.station.view` (U), `org.view` (N), `asset.view` (S), `report.view` (S), `personnel.view` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S), `training.view` (S), `training.nominate` (S)
 
 ### Role 28 — Station Inspector — Police Station GD
 

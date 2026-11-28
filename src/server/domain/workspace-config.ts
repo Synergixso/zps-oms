@@ -21,11 +21,11 @@ export interface Workspace {
 
 // Reusable navigation sections (hrefs resolve to NAV_ITEMS in src/lib/nav.ts).
 const OVERVIEW = { label: "Overview", items: ["/app", "/app/tasks", "/app/approvals"] };
-const PERSONNEL_OPS = { label: "Personnel and manpower", items: ["/app/personnel", "/app/manpower", "/app/manpower/contributions", "/app/rosters", "/app/assignments", "/app/transfers", "/app/areas"] };
-const CONTRIBUTIONS = { label: "Personnel and contributions", items: ["/app/personnel", "/app/manpower/contributions", "/app/manpower", "/app/rosters", "/app/assignments"] };
+const PERSONNEL_OPS = { label: "Personnel and manpower", items: ["/app/personnel", "/app/manpower", "/app/manpower/contributions", "/app/rosters", "/app/assignments", "/app/transfers", "/app/areas", "/app/import"] };
+const CONTRIBUTIONS = { label: "Personnel and contributions", items: ["/app/personnel", "/app/manpower/contributions", "/app/manpower", "/app/rosters", "/app/assignments", "/app/import"] };
 const ADMIN = { label: "Administration", items: ["/app/requests", "/app/fleet", "/app/fleet/maintenance", "/app/assets", "/app/stores", "/app/stores/requisitions"] };
 const REPORTS = { label: "Reports", items: ["/app/reports"] };
-const ORG = { label: "Organisation", items: ["/app/org", "/app/org/changes"] };
+const ORG = { label: "Organisation", items: ["/app/org", "/app/org/changes", "/app/import"] };
 const OVERSIGHT = { label: "Oversight", items: ["/app/audit", "/app/audit/history", "/app/workflows"] };
 const TECH_LOCAL = { label: "Technical administration", items: ["/app/admin/users", "/app/admin/roles"] };
 
@@ -62,7 +62,7 @@ const BASE_CONFIG: Omit<Workspace, "backOffice">[] = [
   // ── Tier 1 ──
   { role: "SUPERADMIN", purpose: "Platform configuration, tenants, organisation structure and access administration. No personnel records or business approvals.",
     kpis: ["tenants", "divisions", "orgUnits", "usersActive", "jobFailures", "orgChangesPending"],
-    nav: [OVERVIEW, { label: "Platform", items: ["/app/platform", "/app/org/tenants", "/app/workflows"] }, { label: "Organisation", items: ["/app/org", "/app/org/changes"] },
+    nav: [OVERVIEW, { label: "Platform", items: ["/app/platform", "/app/org/tenants", "/app/workflows"] }, { label: "Organisation", items: ["/app/org", "/app/org/changes", "/app/import"] },
       { label: "Access", items: ["/app/admin/users", "/app/admin/roles", "/app/admin/reviews", "/app/security"] }, { label: "Public site", items: ["/app/messages"] }],
     quick: [Q.users, Q.tenants, Q.org, Q.health, Q.security] },
   { role: "INSPECTOR_GENERAL", purpose: "National executive summaries of authorised management information, with audit oversight.",

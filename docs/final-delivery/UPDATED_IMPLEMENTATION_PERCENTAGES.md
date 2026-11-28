@@ -4,20 +4,20 @@
 
 | Measure | Baseline | Current | Change |
 |---|--:|--:|--:|
-| Implementation (all approved criteria, weighted) | 64.0 % | 88.8 % | 24.8 % |
-| Verification (all approved criteria, weighted) | 63.1 % | 88.4 % | 25.3 % |
-| Implementation excluding externally blocked criteria | 71.7 % | 99.5 % | 27.8 % |
-| Remaining (all approved criteria) | 36.0 % | 11.2 % | |
-| Modules fully implemented (of 17) | 12 | 17 | |
+| Implementation (all approved criteria, weighted) | 47.6 % | 90.4 % | 42.8 % |
+| Verification (all approved criteria, weighted) | 47.0 % | 90.1 % | 43.1 % |
+| Implementation excluding externally blocked criteria | 52.5 % | 99.6 % | 47.1 % |
+| Remaining (all approved criteria) | 52.4 % | 9.6 % | |
+| Modules fully implemented (of 17) | 8 | 17 | |
 | Role back offices fully implemented and verified (of 31) | 16 | 31 | |
 
 ## By area (current)
 
 | No. | Module | Status | Criteria | Implemented and tested | Partial | Not developed | Blocked | Implementation | Verification | Remaining |
 |--:|---|---|--:|--:|--:|--:|--:|--:|--:|--:|
-| 01 | National Organisation and Multi-Tenant Management | Fully implemented (external items blocked) | 5 | 4 | 0 | 0 | 1 | 76.9 % | 76.9 % | 23.1 % |
+| 01 | National Organisation and Multi-Tenant Management | Fully implemented (external items blocked) | 6 | 5 | 0 | 0 | 1 | 80.0 % | 80.0 % | 20.0 % |
 | 02 | User, Roles and Access Management | Fully implemented (external items blocked) | 9 | 8 | 0 | 0 | 1 | 88.0 % | 88.0 % | 12.0 % |
-| 03 | Central Personnel Registry | Fully implemented (external items blocked) | 5 | 4 | 0 | 0 | 1 | 83.3 % | 83.3 % | 16.7 % |
+| 03 | Central Personnel Registry | Fully implemented (external items blocked) | 6 | 5 | 0 | 0 | 1 | 85.7 % | 85.7 % | 14.3 % |
 | 04 | Manpower Request and Contribution Management | Fully implemented | 4 | 4 | 0 | 0 | 0 | 100.0 % | 100.0 % | 0.0 % |
 | 05 | Personnel Roster Builder | Fully implemented | 5 | 4 | 1 | 0 | 0 | 100.0 % | 90.9 % | 0.0 % |
 | 06 | Operational Area Administration | Fully implemented | 2 | 2 | 0 | 0 | 0 | 100.0 % | 100.0 % | 0.0 % |
@@ -29,11 +29,13 @@
 | 12 | Management Dashboards and Reporting | Fully implemented | 3 | 3 | 0 | 0 | 0 | 100.0 % | 100.0 % | 0.0 % |
 | 13 | Notifications, Tasks and Reminders | Fully implemented | 2 | 2 | 0 | 0 | 0 | 100.0 % | 100.0 % | 0.0 % |
 | 14 | Audit and Compliance Management | Fully implemented (external items blocked) | 4 | 3 | 0 | 0 | 1 | 80.0 % | 80.0 % | 20.0 % |
-| 15 | Platform Administration and System Monitoring | Fully implemented (external items blocked) | 3 | 2 | 0 | 0 | 1 | 66.7 % | 66.7 % | 33.3 % |
+| 15 | Platform Administration and System Monitoring | Fully implemented (external items blocked) | 4 | 3 | 0 | 0 | 1 | 72.7 % | 72.7 % | 27.3 % |
 | 16 | Administrative Scheduling and Availability | Fully implemented | 2 | 2 | 0 | 0 | 0 | 100.0 % | 100.0 % | 0.0 % |
-| 17 | Administrative Correspondence Management | Fully implemented (external items blocked) | 3 | 2 | 0 | 0 | 1 | 71.4 % | 71.4 % | 28.6 % |
+| 17 | Administrative Correspondence Management | Fully implemented (external items blocked) | 4 | 3 | 0 | 0 | 1 | 77.8 % | 77.8 % | 22.2 % |
 | — | Command and Reporting (new direction) | Fully implemented (external items blocked) | 18 | 17 | 0 | 0 | 1 | 94.0 % | 94.0 % | 6.0 % |
-| — | Cross-cutting: security, quality, operations | Partially implemented | 10 | 7 | 0 | 1 | 2 | 69.6 % | 69.6 % | 30.4 % |
+| — | Kamfinsa Mobile Unit structure and field command (directive 28 Nov 2026) | Fully implemented (external items blocked) | 13 | 12 | 0 | 0 | 1 | 93.8 % | 93.8 % | 6.3 % |
+| — | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | Fully implemented (external items blocked) | 15 | 14 | 0 | 0 | 1 | 94.6 % | 94.6 % | 5.4 % |
+| — | Cross-cutting: security, quality, operations | Partially implemented | 11 | 8 | 0 | 1 | 2 | 73.1 % | 73.1 % | 26.9 % |
 
 ## Status vocabulary
 

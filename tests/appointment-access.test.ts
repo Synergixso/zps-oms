@@ -54,6 +54,7 @@ describe("appointment-only access policy", () => {
     expect(await officesHeld(db, await actor(db, "u_mu_cst"))).toEqual([]);
     // Role holders are unaffected by the policy.
     expect((await officesHeld(db, await actor(db, "u_mu_sec"))).map((h) => h.positionId)).toEqual(["pos_mu_insp"]);
+    // The Area Commander is a distinct appointment: the account holds the Area Commander office only (seed step 017).
     expect((await officesHeld(db, await actor(db, "u_mu_acoy"))).map((h) => h.positionId)).toEqual(["pos_mu_area_a"]);
   }));
 

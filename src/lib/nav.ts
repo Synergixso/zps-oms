@@ -6,6 +6,10 @@ export interface NavItem {
   icon: IconName;
   /** Shown when the user holds ANY of these permissions. Server-side checks still apply on every page. */
   any: Permission[];
+  /** Command offices: shown only to holders of an office of one of these types (field command, DEC-078). */
+  officeTypes?: string[];
+  /** Also shown to holders of these office types even without the permissions (executive appointments, DEC-088). */
+  alsoOffices?: string[];
 }
 export interface NavGroup {
   label: string;
@@ -60,9 +64,23 @@ export const NAV: NavGroup[] = [
       { href: "/app/command/directives/issued", label: "Directives issued", icon: "send", any: [] },
       { href: "/app/command/reports", label: "Reports received", icon: "clipboardCheck", any: [] },
       { href: "/app/command/reports/submitted", label: "Reports submitted", icon: "fileEdit", any: [] },
+      { href: "/app/command/company", label: "Company / detachment command", icon: "building", any: [], officeTypes: ["COMPANY_COMMANDER", "DEPUTY_COMPANY_COMMANDER", "DETACHMENT_COMMANDER"] },
+      { href: "/app/command/area", label: "Area command", icon: "target", any: [], officeTypes: ["AREA_COMMANDER"] },
+      { href: "/app/command/platoon", label: "Platoon command", icon: "users", any: [], officeTypes: ["SECTION_PLATOON_COMMANDER"] },
       { href: "/app/command/acting", label: "Acting appointments", icon: "userCircle", any: [] },
       { href: "/app/command/conflicts", label: "Command conflicts", icon: "scale", any: [] },
       { href: "/app/command/structure", label: "Command structure", icon: "sitemap", any: ["command.structure.view"] },
+    ],
+  },
+  {
+    // Executive portfolios (DEC-086 … DEC-088). Appended by the layout for every user; each item is filtered by permission
+    // or by the office held, and every page and domain function re-checks on the server.
+    label: "Portfolios",
+    items: [
+      { href: "/app/training", label: "Training and development", icon: "star", any: ["training.view"], alsoOffices: ["DIG_ADMINISTRATION"] },
+      { href: "/app/operations", label: "Operations administration", icon: "flow", any: ["opsadmin.view"] },
+      { href: "/app/operations/security-services", label: "Mining security services", icon: "handshake", any: ["secservice.view"] },
+      { href: "/app/coordination", label: "Inter-office coordination", icon: "network", any: [], officeTypes: ["IG", "DIG_OPERATIONS", "DIG_ADMINISTRATION", "DIG_SPECIAL_DUTIES", "COMMISSIONER_OPS", "DEPUTY_COMMISSIONER_OPS"] },
     ],
   },
   {
@@ -89,6 +107,7 @@ export const NAV: NavGroup[] = [
   {
     label: "Organisation",
     items: [
+      { href: "/app/import", label: "Controlled data import", icon: "arrowUp", any: ["personnel.register", "org.propose"] },
       { href: "/app/org", label: "Organisation directory", icon: "building", any: ["org.view"] },
       { href: "/app/org/changes", label: "Structure changes", icon: "flow", any: ["org.propose", "org.view"] },
       { href: "/app/org/tenants", label: "Tenant management", icon: "network", any: ["tenant.view"] },

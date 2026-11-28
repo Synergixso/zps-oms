@@ -34,7 +34,7 @@ const POSITIONS: Array<[string, string, string, string | null, string]> = [
   ["pos_ig", "IG", "org_hq", "u_rom", "Inspector General of Police"],
   ["pos_dig_ops", "DIG_OPERATIONS", "org_hq", "u_dig", "Deputy Inspector General of Police - Operations (DIG Operations)"],
   ["pos_dig_adm", "DIG_ADMINISTRATION", "org_hq", null, "Deputy Inspector General – Administration"],
-  ["pos_dig_sd", "DIG_SPECIAL_DUTIES", "org_hq", null, "Deputy Inspector General – Special Duties (Stately)"],
+  ["pos_dig_sd", "DIG_SPECIAL_DUTIES", "org_hq", null, "Deputy Inspector General – Special Duties / State House"],
   ["pos_comm", "COMMISSIONER_OPS", "org_hq", "u_hqc", "Commissioner – Operations HQ"],
   ["pos_dcomm", "DEPUTY_COMMISSIONER_OPS", "org_hq", "u_hqstaff", "Deputy Commissioner – Operations HQ"],
   ["pos_mu_cmd", "DIVISIONAL_COMMANDER", "org_mu", "u_mu_cmd", "Divisional Commander, Mobile Unit"],

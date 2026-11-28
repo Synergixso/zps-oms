@@ -1,6 +1,8 @@
 # Mobile Unit Reporting Structure
 
-Recorded 27 November 2026 for v0.11.0 (owner directive Part 6; DEC-075). Synthetic configuration from seed step 014; it requires institutional validation before production use.
+Recorded 27 November 2026 for v0.11.0 (owner directive Part 6; DEC-075); updated 28 November 2026 for v0.13.0 (DEC-078 … DEC-080).
+
+The **appointments and reporting progression** shown here — Constable → Sergeant → Inspector → Chief Inspector / Platoon Commander → Area Commander, the Area Commander's two channels, and Detachment Commander → Company Commander / Deputy → Kamfinsa Mobile Unit HQ command — are **established requirements** confirmed by the ZPS stakeholders (directive 28 Nov 2026). Office **holders** (`demo.*` accounts) are synthetic. The exact KMU HQ office above the Company Commanders (#2) and the formal DEC-075 sign-off (#7) remain open.
 
 ## 1. Junior personnel to Area Commander (primary command)
 
@@ -42,3 +44,18 @@ When the Area Commander submits a report, ZPS-OMS creates **one** `status_report
 ## 4. Conflicting tasking
 
 Staff II (channel B) and the District Operations Officer (channel A) can both task the Area Commander. If their instructions conflict, the Area Commander refers them as a conflict. The system then routes it to the nearest common superior office (here the Commissioner – Operations HQ) and changes neither directive until that office decides (Test H). See `COMMAND_CONFLICT_RESOLUTION.md`.
+
+## 5. Company and Detachment command (v0.13.0, DEC-079)
+
+| Office | Unit | Reports to | Relationship |
+|---|---|---|---|
+| Detachment Commander (e.g. HQ 5 Detachment, Kitwe; synthetic holder `demo.mu.hq5.commander`) | Detachment | Company Commander of the parent Company | Primary command |
+| Detachment Commander | Detachment | Deputy Company Commander of the parent Company | Parallel reporting (receives every report) |
+| Deputy Company Commander | Company | Company Commander | Primary command; acts for the Company Commander only through a dated acting appointment |
+| Company Commander | Company | Divisional Commander, Mobile Unit | Primary command — **interim**, pending the Project Manager's designation (#2) |
+
+## 6. Field command workspaces (v0.13.0, DEC-080)
+
+- **Platoon Commander** (`/app/command/platoon`): directly in charge of the officers on the ground — field chain, personnel and availability, daily attendance register.
+- **Area Commander** (`/app/command/area`): area coordination — platoon attendance as counts only, both channels, reports awaiting the office, partner engagement register (metadata only).
+- **Company / Detachment Commander** (`/app/command/company`): units, duty stations, commanders, strength, reports addressed to the office.

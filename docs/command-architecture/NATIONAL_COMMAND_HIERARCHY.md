@@ -11,7 +11,7 @@ Recorded 27 November 2026 for v0.11.0 (owner directive, Parts 4, 5.1, 10, 11; DE
 | Inspector General of Police | — (none) | Highest; issues directives downward; receives executive reports |
 | DIG – Operations | IG | Operations chain: instructs the Commissioner – Operations HQ |
 | DIG – Administration | IG | **None**: no relationships below it in the Operations chain; no holder configured |
-| DIG – Special Duties (Stately) | IG | **None**: same as above |
+| DIG – Special Duties / State House | IG | **None**: same as above |
 | Commissioner – Operations HQ | DIG Operations | Instructs Divisional / Formation Commanders |
 | Deputy Commissioner – Operations HQ | Commissioner | Acts for the Commissioner **only** under a recorded acting appointment |
 

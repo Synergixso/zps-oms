@@ -40,6 +40,8 @@ const m16 = M(16, "Administrative Scheduling and Availability");
 const m17 = M(17, "Administrative Correspondence Management");
 export const MODULES = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m16, m17];
 export const CMD = "Command and Reporting (new direction)";
+export const KMU = "Kamfinsa Mobile Unit structure and field command (directive 28 Nov 2026)";
+export const PORT = "Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026)";
 export const XC = "Cross-cutting: security, quality, operations";
 export const ROLES_AREA = "31 role back offices";
 
@@ -53,6 +55,7 @@ export const CRITERIA: Criterion[] = [
   c("M01-3", m1, "Effective-dated structure changes with approval and automation", 2, "V", "V", "`org.effective-changes` job; `automation-platform`"),
   c("M01-4", m1, "Organisation directory and unit pages", 2, "V", "V", "`/app/org`; route audit"),
   c("M01-5", m1, "Authoritative national establishment loaded (all Districts, Stations, Posts)", 3, "B", "B", "synthetic establishment only (3 Districts, 4 Stations, 2 Posts)", { blocker: "Signed establishment from the Service (DEC-004)" }),
+  c("M01-6", m1, "Controlled establishment import: CSV validated in full, each unit a WF-03 proposal approved by a different officer, duty station and record basis, audited with file fingerprint", 2, "N", "V", "`data-import.ts`; `/app/import`; `data-import` test; e2e; security probe (issue #8)"),
   // ── 02 Users, roles, access ──
   c("M02-1", m2, "Individual accounts, provisioning, suspension, deactivation; no self-registration", 3, "V", "V", "`iam.ts`; `auth-scope`"),
   c("M02-2", m2, "Exactly 31 roles in four levels; obsolete roles retired safely with reassignment flags", 3, "V", "V", "`three-tier-roles`, `role-migration`", { validate: true }),
@@ -69,6 +72,7 @@ export const CRITERIA: Criterion[] = [
   c("M03-3", m3, "Search, filter, sort, paging; export (audited)", 2, "V", "V", "`paging`; route audit"),
   c("M03-4", m3, "Disposition history", 2, "V", "V", "criterion F"),
   c("M03-5", m3, "Production service-number format", 2, "B", "B", "format refused until configured", { blocker: "Service identifier formats (DEC-069, X05)" }),
+  c("M03-6", m3, "Controlled personnel import: all-or-nothing, registry rules and scope per row, synthetic-only outside production, at most 500 rows, audited with file fingerprint; production records not flagged synthetic", 2, "N", "V", "`data-import.ts`; `registerPersonnel` synthetic flag fixed; `data-import` test; e2e (issue #8)"),
   // ── 04 Manpower ──
   c("M04-1", m4, "Request lifecycle: create, submit, review, recommend, approve, return, close", 3, "V", "V", "`manpower` tests; roster journey"),
   c("M04-2", m4, "Contribution requirements routed to units; contributions validated, returned, resubmitted", 3, "V", "V", "`manpower`"),
@@ -79,7 +83,7 @@ export const CRITERIA: Criterion[] = [
   c("M05-2", m5, "Duplicate, membership, eligibility and conflicting-assignment checks", 3, "V", "V", "criteria C–E"),
   c("M05-3", m5, "Versions, approval, finalisation", 2, "V", "V", "`manpower`"),
   c("M05-4", m5, "Print (A4), PDF, CSV, .xlsx (audited)", 2, "V", "V", "`extensions`, `xlsx`; A4 print test"),
-  c("M05-5", m5, ".xlsx opened in licensed Microsoft Excel", 1, "P:1:0", "P:1:0", "file generated and parsed by tests; not opened in Excel (no licence in this environment)"),
+  c("M05-5", m5, ".xlsx opened in licensed Microsoft Excel", 1, "P:1:0", "P:1:0", "file generated and parsed by tests, including integrity checks (formula-like text kept as text, column widths, frozen header, schema order, Unicode, sheet-name limit); not opened in licensed Excel (issue #14)"),
   // ── 06 Areas ──
   c("M06-1", m6, "Administrative duty-area directory (no locations)", 3, "V", "V", "`/app/areas`; `personnel-assignments`"),
   c("M06-2", m6, "Create, edit, close areas; scoped", 2, "V", "V", "route audit"),
@@ -119,6 +123,7 @@ export const CRITERIA: Criterion[] = [
   c("M15-1", m15, "Health, settings, jobs console, backups with tamper detection, restore drills", 3, "V", "V", "`automation-platform`"),
   c("M15-2", m15, "Environments, production baseline seed, first-Superadmin setup, release record", 3, "V", "V", "`release`, `production-setup`, `identifiers`"),
   c("M15-3", m15, "Production hosting, TLS, least-privilege DB account, monitoring", 3, "B", "B", "`DEPLOYMENT_READINESS.md`", { blocker: "Production infrastructure (X01)" }),
+  c("M15-5", m15, "Deployment configuration check (database account, Secure cookies, production build, setup token, identifier formats, scanner, backups) without exposing secrets; runbook with TLS requirements and rollback", 2, "N", "V", "`config-check.ts`; `npm run check:config`; logged at start-up; `config-check` test; DEPLOYMENT_GUIDE runbook (issue #11)"),
   // ── 16 Scheduling ──
   c("M16-1", m16, "Non-sensitive administrative events; derived dates; tasks; reminders", 3, "V", "V", "`scheduling-correspondence`; admin-records journey"),
   c("M16-2", m16, "Personnel availability shown in scheduling (derived from disposition)", 2, "P:0.5", "V", "baseline: disposition status in the registry only; now the calendar shows current availability by group, availability changes by day and unit, and approved assignments due to commence, within personnel and assignment scope (v0.12.0); `scheduling-correspondence` test; browser"),
@@ -126,6 +131,7 @@ export const CRITERIA: Criterion[] = [
   c("M17-1", m17, "Register, assign, progress, file; RESTRICTED handling; history", 3, "V", "V", "`scheduling-correspondence`, `transactions`"),
   c("M17-2", m17, "PDF documents with structural screening; download sandboxed", 2, "V", "V", "security probes; `scheduling-correspondence`"),
   c("M17-3", m17, "Malware scanning before production document storage", 2, "B", "B", "", { blocker: "Scanner and information-security decision (DEC-068, X04)" }),
+  c("M17-4", m17, "Malware scanner interface (ClamAV INSTREAM, free) and fail-closed production policy: uploads refused while no scanner is configured; infected or unscannable files refused and audited", 2, "N", "V", "`malware-scan.ts`; wired into correspondence uploads; `malware-scan` test with the EICAR test string (issue #12)"),
 
   // ── Command and reporting (new direction, Parts 4–13) ──
   c("C-01", CMD, "IG represented as the highest command authority; DIG Operations reports to the IG; other DIG offices subordinate and outside the Operations chain", 3, "P:0.2", "V", "`command.ts` (no superior for IG; downward-only rule); Test A; `e2e/command.spec.ts`", { roles: "IG, DIG Operations" }),
@@ -147,17 +153,51 @@ export const CRITERIA: Criterion[] = [
   c("C-17", CMD, "Access for appointment holders without an application role (Inspector, Sergeant, Constable, Area Commander)", 2, "N", "V", "governed policy (platform console, reason, production reference, audit), explicit office types (Sergeant, Constable), Users & access listing, scoped support; `appointment-access` 6/6; browser (DEC-076, owner direction 27 Nov 2026)", { validate: true }),
   c("C-18", CMD, "Institutional validation of the command structure, channels, conflict referral and office-to-role mappings (DEC-075 sign-off)", 3, "B", "B", "advisory review and sign-off sheet: `docs/command-architecture/DEC-075_VALIDATION_REVIEW.md`; Area Commander mapping withdrawn (migration 015)", { blocker: "Signatures of authorised Service officers (DEC-075 §6)" }),
 
+  // ── Kamfinsa Mobile Unit structure and field command (institutional compliance directive, 28 Nov 2026) ──
+  // Baseline N: these requirements were introduced by the directive; the institutional facts themselves are confirmed.
+  c("K-01", KMU, "Five established Companies (HQ, A, B, C, D) under Kamfinsa Mobile Unit, recorded as established", 3, "N", "V", "seed step 016; `kmu-structure` test; organisation directory and unit page (record basis); browser"),
+  c("K-02", KMU, "Six established Detachments under their stated Companies with duty stations (HQ 5 Kitwe, B4 Sikanze, A2 Kabwe, A4 Mansa, D3 Mufulira, D4 Choma)", 3, "N", "V", "migration 016 (`duty_station`); seed step 016; `kmu-structure` test; route audit"),
+  c("K-03", KMU, "Provincial Divisions and named formations recorded as established coverage, not provisional", 2, "N", "V", "seed step 016; `kmu-structure` test"),
+  c("K-04", KMU, "Company Commander, Deputy Company Commander and Detachment Commander offices; Detachment → Company Commander (primary) and Deputy (parallel); Company Commander → Staff II → Staff I → Divisional Commander, Mobile Unit (route stated by the stakeholders, #2)", 3, "N", "V", "office types in `command.ts`; seed steps 016 and 018; `kmu-structure` test (routing, downward-only instructions, cross-company refusal)", { validate: true }),
+  c("K-05", KMU, "Deputy Company Commander assumes duties only through a dated acting appointment with recorded authority and actions", 2, "N", "V", "acting appointments (DEC-077); `kmu-structure` test"),
+  c("K-06", KMU, "Platoon Commander workspace: direct responsibility for the officers on the ground (field chain, personnel, availability, instructions, reports)", 3, "N", "V", "`field-command.ts` `platoonWorkspace`; `/app/command/platoon`; `field-command` test; browser; route audit"),
+  c("K-07", KMU, "Daily platoon attendance register: one status per officer, complete, correctable 7 days, delegable to an acting holder, audited", 2, "N", "V", "migration 017; `recordMuster`; `field-command` test; browser"),
+  c("K-08", KMU, "Area Commander workspace distinct from the Platoon Commander: platoon attendance as counts only, both reporting channels, reports awaiting the office", 3, "N", "V", "`areaWorkspace`; `/app/command/area`; `field-command` test; security probes; browser"),
+  c("K-09", KMU, "Partner-organisation engagement register for Area Commanders (metadata only, no content field)", 2, "N", "V", "migration 017; `recordEngagement`; `field-command` test (no content column, excluded terms refused); browser"),
+  c("K-10", KMU, "Company / Detachment Commander workspace: units, duty stations, commanders, strength, reports addressed to the office", 2, "N", "V", "`companyWorkspace`; `/app/command/company`; `field-command` test; browser"),
+  c("K-11", KMU, "Accountability record for each instruction (§13.4): originating officer, issuing authority, responsible officer, parent unit, acknowledgement, progress, completion, escalation history, audit", 2, "N", "V", "`directiveAccountability`; directive page; `command-accountability` test"),
+  c("K-12", KMU, "Field command security: office-based access, neutral 404 for foreign offices, no individual records to the Area Commander", 3, "N", "V", "6 security probes (43/43); `field-command` test"),
+  c("K-13", KMU, "Complete Kamfinsa Mobile Unit Detachment and Platoon establishment", 2, "B", "B", "only the six Detachments stated in the directive are recorded as established", { blocker: "Full detachment list from the Service (Project Manager issue)" }),
+
+  // ── Executive portfolios (final master directive, 28 Nov 2026, Parts B–E; DEC-086 … DEC-088) ──
+  c("P-01", PORT, "IG is the highest office; DIG Operations, DIG Administration and DIG Special Duties / State House report directly to the IG and never instruct the IG or one another", 3, "N", "V", "`portfolios` test; `command` Test A"),
+  c("P-02", PORT, "Executive appointments for DIG Administration and DIG Special Duties without a new application role (own office only)", 2, "N", "V", "`EXECUTIVE_APPOINTMENT_TYPES`; `portfolios`, `command-negative` tests", { validate: true }),
+  c("P-03", PORT, "Differentiated executive dashboards for the IG, DIG Operations, DIG Administration and DIG Special Duties", 3, "N", "V", "`portfolio.ts`, `portfolio-panel.tsx`; smoke check; e2e `portfolios`"),
+  c("P-04", PORT, "Training needs assessment: units submit, DIG Administration decides", 2, "N", "V", "`training.ts`; `/app/training`; `portfolios` test"),
+  c("P-05", PORT, "Training institutions and course catalogue (eligibility, certification, renewal)", 2, "N", "V", "migration 018; `portfolios` test"),
+  c("P-06", PORT, "Training sessions: plan, capacity, calendar, delivery status", 2, "N", "V", "`createSession`, `setSessionStatus`; `portfolios` test"),
+  c("P-07", PORT, "Nomination, recommendation by a different officer, approval within capacity, rejection and withdrawal with reasons", 3, "N", "V", "`portfolios` test; e2e `portfolios` journey 5"),
+  c("P-08", PORT, "Attendance, results, certificates and renewal dates recorded by the delivering unit", 2, "N", "V", "`recordAttendance`, `recordResult`; `portfolios` test"),
+  c("P-09", PORT, "Training oversight by Division / formation (counts), capacity utilisation, renewals due", 2, "N", "V", "`trainingOverview`; `portfolios` test"),
+  c("P-10", PORT, "SPOM / Mobile Unit training delivery coordinated with DIG Administration without administrative subordination", 2, "N", "V", "delivering-unit authority; coordination TRAINING_SUPPORT; `portfolios` test", { validate: true }),
+  c("P-11", PORT, "Public-order administrative register (authority, unit, dates, personnel count, progress, resources, outcome, post-event review)", 3, "N", "V", "`ops-admin.ts`; `/app/operations`; `portfolios` test"),
+  c("P-12", PORT, "Illegal-mining enforcement administrative register with coordinating unit", 3, "N", "V", "`ops-admin.ts`; `portfolios` test; e2e journey 3"),
+  c("P-13", PORT, "Mining security services: partners, agreements on duty areas, officers required vs assigned, service reports", 3, "N", "V", "`ops-admin.ts`; `/app/operations/security-services`; `portfolios` test"),
+  c("P-14", PORT, "DIG Operations ↔ DIG Special Duties coordination: restricted recipients, receiver acts, protection and movement terms refused", 3, "N", "V", "`coordination.ts`; `portfolios` test; e2e journey 4"),
+  c("P-15", PORT, "DIG Administration access to individual personnel and Operations records", 2, "B", "B", "restricted; aggregate workforce counts only", { blocker: "Service decision H-3 (issue #6)" }),
+
   // ── Cross-cutting ──
   c("X-01", XC, "Server-side authorisation and scope in every domain function; route audit with 0 server errors", 3, "V", "V", "route audit"),
   c("X-02", XC, "CSP with per-request nonce, secure headers, CSRF via server actions, injection-safe SQL", 3, "V", "V", "`csp` tests; security probes"),
   c("X-03", XC, "Accessibility WCAG 2.2 AA automated rules on every role's dashboard, Help and v0.9/v0.10 pages", 2, "V", "V", "`e2e/accessibility*.spec.ts`"),
-  c("X-04", XC, "Manual accessibility audit with assistive technology", 1, "N", "N", "not performed"),
+  c("X-04", XC, "Manual accessibility audit with assistive technology", 1, "N", "N", "not performed; plan and record sheet prepared (`docs/evidence/ASSISTIVE_TECHNOLOGY_AUDIT_PLAN.md`, issue #15)"),
   c("X-05", XC, "Reflow 320–1024 px for every page in every role's navigation", 2, "V", "V", "`e2e/reflow.spec.ts`"),
   c("X-06", XC, "Load baseline on the production build within provisional budgets", 2, "V", "V", "`npm run test:load`"),
   c("X-07", XC, "CI: type check, lint, tests on MariaDB, dependency audit, build", 2, "P:1:0.5", "V", "observed on GitHub 28 Nov 2026: runs #1-#7 all succeeded; run #7 (v0.11.0) passed type check, lint, tests on MariaDB 10.4, dependency audit and build; checkout action moved to v5 (Node.js 20 deprecation warning)"),
   c("X-08", XC, "Independent penetration test and DPIA", 3, "B", "B", "", { blocker: "Assessor and production-configured environment (X03)" }),
   c("X-09", XC, "Liaison updates refuse a lost concurrent update (no orphan history)", 2, "P:0.8:0.8", "V", "baseline: version condition present but row count not checked; fixed 27 Nov (`guarded`), `liaison` › concurrency test"),
   c("X-10", XC, "Institutional approval and deployment authorisation", 3, "B", "B", "`INSTITUTIONAL_APPROVAL_STATUS.md`", { blocker: "Service decision (X06)" }),
+  c("X-11", XC, "Negative command and permission tests: DIG Administration has no route into Operations records (H-3 pending), recipients cannot be chosen or hijacked, a junior office cannot decide a conflict, expired acting authority stops at once", 3, "N", "V", "`command-negative` test (issues #5, #6)"),
 ];
 
 /** Roles in the command chain that the directive gives command pages (Part 8). */

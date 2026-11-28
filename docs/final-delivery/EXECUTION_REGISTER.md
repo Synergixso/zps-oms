@@ -62,6 +62,23 @@ Live task register (directive §15). Statuses: Not Started · In Progress · Par
 | W13 | 13 | CI | GitHub Actions observed (runs #1–#7 successful); checkout action moved to v5 | Completed and Verified | GitHub Actions run #7 | KNOWN_ISSUES 11 |
 | X08 | — | Command | Validation of the command structure, channels, precedence and mappings; decision on appointment-only access | Blocked by External Dependency | — | DEC-075, DEC-076 |
 
+## v0.13.0 — Institutional compliance directive (28 Nov 2026): Kamfinsa Mobile Unit structure and field command
+
+Plan: `docs/MASTER_DEVELOPMENT_PLAN.md`. Project Manager actions: GitHub issues #1–#16, master tracking issue [#17](https://github.com/Synergixso/zps-oms/issues/17).
+
+| ID | Phase | Area | Requirement | Status | Test result | Evidence |
+|---|---|---|---|---|---|---|
+| K1 | 1 | Audit | Skills verified (mattpocock-skills 1.3.1); repository audit against the directive; master plan committed | Completed and Verified | — | `MASTER_DEVELOPMENT_PLAN.md` (commit ea6e11e) |
+| K2 | 2 | Organisation | Established KMU Companies and Detachments with duty stations; established coverage labels (K-01 … K-03) | RESULT_K | `kmu-structure` 8/8 | DEC-078; migration 016; seed step 016 |
+| K3 | 2 | Command | Company, Deputy Company and Detachment Commander offices and relationships; Deputy acting (K-04, K-05) | RESULT_K | `kmu-structure` 8/8 | DEC-079 |
+| K4 | 3 | Command | Accountability record for each instruction (§13.4) (K-11) | RESULT_K | `command-accountability` 2/2 | `directiveAccountability` |
+| K5 | 4 | Field command | Platoon Commander workspace and attendance register (K-06, K-07) | RESULT_K | `field-command` 7/7; Playwright `field-command` 4/4; browser | DEC-080; migration 017 |
+| K6 | 4 | Field command | Area Commander workspace and engagement register; Company / Detachment workspace (K-08 … K-10) | RESULT_K | `field-command` 7/7; Playwright; browser | DEC-080 |
+| K7 | 6 | Security | Field command probes; office-based access; neutral 404 (K-12) | RESULT_K | security probes 43/43 (development) | `scripts/security-probe.mjs` §4c |
+| K8 | 7 | QA | Full regression | RESULT_K | RESULT_FULL | `CHANGELOG.md` [0.13.0] |
+| K9 | 8 | Pilot | Pilot readiness assessment | Completed | — | `PILOT_READINESS.md` |
+| K10 | 2 | Organisation | Complete KMU detachment and platoon establishment (K-13) | Blocked by External Dependency | — | Project Manager issue |
+
 ## External dependencies
 
 | ID | Stage | Module / role | Requirement | Dependency | Status | Test result | Evidence | Blocker |

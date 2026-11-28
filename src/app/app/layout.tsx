@@ -24,12 +24,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // still filtered by permission here and re-checked by each page and domain function.
   const env = await environmentNotice(getDb());
   const ws = workspaceFor(actor);
-  const allowed = (i: NavItem) => i.any.length === 0 || i.any.some((p) => hasPermission(actor, p));
   const source = ws ? ws.nav.map((g) => ({ label: g.label, items: g.items.map((h) => (NAV_ITEMS[h] ? { ...NAV_ITEMS[h], label: ws.labels?.[h] ?? NAV_ITEMS[h].label } : undefined)).filter((i): i is NavItem => Boolean(i)) })) : NAV;
   // Command and reporting follows appointments to offices, not roles: the section appears only for office holders.
-  const holdsOffice = (await officesHeld(getDb(), actor)).length > 0;
+  const held = await officesHeld(getDb(), actor);
+  const holdsOffice = held.length > 0;
+  const heldTypes = new Set(held.map((h) => h.positionType));
+  const allowed = (i: NavItem) => ((i.any.length === 0 || i.any.some((p) => hasPermission(actor, p))) && (!i.officeTypes || i.officeTypes.some((t) => heldTypes.has(t))))
+    || Boolean(i.alsoOffices?.some((t) => heldTypes.has(t)));
   const commandGroup = NAV.find((g) => g.label === "Command and reporting")!;
-  const withCommand = [...source.filter((g) => g.label !== "Command and reporting"), ...(holdsOffice ? [commandGroup] : [])];
+  const portfolioGroup = NAV.find((g) => g.label === "Portfolios")!;
+  const withCommand = [...source.filter((g) => g.label !== "Command and reporting" && g.label !== "Portfolios"), portfolioGroup, ...(holdsOffice ? [commandGroup] : [])];
   const groups = withCommand.map((g) => ({ ...g, items: g.items.filter(allowed) })).filter((g) => g.items.length);
   const role = primaryRole(actor);
   const pa = primaryAssignment(actor);

@@ -8,6 +8,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import mysql from "mysql2/promise";
 import { DEV_PASSWORD, e2eDatabaseUrl } from "./env";
+import { settle, watch } from "./settle";
 
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 type Finding = { page: string; who: string; id: string; impact: string; help: string; nodes: number; target: string };
@@ -15,7 +16,7 @@ const findings: Finding[] = [];
 let scanned = 0;
 
 async function scan(page: Page, label: string, who: string) {
-  await page.waitForLoadState("networkidle");
+  await settle(page);
   // The Next.js development badge is not part of the application.
   const r = await new AxeBuilder({ page }).withTags(TAGS).exclude("nextjs-portal").analyze();
   scanned++;
@@ -25,7 +26,7 @@ async function scan(page: Page, label: string, who: string) {
 async function login(page: Page, username: string) {
   await page.context().clearCookies();
   await page.goto("/login");
-  await page.waitForLoadState("networkidle");
+  await settle(page);
   await page.getByPlaceholder("Username").fill(username);
   await page.getByPlaceholder("Password").fill(DEV_PASSWORD);
   await page.getByRole("button", { name: "Sign In to ZPS-OMS" }).click();
@@ -66,3 +67,5 @@ test("WCAG 2.2 AA: public pages, sign-in, and every role's dashboard and Help pa
   fs.writeFileSync("docs/evidence/accessibility.md", md.join("\n") + "\n");
   expect(findings, JSON.stringify([...byRule.keys()])).toEqual([]);
 });
+
+test.beforeEach(({ page }) => watch(page));

@@ -17,11 +17,11 @@ Application stage: **production candidate** for the previously approved scope. I
 
 | Measure (baseline) | Value |
 |---|---|
-| Implementation percentage (all approved criteria, weighted) | **64.0 %** |
-| Verification percentage (all approved criteria, weighted) | **63.1 %** |
-| Implementation of work that can be done without external dependencies | 71.7 % |
-| Criteria: total · implemented and tested · implemented not tested · partial · not developed · blocked | 90 · 54 · 0 · 6 · 20 · 10 |
-| Modules (of 17): fully implemented · partially · not developed | 12 · 5 · 0 |
+| Implementation percentage (all approved criteria, weighted) | **47.6 %** |
+| Verification percentage (all approved criteria, weighted) | **47.0 %** |
+| Implementation of work that can be done without external dependencies | 52.5 % |
+| Criteria: total · implemented and tested · implemented not tested · partial · not developed · blocked | 123 · 54 · 0 · 6 · 51 · 12 |
+| Modules (of 17): fully implemented · partially · not developed | 8 · 9 · 0 |
 | Role dashboards implemented (of 31) | 31 |
 | Role back offices fully implemented and verified (of 31), including command pages where required | 16 |
 
@@ -29,10 +29,10 @@ Application stage: **production candidate** for the previously approved scope. I
 
 | Measure (current) | Value |
 |---|---|
-| Implementation percentage (all approved criteria, weighted) | **88.8 %** |
-| Verification percentage (all approved criteria, weighted) | **88.4 %** |
-| Implementation of work that can be done without external dependencies | 99.5 % |
-| Criteria: total · implemented and tested · implemented not tested · partial · not developed · blocked | 90 · 78 · 0 · 1 · 1 · 10 |
+| Implementation percentage (all approved criteria, weighted) | **90.4 %** |
+| Verification percentage (all approved criteria, weighted) | **90.1 %** |
+| Implementation of work that can be done without external dependencies | 99.6 % |
+| Criteria: total · implemented and tested · implemented not tested · partial · not developed · blocked | 123 · 109 · 0 · 1 · 1 · 12 |
 | Modules (of 17): fully implemented · partially · not developed | 17 · 0 · 0 |
 | Role dashboards implemented (of 31) | 31 |
 | Role back offices fully implemented and verified (of 31), including command pages where required | 31 |
@@ -43,9 +43,9 @@ How the percentages are calculated: every approved requirement is broken into ac
 
 | No. | Module | Status | Criteria | Implemented and tested | Partial | Not developed | Blocked | Implementation | Verification | Remaining |
 |--:|---|---|--:|--:|--:|--:|--:|--:|--:|--:|
-| 01 | National Organisation and Multi-Tenant Management | Fully implemented (external items blocked) | 5 | 4 | 0 | 0 | 1 | 76.9 % | 76.9 % | 23.1 % |
+| 01 | National Organisation and Multi-Tenant Management | Partially implemented | 6 | 4 | 0 | 1 | 1 | 66.7 % | 66.7 % | 33.3 % |
 | 02 | User, Roles and Access Management | Partially implemented | 9 | 7 | 1 | 0 | 1 | 79.6 % | 79.6 % | 20.4 % |
-| 03 | Central Personnel Registry | Fully implemented (external items blocked) | 5 | 4 | 0 | 0 | 1 | 83.3 % | 83.3 % | 16.7 % |
+| 03 | Central Personnel Registry | Partially implemented | 6 | 4 | 0 | 1 | 1 | 71.4 % | 71.4 % | 28.6 % |
 | 04 | Manpower Request and Contribution Management | Fully implemented | 4 | 4 | 0 | 0 | 0 | 100.0 % | 100.0 % | 0.0 % |
 | 05 | Personnel Roster Builder | Fully implemented | 5 | 4 | 1 | 0 | 0 | 100.0 % | 90.9 % | 0.0 % |
 | 06 | Operational Area Administration | Fully implemented | 2 | 2 | 0 | 0 | 0 | 100.0 % | 100.0 % | 0.0 % |
@@ -57,19 +57,21 @@ How the percentages are calculated: every approved requirement is broken into ac
 | 12 | Management Dashboards and Reporting | Partially implemented | 3 | 2 | 0 | 1 | 0 | 66.7 % | 66.7 % | 33.3 % |
 | 13 | Notifications, Tasks and Reminders | Partially implemented | 2 | 1 | 0 | 1 | 0 | 60.0 % | 60.0 % | 40.0 % |
 | 14 | Audit and Compliance Management | Fully implemented (external items blocked) | 4 | 3 | 0 | 0 | 1 | 80.0 % | 80.0 % | 20.0 % |
-| 15 | Platform Administration and System Monitoring | Fully implemented (external items blocked) | 3 | 2 | 0 | 0 | 1 | 66.7 % | 66.7 % | 33.3 % |
+| 15 | Platform Administration and System Monitoring | Partially implemented | 4 | 2 | 0 | 1 | 1 | 54.5 % | 54.5 % | 45.5 % |
 | 16 | Administrative Scheduling and Availability | Partially implemented | 2 | 1 | 1 | 0 | 0 | 80.0 % | 80.0 % | 20.0 % |
-| 17 | Administrative Correspondence Management | Fully implemented (external items blocked) | 3 | 2 | 0 | 0 | 1 | 71.4 % | 71.4 % | 28.6 % |
+| 17 | Administrative Correspondence Management | Partially implemented | 4 | 2 | 0 | 1 | 1 | 55.6 % | 55.6 % | 44.4 % |
 | — | Command and Reporting (new direction) | Partially implemented | 18 | 0 | 1 | 16 | 1 | 1.2 % | 1.2 % | 98.8 % |
-| — | Cross-cutting: security, quality, operations | Partially implemented | 10 | 5 | 2 | 1 | 2 | 67.8 % | 63.5 % | 32.2 % |
+| — | Kamfinsa Mobile Unit structure and field command (directive 28 Nov 2026) | Not developed | 13 | 0 | 0 | 12 | 1 | 0.0 % | 0.0 % | 100.0 % |
+| — | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | Not developed | 15 | 0 | 0 | 14 | 1 | 0.0 % | 0.0 % | 100.0 % |
+| — | Cross-cutting: security, quality, operations | Partially implemented | 11 | 5 | 2 | 2 | 2 | 60.0 % | 56.2 % | 40.0 % |
 
 ## 3. Module-by-module status — current
 
 | No. | Module | Status | Criteria | Implemented and tested | Partial | Not developed | Blocked | Implementation | Verification | Remaining |
 |--:|---|---|--:|--:|--:|--:|--:|--:|--:|--:|
-| 01 | National Organisation and Multi-Tenant Management | Fully implemented (external items blocked) | 5 | 4 | 0 | 0 | 1 | 76.9 % | 76.9 % | 23.1 % |
+| 01 | National Organisation and Multi-Tenant Management | Fully implemented (external items blocked) | 6 | 5 | 0 | 0 | 1 | 80.0 % | 80.0 % | 20.0 % |
 | 02 | User, Roles and Access Management | Fully implemented (external items blocked) | 9 | 8 | 0 | 0 | 1 | 88.0 % | 88.0 % | 12.0 % |
-| 03 | Central Personnel Registry | Fully implemented (external items blocked) | 5 | 4 | 0 | 0 | 1 | 83.3 % | 83.3 % | 16.7 % |
+| 03 | Central Personnel Registry | Fully implemented (external items blocked) | 6 | 5 | 0 | 0 | 1 | 85.7 % | 85.7 % | 14.3 % |
 | 04 | Manpower Request and Contribution Management | Fully implemented | 4 | 4 | 0 | 0 | 0 | 100.0 % | 100.0 % | 0.0 % |
 | 05 | Personnel Roster Builder | Fully implemented | 5 | 4 | 1 | 0 | 0 | 100.0 % | 90.9 % | 0.0 % |
 | 06 | Operational Area Administration | Fully implemented | 2 | 2 | 0 | 0 | 0 | 100.0 % | 100.0 % | 0.0 % |
@@ -81,11 +83,13 @@ How the percentages are calculated: every approved requirement is broken into ac
 | 12 | Management Dashboards and Reporting | Fully implemented | 3 | 3 | 0 | 0 | 0 | 100.0 % | 100.0 % | 0.0 % |
 | 13 | Notifications, Tasks and Reminders | Fully implemented | 2 | 2 | 0 | 0 | 0 | 100.0 % | 100.0 % | 0.0 % |
 | 14 | Audit and Compliance Management | Fully implemented (external items blocked) | 4 | 3 | 0 | 0 | 1 | 80.0 % | 80.0 % | 20.0 % |
-| 15 | Platform Administration and System Monitoring | Fully implemented (external items blocked) | 3 | 2 | 0 | 0 | 1 | 66.7 % | 66.7 % | 33.3 % |
+| 15 | Platform Administration and System Monitoring | Fully implemented (external items blocked) | 4 | 3 | 0 | 0 | 1 | 72.7 % | 72.7 % | 27.3 % |
 | 16 | Administrative Scheduling and Availability | Fully implemented | 2 | 2 | 0 | 0 | 0 | 100.0 % | 100.0 % | 0.0 % |
-| 17 | Administrative Correspondence Management | Fully implemented (external items blocked) | 3 | 2 | 0 | 0 | 1 | 71.4 % | 71.4 % | 28.6 % |
+| 17 | Administrative Correspondence Management | Fully implemented (external items blocked) | 4 | 3 | 0 | 0 | 1 | 77.8 % | 77.8 % | 22.2 % |
 | — | Command and Reporting (new direction) | Fully implemented (external items blocked) | 18 | 17 | 0 | 0 | 1 | 94.0 % | 94.0 % | 6.0 % |
-| — | Cross-cutting: security, quality, operations | Partially implemented | 10 | 7 | 0 | 1 | 2 | 69.6 % | 69.6 % | 30.4 % |
+| — | Kamfinsa Mobile Unit structure and field command (directive 28 Nov 2026) | Fully implemented (external items blocked) | 13 | 12 | 0 | 0 | 1 | 93.8 % | 93.8 % | 6.3 % |
+| — | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | Fully implemented (external items blocked) | 15 | 14 | 0 | 0 | 1 | 94.6 % | 94.6 % | 5.4 % |
+| — | Cross-cutting: security, quality, operations | Partially implemented | 11 | 8 | 0 | 1 | 2 | 73.1 % | 73.1 % | 26.9 % |
 
 ## 4. Acceptance criteria (every criterion, baseline → current)
 
@@ -96,6 +100,7 @@ How the percentages are calculated: every approved requirement is broken into ac
 | M01-3 | National Organisation and Multi-Tenant Management | Effective-dated structure changes with approval and automation | 2 | Implemented and tested | Implemented and tested | `org.effective-changes` job; `automation-platform` |
 | M01-4 | National Organisation and Multi-Tenant Management | Organisation directory and unit pages | 2 | Implemented and tested | Implemented and tested | `/app/org`; route audit |
 | M01-5 | National Organisation and Multi-Tenant Management | Authoritative national establishment loaded (all Districts, Stations, Posts) | 3 | Blocked by external dependency | Blocked by external dependency | synthetic establishment only (3 Districts, 4 Stations, 2 Posts) · **Blocked:** Signed establishment from the Service (DEC-004) |
+| M01-6 | National Organisation and Multi-Tenant Management | Controlled establishment import: CSV validated in full, each unit a WF-03 proposal approved by a different officer, duty station and record basis, audited with file fingerprint | 2 | Not developed | Implemented and tested | `data-import.ts`; `/app/import`; `data-import` test; e2e; security probe (issue #8) |
 | M02-1 | User, Roles and Access Management | Individual accounts, provisioning, suspension, deactivation; no self-registration | 3 | Implemented and tested | Implemented and tested | `iam.ts`; `auth-scope` |
 | M02-2 | User, Roles and Access Management | Exactly 31 roles in four levels; obsolete roles retired safely with reassignment flags *(requires institutional validation)* | 3 | Implemented and tested | Implemented and tested | `three-tier-roles`, `role-migration` |
 | M02-3 | User, Roles and Access Management | Role + organisational scope + validity; deny by default; NATIONAL only at HQ | 3 | Implemented and tested | Implemented and tested | `policy.ts`; `auth-scope`; route audit |
@@ -110,6 +115,7 @@ How the percentages are calculated: every approved requirement is broken into ac
 | M03-3 | Central Personnel Registry | Search, filter, sort, paging; export (audited) | 2 | Implemented and tested | Implemented and tested | `paging`; route audit |
 | M03-4 | Central Personnel Registry | Disposition history | 2 | Implemented and tested | Implemented and tested | criterion F |
 | M03-5 | Central Personnel Registry | Production service-number format | 2 | Blocked by external dependency | Blocked by external dependency | format refused until configured · **Blocked:** Service identifier formats (DEC-069, X05) |
+| M03-6 | Central Personnel Registry | Controlled personnel import: all-or-nothing, registry rules and scope per row, synthetic-only outside production, at most 500 rows, audited with file fingerprint; production records not flagged synthetic | 2 | Not developed | Implemented and tested | `data-import.ts`; `registerPersonnel` synthetic flag fixed; `data-import` test; e2e (issue #8) |
 | M04-1 | Manpower Request and Contribution Management | Request lifecycle: create, submit, review, recommend, approve, return, close | 3 | Implemented and tested | Implemented and tested | `manpower` tests; roster journey |
 | M04-2 | Manpower Request and Contribution Management | Contribution requirements routed to units; contributions validated, returned, resubmitted | 3 | Implemented and tested | Implemented and tested | `manpower` |
 | M04-3 | Manpower Request and Contribution Management | Contribution reminders (automation) | 2 | Implemented and tested | Implemented and tested | `manpower.contribution-reminders` |
@@ -118,7 +124,7 @@ How the percentages are calculated: every approved requirement is broken into ac
 | M05-2 | Personnel Roster Builder | Duplicate, membership, eligibility and conflicting-assignment checks | 3 | Implemented and tested | Implemented and tested | criteria C–E |
 | M05-3 | Personnel Roster Builder | Versions, approval, finalisation | 2 | Implemented and tested | Implemented and tested | `manpower` |
 | M05-4 | Personnel Roster Builder | Print (A4), PDF, CSV, .xlsx (audited) | 2 | Implemented and tested | Implemented and tested | `extensions`, `xlsx`; A4 print test |
-| M05-5 | Personnel Roster Builder | .xlsx opened in licensed Microsoft Excel | 1 | Partially implemented (100 %, 0 % verified) | Partially implemented (100 %, 0 % verified) | file generated and parsed by tests; not opened in Excel (no licence in this environment) |
+| M05-5 | Personnel Roster Builder | .xlsx opened in licensed Microsoft Excel | 1 | Partially implemented (100 %, 0 % verified) | Partially implemented (100 %, 0 % verified) | file generated and parsed by tests, including integrity checks (formula-like text kept as text, column widths, frozen header, schema order, Unicode, sheet-name limit); not opened in licensed Excel (issue #14) |
 | M06-1 | Operational Area Administration | Administrative duty-area directory (no locations) | 3 | Implemented and tested | Implemented and tested | `/app/areas`; `personnel-assignments` |
 | M06-2 | Operational Area Administration | Create, edit, close areas; scoped | 2 | Implemented and tested | Implemented and tested | route audit |
 | M07-1 | Field Assignment and Disposition Management | Assignment proposal → decision chain → commencement | 3 | Implemented and tested | Implemented and tested | criterion F; assignment journey |
@@ -148,11 +154,13 @@ How the percentages are calculated: every approved requirement is broken into ac
 | M15-1 | Platform Administration and System Monitoring | Health, settings, jobs console, backups with tamper detection, restore drills | 3 | Implemented and tested | Implemented and tested | `automation-platform` |
 | M15-2 | Platform Administration and System Monitoring | Environments, production baseline seed, first-Superadmin setup, release record | 3 | Implemented and tested | Implemented and tested | `release`, `production-setup`, `identifiers` |
 | M15-3 | Platform Administration and System Monitoring | Production hosting, TLS, least-privilege DB account, monitoring | 3 | Blocked by external dependency | Blocked by external dependency | `DEPLOYMENT_READINESS.md` · **Blocked:** Production infrastructure (X01) |
+| M15-5 | Platform Administration and System Monitoring | Deployment configuration check (database account, Secure cookies, production build, setup token, identifier formats, scanner, backups) without exposing secrets; runbook with TLS requirements and rollback | 2 | Not developed | Implemented and tested | `config-check.ts`; `npm run check:config`; logged at start-up; `config-check` test; DEPLOYMENT_GUIDE runbook (issue #11) |
 | M16-1 | Administrative Scheduling and Availability | Non-sensitive administrative events; derived dates; tasks; reminders | 3 | Implemented and tested | Implemented and tested | `scheduling-correspondence`; admin-records journey |
 | M16-2 | Administrative Scheduling and Availability | Personnel availability shown in scheduling (derived from disposition) | 2 | Partially implemented (50 %) | Implemented and tested | baseline: disposition status in the registry only; now the calendar shows current availability by group, availability changes by day and unit, and approved assignments due to commence, within personnel and assignment scope (v0.12.0); `scheduling-correspondence` test; browser |
 | M17-1 | Administrative Correspondence Management | Register, assign, progress, file; RESTRICTED handling; history | 3 | Implemented and tested | Implemented and tested | `scheduling-correspondence`, `transactions` |
 | M17-2 | Administrative Correspondence Management | PDF documents with structural screening; download sandboxed | 2 | Implemented and tested | Implemented and tested | security probes; `scheduling-correspondence` |
 | M17-3 | Administrative Correspondence Management | Malware scanning before production document storage | 2 | Blocked by external dependency | Blocked by external dependency | **Blocked:** Scanner and information-security decision (DEC-068, X04) |
+| M17-4 | Administrative Correspondence Management | Malware scanner interface (ClamAV INSTREAM, free) and fail-closed production policy: uploads refused while no scanner is configured; infected or unscannable files refused and audited | 2 | Not developed | Implemented and tested | `malware-scan.ts`; wired into correspondence uploads; `malware-scan` test with the EICAR test string (issue #12) |
 | C-01 | Command and Reporting (new direction) | IG represented as the highest command authority; DIG Operations reports to the IG; other DIG offices subordinate and outside the Operations chain | 3 | Partially implemented (20 %) | Implemented and tested | `command.ts` (no superior for IG; downward-only rule); Test A; `e2e/command.spec.ts` |
 | C-02 | Command and Reporting (new direction) | Command positions separate from roles; appointments of users to positions with history *(requires institutional validation)* | 3 | Not developed | Implemented and tested | `command_positions`, `position_appointments` (dated, authorised, history); `appoint`; Test I |
 | C-03 | Command and Reporting (new direction) | Configurable reporting relationships (primary command, primary reporting, parallel reporting, administrative coordination) with dates, authorising reference and history *(requires institutional validation)* | 3 | Not developed | Implemented and tested | `reporting_relationships` with four types, dates, channel, authorising reference, end records; structure page |
@@ -171,16 +179,45 @@ How the percentages are calculated: every approved requirement is broken into ac
 | C-16 | Command and Reporting (new direction) | Tests A–J | 3 | Not developed | Implemented and tested | `tests/command.test.ts` 13/13; `e2e/command.spec.ts` 5/5 |
 | C-17 | Command and Reporting (new direction) | Access for appointment holders without an application role (Inspector, Sergeant, Constable, Area Commander) *(requires institutional validation)* | 2 | Not developed | Implemented and tested | governed policy (platform console, reason, production reference, audit), explicit office types (Sergeant, Constable), Users & access listing, scoped support; `appointment-access` 6/6; browser (DEC-076, owner direction 27 Nov 2026) |
 | C-18 | Command and Reporting (new direction) | Institutional validation of the command structure, channels, conflict referral and office-to-role mappings (DEC-075 sign-off) | 3 | Blocked by external dependency | Blocked by external dependency | advisory review and sign-off sheet: `docs/command-architecture/DEC-075_VALIDATION_REVIEW.md`; Area Commander mapping withdrawn (migration 015) · **Blocked:** Signatures of authorised Service officers (DEC-075 §6) |
+| K-01 | Kamfinsa Mobile Unit structure and field command (directive 28 Nov 2026) | Five established Companies (HQ, A, B, C, D) under Kamfinsa Mobile Unit, recorded as established | 3 | Not developed | Implemented and tested | seed step 016; `kmu-structure` test; organisation directory and unit page (record basis); browser |
+| K-02 | Kamfinsa Mobile Unit structure and field command (directive 28 Nov 2026) | Six established Detachments under their stated Companies with duty stations (HQ 5 Kitwe, B4 Sikanze, A2 Kabwe, A4 Mansa, D3 Mufulira, D4 Choma) | 3 | Not developed | Implemented and tested | migration 016 (`duty_station`); seed step 016; `kmu-structure` test; route audit |
+| K-03 | Kamfinsa Mobile Unit structure and field command (directive 28 Nov 2026) | Provincial Divisions and named formations recorded as established coverage, not provisional | 2 | Not developed | Implemented and tested | seed step 016; `kmu-structure` test |
+| K-04 | Kamfinsa Mobile Unit structure and field command (directive 28 Nov 2026) | Company Commander, Deputy Company Commander and Detachment Commander offices; Detachment → Company Commander (primary) and Deputy (parallel); Company Commander → Staff II → Staff I → Divisional Commander, Mobile Unit (route stated by the stakeholders, #2) *(requires institutional validation)* | 3 | Not developed | Implemented and tested | office types in `command.ts`; seed steps 016 and 018; `kmu-structure` test (routing, downward-only instructions, cross-company refusal) |
+| K-05 | Kamfinsa Mobile Unit structure and field command (directive 28 Nov 2026) | Deputy Company Commander assumes duties only through a dated acting appointment with recorded authority and actions | 2 | Not developed | Implemented and tested | acting appointments (DEC-077); `kmu-structure` test |
+| K-06 | Kamfinsa Mobile Unit structure and field command (directive 28 Nov 2026) | Platoon Commander workspace: direct responsibility for the officers on the ground (field chain, personnel, availability, instructions, reports) | 3 | Not developed | Implemented and tested | `field-command.ts` `platoonWorkspace`; `/app/command/platoon`; `field-command` test; browser; route audit |
+| K-07 | Kamfinsa Mobile Unit structure and field command (directive 28 Nov 2026) | Daily platoon attendance register: one status per officer, complete, correctable 7 days, delegable to an acting holder, audited | 2 | Not developed | Implemented and tested | migration 017; `recordMuster`; `field-command` test; browser |
+| K-08 | Kamfinsa Mobile Unit structure and field command (directive 28 Nov 2026) | Area Commander workspace distinct from the Platoon Commander: platoon attendance as counts only, both reporting channels, reports awaiting the office | 3 | Not developed | Implemented and tested | `areaWorkspace`; `/app/command/area`; `field-command` test; security probes; browser |
+| K-09 | Kamfinsa Mobile Unit structure and field command (directive 28 Nov 2026) | Partner-organisation engagement register for Area Commanders (metadata only, no content field) | 2 | Not developed | Implemented and tested | migration 017; `recordEngagement`; `field-command` test (no content column, excluded terms refused); browser |
+| K-10 | Kamfinsa Mobile Unit structure and field command (directive 28 Nov 2026) | Company / Detachment Commander workspace: units, duty stations, commanders, strength, reports addressed to the office | 2 | Not developed | Implemented and tested | `companyWorkspace`; `/app/command/company`; `field-command` test; browser |
+| K-11 | Kamfinsa Mobile Unit structure and field command (directive 28 Nov 2026) | Accountability record for each instruction (§13.4): originating officer, issuing authority, responsible officer, parent unit, acknowledgement, progress, completion, escalation history, audit | 2 | Not developed | Implemented and tested | `directiveAccountability`; directive page; `command-accountability` test |
+| K-12 | Kamfinsa Mobile Unit structure and field command (directive 28 Nov 2026) | Field command security: office-based access, neutral 404 for foreign offices, no individual records to the Area Commander | 3 | Not developed | Implemented and tested | 6 security probes (43/43); `field-command` test |
+| K-13 | Kamfinsa Mobile Unit structure and field command (directive 28 Nov 2026) | Complete Kamfinsa Mobile Unit Detachment and Platoon establishment | 2 | Blocked by external dependency | Blocked by external dependency | only the six Detachments stated in the directive are recorded as established · **Blocked:** Full detachment list from the Service (Project Manager issue) |
+| P-01 | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | IG is the highest office; DIG Operations, DIG Administration and DIG Special Duties / State House report directly to the IG and never instruct the IG or one another | 3 | Not developed | Implemented and tested | `portfolios` test; `command` Test A |
+| P-02 | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | Executive appointments for DIG Administration and DIG Special Duties without a new application role (own office only) *(requires institutional validation)* | 2 | Not developed | Implemented and tested | `EXECUTIVE_APPOINTMENT_TYPES`; `portfolios`, `command-negative` tests |
+| P-03 | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | Differentiated executive dashboards for the IG, DIG Operations, DIG Administration and DIG Special Duties | 3 | Not developed | Implemented and tested | `portfolio.ts`, `portfolio-panel.tsx`; smoke check; e2e `portfolios` |
+| P-04 | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | Training needs assessment: units submit, DIG Administration decides | 2 | Not developed | Implemented and tested | `training.ts`; `/app/training`; `portfolios` test |
+| P-05 | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | Training institutions and course catalogue (eligibility, certification, renewal) | 2 | Not developed | Implemented and tested | migration 018; `portfolios` test |
+| P-06 | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | Training sessions: plan, capacity, calendar, delivery status | 2 | Not developed | Implemented and tested | `createSession`, `setSessionStatus`; `portfolios` test |
+| P-07 | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | Nomination, recommendation by a different officer, approval within capacity, rejection and withdrawal with reasons | 3 | Not developed | Implemented and tested | `portfolios` test; e2e `portfolios` journey 5 |
+| P-08 | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | Attendance, results, certificates and renewal dates recorded by the delivering unit | 2 | Not developed | Implemented and tested | `recordAttendance`, `recordResult`; `portfolios` test |
+| P-09 | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | Training oversight by Division / formation (counts), capacity utilisation, renewals due | 2 | Not developed | Implemented and tested | `trainingOverview`; `portfolios` test |
+| P-10 | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | SPOM / Mobile Unit training delivery coordinated with DIG Administration without administrative subordination *(requires institutional validation)* | 2 | Not developed | Implemented and tested | delivering-unit authority; coordination TRAINING_SUPPORT; `portfolios` test |
+| P-11 | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | Public-order administrative register (authority, unit, dates, personnel count, progress, resources, outcome, post-event review) | 3 | Not developed | Implemented and tested | `ops-admin.ts`; `/app/operations`; `portfolios` test |
+| P-12 | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | Illegal-mining enforcement administrative register with coordinating unit | 3 | Not developed | Implemented and tested | `ops-admin.ts`; `portfolios` test; e2e journey 3 |
+| P-13 | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | Mining security services: partners, agreements on duty areas, officers required vs assigned, service reports | 3 | Not developed | Implemented and tested | `ops-admin.ts`; `/app/operations/security-services`; `portfolios` test |
+| P-14 | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | DIG Operations ↔ DIG Special Duties coordination: restricted recipients, receiver acts, protection and movement terms refused | 3 | Not developed | Implemented and tested | `coordination.ts`; `portfolios` test; e2e journey 4 |
+| P-15 | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | DIG Administration access to individual personnel and Operations records | 2 | Blocked by external dependency | Blocked by external dependency | restricted; aggregate workforce counts only · **Blocked:** Service decision H-3 (issue #6) |
 | X-01 | Cross-cutting: security, quality, operations | Server-side authorisation and scope in every domain function; route audit with 0 server errors | 3 | Implemented and tested | Implemented and tested | route audit |
 | X-02 | Cross-cutting: security, quality, operations | CSP with per-request nonce, secure headers, CSRF via server actions, injection-safe SQL | 3 | Implemented and tested | Implemented and tested | `csp` tests; security probes |
 | X-03 | Cross-cutting: security, quality, operations | Accessibility WCAG 2.2 AA automated rules on every role's dashboard, Help and v0.9/v0.10 pages | 2 | Implemented and tested | Implemented and tested | `e2e/accessibility*.spec.ts` |
-| X-04 | Cross-cutting: security, quality, operations | Manual accessibility audit with assistive technology | 1 | Not developed | Not developed | not performed |
+| X-04 | Cross-cutting: security, quality, operations | Manual accessibility audit with assistive technology | 1 | Not developed | Not developed | not performed; plan and record sheet prepared (`docs/evidence/ASSISTIVE_TECHNOLOGY_AUDIT_PLAN.md`, issue #15) |
 | X-05 | Cross-cutting: security, quality, operations | Reflow 320–1024 px for every page in every role's navigation | 2 | Implemented and tested | Implemented and tested | `e2e/reflow.spec.ts` |
 | X-06 | Cross-cutting: security, quality, operations | Load baseline on the production build within provisional budgets | 2 | Implemented and tested | Implemented and tested | `npm run test:load` |
 | X-07 | Cross-cutting: security, quality, operations | CI: type check, lint, tests on MariaDB, dependency audit, build | 2 | Partially implemented (100 %, 50 % verified) | Implemented and tested | observed on GitHub 28 Nov 2026: runs #1-#7 all succeeded; run #7 (v0.11.0) passed type check, lint, tests on MariaDB 10.4, dependency audit and build; checkout action moved to v5 (Node.js 20 deprecation warning) |
 | X-08 | Cross-cutting: security, quality, operations | Independent penetration test and DPIA | 3 | Blocked by external dependency | Blocked by external dependency | **Blocked:** Assessor and production-configured environment (X03) |
 | X-09 | Cross-cutting: security, quality, operations | Liaison updates refuse a lost concurrent update (no orphan history) | 2 | Partially implemented (80 %) | Implemented and tested | baseline: version condition present but row count not checked; fixed 27 Nov (`guarded`), `liaison` › concurrency test |
 | X-10 | Cross-cutting: security, quality, operations | Institutional approval and deployment authorisation | 3 | Blocked by external dependency | Blocked by external dependency | `INSTITUTIONAL_APPROVAL_STATUS.md` · **Blocked:** Service decision (X06) |
+| X-11 | Cross-cutting: security, quality, operations | Negative command and permission tests: DIG Administration has no route into Operations records (H-3 pending), recipients cannot be chosen or hijacked, a junior office cannot decide a conflict, expired acting authority stops at once | 3 | Not developed | Implemented and tested | `command-negative` test (issues #5, #6) |
 
 ## 5. Role-by-role status (31 roles, individually)
 
@@ -188,21 +225,21 @@ Checks per role (weight): dashboard (3), sidebar (2), figures (2), quick actions
 
 | # | Role | Tier | Scope | Nav entries | Figures | Accounts audited | Rendered / refused / 404 / errors | Baseline impl. · verif. | Current impl. · verif. | Remaining |
 |--:|---|:-:|---|--:|--:|--:|---|---|---|---|
-| 01 | Superadmin | 1 | National Headquarters (platform-wide) | 12 | 6 | 2 | 60 / 110 / 50 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
+| 01 | Superadmin | 1 | National Headquarters (platform-wide) | 13 | 6 | 2 | 60 / 110 / 50 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
 | 02 | Inspector General of Police (IG) | 1 | National Headquarters | 12 | 6 | 2 | 73 / 106 / 41 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
 | 03 | Deputy Inspector General of Police - Operations (DIG Operations) | 1 | Office of the DIG Operations, National Headquarters | 21 | 6 | 1 | 72 / 33 / 5 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
 | 04 | Commissioner – Operations HQ | 1 | Operations Headquarters | 22 | 6 | 2 | 160 / 56 / 4 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
-| 05 | Deputy Commissioner – Operations HQ | 1 | Operations Headquarters | 14 | 6 | 3 | 165 / 111 / 54 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
+| 05 | Deputy Commissioner – Operations HQ | 1 | Operations Headquarters | 16 | 6 | 3 | 165 / 111 / 54 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
 | 06 | System Administrator – HQ Tech | 1 | National Headquarters (technical) | 8 | 6 | 1 | 26 / 59 / 25 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
 | 07 | National Police Intelligence Officer | 1 | National Headquarters (intelligence liaison administration) | 12 | 6 | 1 | 26 / 58 / 26 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
 | 08 | Divisional/Unit System Administrator (Tech) | 2 | Assigned Provincial Division or Unit/Formation only | 5 | 4 | 2 | 42 / 126 / 52 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
 | 09 | Formation Commanding Officer | 2 | Provincial Division or Unit/Formation (commanding officer) | 19 | 6 | 4 | 199 / 150 / 91 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
 | 10 | Deputy Division Commander | 2 | Provincial Division or Unit/Formation (deputy) | 15 | 6 | 3 | 149 / 120 / 61 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
-| 11 | Division Senior Staff Officer – Operations (Staff I) | 2 | Provincial Division or Unit/Formation | 19 | 6 | 4 | 233 / 108 / 99 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
-| 12 | Deputy Division Staff Officer – Operations (Staff II) | 2 | Provincial Division or Unit/Formation | 13 | 6 | 4 | 189 / 154 / 97 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
-| 13 | Company Commander | 2 | Company within a Unit/Formation | 11 | 6 | 2 | 65 / 94 / 61 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
-| 14 | Section Head | 2 | Section (or department, detachment or platoon where configured) | 8 | 5 | 7 | 169 / 378 / 223 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
-| 15 | Formation Operations Staff Administrator | 2 | Unit/Formation | 19 | 6 | 2 | 107 / 56 / 57 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
+| 11 | Division Senior Staff Officer – Operations (Staff I) | 2 | Provincial Division or Unit/Formation | 20 | 6 | 4 | 233 / 108 / 99 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
+| 12 | Deputy Division Staff Officer – Operations (Staff II) | 2 | Provincial Division or Unit/Formation | 14 | 6 | 4 | 189 / 154 / 97 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
+| 13 | Company Commander | 2 | Company within a Unit/Formation | 12 | 6 | 2 | 65 / 94 / 61 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
+| 14 | Section Head | 2 | Section (or department, detachment or platoon where configured) | 9 | 5 | 7 | 169 / 378 / 223 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
+| 15 | Formation Operations Staff Administrator | 2 | Unit/Formation | 20 | 6 | 2 | 107 / 56 / 57 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
 | 16 | Divisional Quarter Masters Stores Officer | 2 | Provincial Division or Unit/Formation stores | 7 | 6 | 2 | 57 / 124 / 39 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
 | 17 | Divisional Principal Armourer | 2 | Provincial Division or Unit/Formation | 4 | 3 | 1 | 19 / 66 / 25 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
 | 18 | Divisional MTO Officer-in-Charge | 2 | Provincial Division or Unit/Formation transport | 6 | 6 | 2 | 50 / 126 / 44 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
@@ -210,12 +247,12 @@ Checks per role (weight): dashboard (3), sidebar (2), figures (2), quick actions
 | 20 | District System Administrator (Tech) | 3 | Assigned District Command only | 5 | 4 | 1 | 21 / 63 / 26 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
 | 21 | Officer Commanding — District | 3 | District Command | 17 | 6 | 1 | 48 / 39 / 23 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
 | 22 | Deputy OC — District | 3 | District Command | 14 | 6 | 1 | 39 / 42 / 29 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
-| 23 | Operations Officer — District | 3 | District Command | 15 | 6 | 2 | 90 / 70 / 60 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
-| 24 | Deputy Operations Officer — District | 3 | District Command | 13 | 6 | 1 | 43 / 38 / 29 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
+| 23 | Operations Officer — District | 3 | District Command | 16 | 6 | 2 | 90 / 70 / 60 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
+| 24 | Deputy Operations Officer — District | 3 | District Command | 14 | 6 | 1 | 43 / 38 / 29 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
 | 25 | Stores Officer — District | 3 | District Command stores | 7 | 6 | 1 | 28 / 62 / 20 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
 | 26 | Police Station System Administrator | 3 | Assigned Police Station only | 5 | 4 | 1 | 21 / 63 / 26 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
 | 27 | Officer-in-Charge — Police Station GD | 3 | Police Station (and its posts) | 15 | 6 | 1 | 44 / 40 / 26 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
-| 28 | Station Inspector — Police Station GD | 3 | Police Station or Police Post | 12 | 6 | 3 | 113 / 126 / 91 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
+| 28 | Station Inspector — Police Station GD | 3 | Police Station or Police Post | 13 | 6 | 3 | 113 / 126 / 91 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
 | 29 | Police Station Administrator (Stores and Admin) | 3 | Police Station | 10 | 6 | 1 | 35 / 55 / 20 / 0 | 81.3 % · 81.3 % | 100.0 % · 100.0 % | — |
 | 30 | District Police Intelligence Officer | 3 | Assigned District Command only | 9 | 6 | 2 | 52 / 116 / 52 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
 | 31 | Police Intelligence Officer | 4 | Assigned Section or Police Station only | 8 | 6 | 2 | 51 / 116 / 53 / 0 | 100.0 % · 100.0 % | 100.0 % · 100.0 % | — |
@@ -235,11 +272,13 @@ Tiers: 1 — National Headquarters (7) · 2 — Provincial Divisions and Unit Fo
 | M15-3 | Platform Administration and System Monitoring | Production hosting, TLS, least-privilege DB account, monitoring | Critical | Blocked by external dependency | Production infrastructure (X01) | Implement when the dependency is supplied; accepted when the criterion passes on the supplied input | Automated test named in the evidence column; route audit |
 | M17-3 | Administrative Correspondence Management | Malware scanning before production document storage | High | Blocked by external dependency | Scanner and information-security decision (DEC-068, X04) | Implement when the dependency is supplied; accepted when the criterion passes on the supplied input | Automated test named in the evidence column; route audit |
 | C-18 | Command and Reporting (new direction) | Institutional validation of the command structure, channels, conflict referral and office-to-role mappings (DEC-075 sign-off) | Critical | Blocked by external dependency | Signatures of authorised Service officers (DEC-075 §6) | Implement when the dependency is supplied; accepted when the criterion passes on the supplied input | Domain tests and the directive's Tests A–J (`COMMAND_AND_REPORTING_TEST_RESULTS.md`); browser journey; route audit |
+| K-13 | Kamfinsa Mobile Unit structure and field command (directive 28 Nov 2026) | Complete Kamfinsa Mobile Unit Detachment and Platoon establishment | High | Blocked by external dependency | Full detachment list from the Service (Project Manager issue) | Implement when the dependency is supplied; accepted when the criterion passes on the supplied input | Automated test named in the evidence column; route audit |
+| P-15 | Executive portfolios: IG, DIG Operations, DIG Administration, DIG Special Duties (final directive 28 Nov 2026) | DIG Administration access to individual personnel and Operations records | High | Blocked by external dependency | Service decision H-3 (issue #6) | Implement when the dependency is supplied; accepted when the criterion passes on the supplied input | Automated test named in the evidence column; route audit |
 | X-04 | Cross-cutting: security, quality, operations | Manual accessibility audit with assistive technology | Medium | Not developed | — | Deliver: Manual accessibility audit with assistive technology. Accepted when frontend, backend, database, permissions and workflow are connected and the test passes | Automated test named in the evidence column; route audit |
 | X-08 | Cross-cutting: security, quality, operations | Independent penetration test and DPIA | Critical | Blocked by external dependency | Assessor and production-configured environment (X03) | Implement when the dependency is supplied; accepted when the criterion passes on the supplied input | Automated test named in the evidence column; route audit |
 | X-10 | Cross-cutting: security, quality, operations | Institutional approval and deployment authorisation | Critical | Blocked by external dependency | Service decision (X06) | Implement when the dependency is supplied; accepted when the criterion passes on the supplied input | Automated test named in the evidence column; route audit |
 
-External dependencies currently blocking criteria: 10 (Signed establishment from the Service (DEC-004); Approved identity provider (DEC-039, X02); Service identifier formats (DEC-069, X05); Service identifier formats (X05); Production infrastructure (X01); Scanner and information-security decision (DEC-068, X04); Signatures of authorised Service officers (DEC-075 §6); Assessor and production-configured environment (X03); Service decision (X06)).
+External dependencies currently blocking criteria: 12 (Signed establishment from the Service (DEC-004); Approved identity provider (DEC-039, X02); Service identifier formats (DEC-069, X05); Service identifier formats (X05); Production infrastructure (X01); Scanner and information-security decision (DEC-068, X04); Signatures of authorised Service officers (DEC-075 §6); Full detachment list from the Service (Project Manager issue); Service decision H-3 (issue #6); Assessor and production-configured environment (X03); Service decision (X06)).
 
 ## 7. Module detail (baseline audit)
 

@@ -77,6 +77,7 @@ const routes = [
   "/app/liaison/routing", "/app/liaison/history", "/app/liaison/new", `/app/liaison/records/${R.liaCb}`, `/app/liaison/records/${R.liaLsk}`,
   "/app/command", "/app/command/directives", "/app/command/directives/issued", "/app/command/directives/new", `/app/command/directives/${R.dir}`,
   "/app/command/reports", "/app/command/reports/submitted", "/app/command/reports/new", `/app/command/reports/${R.rpt}`, "/app/command/acting", "/app/command/conflicts", "/app/command/structure",
+  "/app/import", "/app/training", "/app/training?tab=needs", "/app/training?tab=nominations", "/app/training?tab=catalogue", "/app/operations", "/app/operations/security-services", "/app/coordination", "/app/command/platoon", "/app/command/area", "/app/command/company", "/app/command/company?office=pos_mu_hq5_dc", "/app/org/org_mu_hq5",
 ];
 
 const users = await all("SELECT u.id, u.display_name, (SELECT role_code FROM role_assignments a WHERE a.user_id=u.id AND a.revoked_at IS NULL ORDER BY a.id LIMIT 1) AS role FROM users u WHERE u.status='ACTIVE' ORDER BY u.id");

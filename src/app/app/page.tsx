@@ -18,6 +18,7 @@ import { StoresPanels, TechLocalPanels } from "./role-panels";
 import { LiaisonPanels } from "./liaison-panels";
 import { CommandPanel } from "./command/panel";
 import { officesHeld } from "@/server/domain/command";
+import { PortfolioPanel } from "./portfolio-panel";
 
 export const metadata = { title: "Dashboard" };
 
@@ -26,9 +27,11 @@ export default async function Dashboard() {
   const kind = dashboardKind(actor);
   if (!kind) {
     // Appointment holders without an application role (DEC-076) see their command and reporting work only.
-    if ((await officesHeld(getDb(), actor)).length) return (
+    const held = await officesHeld(getDb(), actor);
+    if (held.length) return (
       <>
-        <PageHeaderLite name={actor.displayName} />
+        <PageHeaderLite name={actor.displayName} executive={held.find((h) => ["DIG_ADMINISTRATION", "DIG_SPECIAL_DUTIES"].includes(h.positionType))?.title} />
+        <PortfolioPanel actor={actor} />
         <CommandPanel actor={actor} standalone />
       </>
     );
@@ -37,6 +40,7 @@ export default async function Dashboard() {
   return (
     <>
       <CommandOverview actor={actor} kind={kind} />
+      <PortfolioPanel actor={actor} />
       <CommandPanel actor={actor} />
       <section aria-label="Workspace details" className="mt-8 border-t border-line pt-6">{detail(actor, kind)}</section>
     </>
@@ -85,12 +89,14 @@ function detail(actor: Actor, kind: NonNullable<ReturnType<typeof dashboardKind>
   }
 }
 
-function PageHeaderLite({ name }: { name: string }) {
+function PageHeaderLite({ name, executive }: { name: string; executive?: string }) {
   return (
     <div className="mb-6">
-      <p className="text-[11px] font-bold uppercase tracking-wider text-[#173f8a]">Command appointment · no application role</p>
+      <p className="text-[11px] font-bold uppercase tracking-wider text-[#173f8a]">{executive ? "Executive appointment" : "Command appointment · no application role"}</p>
       <h1 className="text-[24px] font-extrabold text-[#0d2149]">{name}</h1>
-      <p className="text-sm text-ink-2">Your account holds a command office but none of the 31 application roles, so ZPS-OMS shows only the directives and reports of your own office. Access to other modules needs an approved role and organisational scope.</p>
+      <p className="text-sm text-ink-2">{executive
+        ? `You hold the office of ${executive}. Its authority comes from the appointment (no application role): your portfolio, inter-office coordination, and the directives and reports of your office. Individual Operations records are not shown to this office.`
+        : "Your account holds a command office but none of the 31 application roles, so ZPS-OMS shows only the directives and reports of your own office. Access to other modules needs an approved role and organisational scope."}</p>
     </div>
   );
 }

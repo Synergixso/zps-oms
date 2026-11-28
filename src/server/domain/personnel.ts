@@ -17,6 +17,7 @@ import { all, one, run, tx } from "../db/connection";
 import { audit } from "./audit";
 import { conflict, forbidden, invalid, newId, notFound, nowIso, today } from "./core";
 import { type Actor, can, requirePermission, unitsFor } from "./policy";
+import { isProduction } from "../lib/environment";
 import type { Permission } from "./catalogue";
 
 export const EMPLOYMENT_STATUSES = ["SERVING", "ON_LEAVE", "SECONDED", "SUSPENDED", "RETIRED", "SEPARATED"] as const;
@@ -204,8 +205,8 @@ export async function registerPersonnel(db: DB, actor: Actor, input: z.input<typ
   await tx(db, async (db) => {
     const ref = await nextPersonnelRef(db);
     await run(db, `INSERT INTO personnel_records (id, tenant_id, personnel_ref, service_number, surname, first_names, name_key, rank_code, home_unit_id, employment_status, disposition_status, verification_status, eligibility_note, synthetic, created_by, created_at, updated_at)
-                   VALUES (?,?,?,?,?,?,?,?,?,?, 'AVAILABLE_HOME', 'UNVERIFIED', ?, 1, ?, ?, ?)`,
-      id, unit.tenant_id, ref, d.serviceNumber, d.surname, d.firstNames, key, d.rankCode, d.homeUnitId, d.employmentStatus, d.eligibilityNote || null, actor.userId, t, t);
+                   VALUES (?,?,?,?,?,?,?,?,?,?, 'AVAILABLE_HOME', 'UNVERIFIED', ?, ?, ?, ?, ?)`,
+      id, unit.tenant_id, ref, d.serviceNumber, d.surname, d.firstNames, key, d.rankCode, d.homeUnitId, d.employmentStatus, d.eligibilityNote || null, isProduction() ? 0 : 1, actor.userId, t, t);
     await run(db, "INSERT INTO personnel_memberships (id, personnel_id, org_unit_id, valid_from, reason, recorded_by, created_at) VALUES (?,?,?,?,?,?,?)",
       newId("pmb"), id, d.homeUnitId, today(), "Initial registration", actor.userId, t);
     await run(db, "INSERT INTO personnel_history (personnel_id, field, new_value, reason, actor_id, created_at) VALUES (?,?,?,?,?,?)", id, "record", ref, "Registered", actor.userId, t);

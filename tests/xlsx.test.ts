@@ -38,6 +38,21 @@ describe("xlsx writer", () => {
     expect(files["xl/workbook.xml"]).toContain('name="A B  C "');
   });
 
+  it("keeps formula-like text as text, sizes columns, freezes the header and handles Unicode (#14)", () => {
+    const rows = [["+SUM(A1)", "-1+2", "@cmd", "=1+1", "	lead"], ["Mwansa Ng’andu — Kabwe", "2026-11-28", "A".repeat(200), "", null]];
+    const files = unzip(buildXlsx({ sheetName: "X".repeat(40), header: ["a", "b", "c", "d", "e"], rows: rows as Array<Array<string | null>> }));
+    const sheet = files["xl/worksheets/sheet1.xml"];
+    for (const v of ["+SUM(A1)", "-1+2", "@cmd", "=1+1"]) expect(sheet).toContain(`<t xml:space="preserve">${v}</t>`);
+    expect(sheet).not.toMatch(/<f>|<f /);
+    expect(sheet).toContain("Mwansa Ng’andu — Kabwe"); // UTF-8 preserved
+    expect(sheet).toContain('<t xml:space="preserve">2026-11-28</t>'); // dates are ISO text (no locale-dependent serials)
+    expect(sheet).toMatch(/<col min="3" max="3" width="60" customWidth="1"\/>/); // capped width
+    expect(sheet).toContain('<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>');
+    expect(sheet.indexOf("<sheetViews>")).toBeLessThan(sheet.indexOf("<cols>")); // schema order Excel requires
+    expect(sheet.indexOf("<cols>")).toBeLessThan(sheet.indexOf("<sheetData>"));
+    expect(files["xl/workbook.xml"]).toContain(`name="${"X".repeat(31)}"`); // Excel's 31-character sheet-name limit
+  });
+
   it("report exports in xlsx go through the same audited path", () => withDb(async (db) => {
     const cmd = await actor(db, "u_lsk_cmd");
     const before = Number((await one<{ c: number }>(db, "SELECT COUNT(*) c FROM report_exports WHERE user_id = 'u_lsk_cmd'"))!.c);

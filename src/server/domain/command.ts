@@ -49,16 +49,24 @@ export const POSITION_TYPES: Record<string, { label: string; rank: string; role?
   IG: { label: "Inspector General of Police", rank: "Inspector General", role: "INSPECTOR_GENERAL" },
   DIG_OPERATIONS: { label: "Deputy Inspector General of Police - Operations (DIG Operations)", rank: "Deputy Inspector General", role: "DIG_OPERATIONS" },
   DIG_ADMINISTRATION: { label: "Deputy Inspector General – Administration", rank: "Deputy Inspector General" },
-  DIG_SPECIAL_DUTIES: { label: "Deputy Inspector General – Special Duties (Stately)", rank: "Deputy Inspector General" },
+  DIG_SPECIAL_DUTIES: { label: "Deputy Inspector General – Special Duties / State House", rank: "Deputy Inspector General" },
   COMMISSIONER_OPS: { label: "Commissioner – Operations HQ", rank: "Commissioner", role: "COMMISSIONER_OPS_HQ" },
   DEPUTY_COMMISSIONER_OPS: { label: "Deputy Commissioner – Operations HQ", rank: "Deputy Commissioner", role: "DEPUTY_COMMISSIONER_OPS_HQ" },
-  DIVISIONAL_COMMANDER: { label: "Divisional Commander / Formation Commanding Officer", rank: "Commissioner or Senior Assistant Commissioner", role: "FORMATION_COMMANDING_OFFICER" },
-  DEPUTY_DIVISION_COMMANDER: { label: "Deputy Division Commander", rank: "Assistant Commissioner", role: "DEPUTY_DIVISION_COMMANDER" },
+  DIVISIONAL_COMMANDER: { label: "Divisional Commander / Formation Commanding Officer", rank: "Commissioner of Police (published for Provincial Divisions)", role: "FORMATION_COMMANDING_OFFICER" },
+  DEPUTY_DIVISION_COMMANDER: { label: "Deputy Division Commander", rank: "Deputy Commissioner of Police (published for Provincial Divisions)", role: "DEPUTY_DIVISION_COMMANDER" },
   STAFF_I: { label: "Division Senior Staff Officer – Operations (Staff I)", rank: "Senior Superintendent", role: "DIVISION_STAFF_I" },
   STAFF_II: { label: "Deputy Division Staff Officer – Operations (Staff II)", rank: "Superintendent", role: "DIVISION_STAFF_II" },
   FORMATION_STAFF_ADMIN: { label: "Formation Operations Staff Administrator", rank: "—", role: "FORMATION_OPS_STAFF_ADMIN" },
+  // Kamfinsa Mobile Unit Company and Detachment offices (institutional directive 28 Nov 2026, §9.2–§9.4). The Company
+  // Commander is the Section Head / Officer-in-Charge of the Company; the Deputy assumes duties through a dated acting
+  // appointment; the Detachment Commander reports to the Company Commander and Deputy Company Commander.
+  COMPANY_COMMANDER: { label: "Company Commander", rank: "As appointed", role: "COMPANY_COMMANDER" },
+  DEPUTY_COMPANY_COMMANDER: { label: "Deputy Company Commander", rank: "As appointed", role: "COMPANY_COMMANDER" },
+  DETACHMENT_COMMANDER: { label: "Detachment Commander", rank: "As appointed", role: "SECTION_HEAD" },
   AREA_COMMANDER: { label: "Area Commander", rank: "Superintendent or Assistant Superintendent", mappingNote: "Not mapped: an Area Commander commands the Mobile Unit elements deployed to an area, which may span companies; Company Commander is company-scoped. The Service is to decide the role (DEC-075 review, item M-3)." },
-  SECTION_PLATOON_COMMANDER: { label: "Section/Platoon Commander", rank: "Chief Inspector", role: "SECTION_HEAD" },
+  // The Platoon Commander is directly in charge of the officers on the ground (directive §11); the rank (Chief Inspector)
+  // and the appointment are separate: the office is the appointment, the rank is held in the personnel registry.
+  SECTION_PLATOON_COMMANDER: { label: "Platoon Commander (Section/Platoon Commander)", rank: "Chief Inspector", role: "SECTION_HEAD" },
   INSPECTOR: { label: "Inspector", rank: "Inspector", role: "SECTION_HEAD" },
   SERGEANT: { label: "Sergeant", rank: "Sergeant", appointmentOnly: true },
   CONSTABLE: { label: "Police Officer / Constable", rank: "Constable", appointmentOnly: true },
@@ -86,12 +94,15 @@ export const PROGRESS = { ON_TRACK: "On track", DELAYED: "Delayed", COMPLETED: "
 export const COMMAND_ACTIONS = {
   ISSUE_DIRECTIVE: "Issue directives", FORWARD_DIRECTIVE: "Assign or forward directives", ACKNOWLEDGE: "Acknowledge directives and reports", REVIEW_REPORT: "Review, return, forward and close reports",
   SUBMIT_REPORT: "Submit reports", CLOSE_DIRECTIVE: "Close or cancel directives", RESOLVE_CONFLICT: "Decide command conflicts", APPOINT_ACTING: "Appoint acting officers",
+  // Field command (institutional directive 28 Nov 2026, §10–§11; field-command.ts): only offices of the matching type use them.
+  RECORD_ATTENDANCE: "Record platoon attendance", RECORD_ENGAGEMENT: "Record partner-organisation engagements",
 } as const;
 export type CommandAction = keyof typeof COMMAND_ACTIONS;
 /** Categories an ADMIN_COORDINATION superior may issue (no formal command directives or personnel assignments). */
 const COORDINATION_CATEGORIES: DirectiveCategory[] = ["ADMIN_INSTRUCTION", "OPS_ADMIN_TASK"];
 
-function screen(...texts: Array<string | null | undefined>) {
+/** Rejects free text that touches an excluded class of information (shared with field-command.ts). */
+export function screen(...texts: Array<string | null | undefined>) {
   for (const text of texts) {
     if (!text) continue;
     const lower = text.toLowerCase();
@@ -108,10 +119,18 @@ export interface Held { positionId: string; title: string; orgUnitId: string; po
  * of the types the appointment-only policy allows (by default Sergeant and Constable), and only while it is on.
  * Returns null for "no restriction", or the allowed office types.
  */
+/**
+ * Executive portfolio offices with no application role in the 31-role catalogue (final master directive, Part B/E;
+ * DEC-088): the DIG Administration and the DIG Special Duties / State House. Their appointees hold their OWN office —
+ * command and reporting with the IG, inter-office coordination and their portfolio workspace — and nothing else. This is
+ * office-based authority (DEC-074), not a new role, and it is independent of the Sergeant/Constable policy.
+ */
+export const EXECUTIVE_APPOINTMENT_TYPES = ["DIG_ADMINISTRATION", "DIG_SPECIAL_DUTIES"];
+
 async function appointmentOnlyTypes(db: DB, actor: Actor): Promise<string[] | null> {
   if (actor.assignments.length) return null;
   const p = await appointmentAccessPolicy(db);
-  return p.enabled ? p.types : [];
+  return [...(p.enabled ? p.types : []), ...EXECUTIVE_APPOINTMENT_TYPES];
 }
 
 /** Every office the actor holds now, with the authority and actions it carries. */
@@ -500,6 +519,58 @@ export async function directiveDetail(db: DB, actor: Actor, id: string) {
   const reports = await all<{ id: string; reference: string; status: string; progress_status: string; reporting_date: string }>(db, "SELECT id, reference, status, progress_status, reporting_date FROM status_reports WHERE directive_id = ? AND status <> 'DRAFT' ORDER BY created_at", id);
   const consolidated = tree.reduce<Record<string, number>>((m, c) => ({ ...m, [c.status]: (m[c.status] ?? 0) + 1 }), {});
   return { directive: d, events, tree, parent, conflicts, reports, consolidated, held: await officesHeld(db, actor) };
+}
+
+/**
+ * Accountability record of a directive (institutional directive 28 Nov 2026, §13.4): originating officer (top of the
+ * assignment chain), issuing authority (office, substantive or acting with its reference), responsible officer(s) (the
+ * current holders of the receiving office), parent unit, acknowledgement, latest progress, completion, escalation
+ * history (reminders to the issuer and overdue notices sent by the automation, conflicts referred) and the number of
+ * audit events. Same visibility as the directive itself (getDirective); administrative facts only.
+ */
+export async function directiveAccountability(db: DB, actor: Actor, id: string) {
+  const d = await getDirective(db, actor, id);
+  let root = { id: d.id, reference: d.reference, issuer: d.issuer_name, office: d.issuer_title };
+  for (let cur = d.parent_id, i = 0; cur && i < 50; i++) {
+    const p = await one<{ id: string; reference: string; parent_id: string | null; issuer: string; office: string }>(db,
+      `SELECT d.id, d.reference, d.parent_id, u.display_name AS issuer, p.title AS office FROM command_directives d JOIN users u ON u.id = d.issuer_user_id
+         JOIN command_positions p ON p.id = d.issuer_position_id WHERE d.id = ?`, cur);
+    if (!p) break;
+    root = { id: p.id, reference: p.reference, issuer: p.issuer, office: p.office };
+    cur = p.parent_id;
+  }
+  const acting = d.authority === "ACTING"
+    ? await one<{ authorising_ref: string; valid_to: string }>(db, "SELECT x.authorising_ref, x.valid_to FROM command_directives d JOIN acting_appointments x ON x.id = d.acting_id WHERE d.id = ?", id)
+    : null;
+  const responsible = await all<{ name: string; authority: string }>(db,
+    `SELECT u.display_name AS name, 'SUBSTANTIVE' AS authority FROM position_appointments a JOIN users u ON u.id = a.user_id
+      WHERE a.position_id = ? AND a.ended_at IS NULL AND a.valid_from <= ? AND (a.valid_to IS NULL OR a.valid_to > ?)
+     UNION ALL
+     SELECT u.display_name, 'ACTING' FROM acting_appointments x JOIN users u ON u.id = x.acting_user_id
+      WHERE x.position_id = ? AND x.revoked_at IS NULL AND x.valid_from <= ? AND x.valid_to > ?`, d.recipient_position_id, nowIso(), nowIso(), d.recipient_position_id, nowIso(), nowIso());
+  const unit = await one<{ unit: string; parent: string | null }>(db,
+    `SELECT o.name AS unit, po.name AS parent FROM command_positions p JOIN org_units o ON o.id = p.org_unit_id
+       LEFT JOIN org_relationships r ON r.child_id = o.id AND r.effective_to IS NULL LEFT JOIN org_units po ON po.id = r.parent_id WHERE p.id = ?`, d.recipient_position_id);
+  const step = async (action: string) => (await one<{ at: string; by: string | null }>(db,
+    "SELECT e.at, u.display_name AS `by` FROM directive_events e LEFT JOIN users u ON u.id = e.actor_user_id WHERE e.directive_id = ? AND e.action = ? ORDER BY e.seq DESC LIMIT 1", id, action)) ?? null;
+  const progress = (await one<{ progress_status: string; reporting_date: string }>(db,
+    "SELECT progress_status, reporting_date FROM status_reports WHERE directive_id = ? AND status <> 'DRAFT' ORDER BY created_at DESC LIMIT 1", id)) ?? null;
+  const notices = await all<{ kind: string; day: string; n: number }>(db,
+    `SELECT SUBSTRING_INDEX(dedupe_key, ':', 1) AS kind, SUBSTRING_INDEX(SUBSTRING_INDEX(dedupe_key, ':', 3), ':', -1) AS day, COUNT(*) AS n FROM notifications
+      WHERE dedupe_key LIKE ? OR dedupe_key LIKE ? OR dedupe_key LIKE ? GROUP BY kind, day ORDER BY day`, `dir-ack:${id}:%`, `dir-esc:${id}:%`, `dir-due:${id}:%`);
+  const conflicts = await all<{ reference: string; status: string; created_at: string }>(db, "SELECT reference, status, created_at FROM command_conflicts WHERE directive_a_id = ? OR directive_b_id = ? ORDER BY created_at", id, id);
+  const ESC: Record<string, string> = { "dir-ack": "Acknowledgement reminder to the receiving office", "dir-esc": "Escalated to the issuing office: not acknowledged", "dir-due": "Overdue notice to the receiving office" };
+  const escalations = [
+    ...notices.map((x) => ({ at: x.day, what: ESC[x.kind] ?? x.kind, count: Number(x.n) })),
+    ...conflicts.map((c) => ({ at: c.created_at.slice(0, 10), what: `Conflict ${c.reference} referred to the common superior (${c.status.toLowerCase()})`, count: 1 })),
+  ].sort((a, b) => a.at.localeCompare(b.at));
+  const auditEvents = Number((await one<{ c: number }>(db, "SELECT COUNT(*) AS c FROM audit_events WHERE entity_type = 'command_directive' AND entity_id = ?", id))?.c ?? 0);
+  return {
+    originating: root, issuing: { office: d.issuer_title, by: d.issuer_name, authority: d.authority, actingRef: acting?.authorising_ref ?? null, actingUntil: acting?.valid_to ?? null },
+    responsibleOffice: d.recipient_title, responsible, unit: unit?.unit ?? d.recipient_unit, parentUnit: unit?.parent ?? null,
+    issuedAt: d.created_at, acknowledged: await step("ACKNOWLEDGE"), completed: await step("COMPLETE"), closed: await step("CLOSE"),
+    progress, escalations, auditEvents, auditLink: hasPermission(actor, "audit.view") ? `/app/audit?q=${encodeURIComponent(id)}` : null,
+  };
 }
 
 export type DirectiveBox = "received" | "issued" | "all";

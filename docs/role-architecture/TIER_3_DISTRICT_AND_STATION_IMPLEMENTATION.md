@@ -26,11 +26,11 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** District Command — assignable at: district
 - **Purpose:** District oversight: stations and posts, personnel, contributions, assignments and stores. Approves only within configured delegations; no access to other Districts.
 - **Workspace purpose line:** District oversight: stations and posts, personnel, contributions, assignments and stores.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Administration (`/app/assets`, `/app/stores`, `/app/stores/requisitions`) · Reports (`/app/reports`) · Organisation (`/app/org`) · Administrative records (`/app/calendar`, `/app/correspondence`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`, `/app/import`) · Administration (`/app/assets`, `/app/stores`, `/app/stores/requisitions`) · Reports (`/app/reports`) · Organisation (`/app/org`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `orgUnits`, `personnel`, `activeAssignments`, `contributionsDue`, `storesAwaitingDecision`, `pendingDecisions`
 - **Quick actions:** Review approvals, Stores and stock, Open reports
 - **Working panels:** dashboard kind `DISTRICT_COMMAND`
-- **Permissions (17):** `dashboard.district.view` (U), `org.view` (N), `asset.view` (S), `report.view` (S), `personnel.view` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S), `command.structure.view` (S)
+- **Permissions (24):** `dashboard.district.view` (U), `org.view` (N), `asset.view` (S), `report.view` (S), `personnel.view` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S), `training.view` (S), `training.need.submit` (S), `training.nominate` (S), `training.recommend` (S), `opsadmin.view` (S), `opsadmin.manage` (S), `secservice.view` (S), `command.structure.view` (S)
 
 ### Role 22 — Deputy OC — District
 
@@ -39,11 +39,11 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** District Command — assignable at: district
 - **Purpose:** Assists the District Commander; reviews subordinate submissions and processes delegated matters. Does not inherit the OC's approvals.
 - **Workspace purpose line:** Assists the District Commander; reviews subordinate submissions.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Reports (`/app/reports`) · Organisation (`/app/org`) · Administrative records (`/app/calendar`, `/app/correspondence`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`, `/app/import`) · Reports (`/app/reports`) · Organisation (`/app/org`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `orgUnits`, `personnel`, `activeAssignments`, `contributionsDue`, `pendingDecisions`, `myTasks`
 - **Quick actions:** Review approvals, Prepare contribution
 - **Working panels:** dashboard kind `DISTRICT_COMMAND`
-- **Permissions (14):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S), `command.structure.view` (S)
+- **Permissions (15):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S), `training.view` (S), `command.structure.view` (S)
 
 ### Role 23 — Operations Officer — District
 
@@ -52,11 +52,11 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** District Command — assignable at: district
 - **Purpose:** District Operations administration: manpower requests, station contributions, district lists, assignment records and reviews. No tactical deployment, patrol scheduling or tracking.
 - **Workspace purpose line:** District Operations administration: requests, station contributions, district lists and assignment records.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Administration (`/app/stores/requisitions`) · Reports (`/app/reports`) · Organisation (`/app/org`) · Administrative records (`/app/calendar`, `/app/correspondence`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`, `/app/import`) · Administration (`/app/stores/requisitions`) · Reports (`/app/reports`) · Organisation (`/app/org`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `openManpower`, `contributionsToReview`, `contributionsDue`, `activeAssignments`, `transfersOpen`, `pendingDecisions`
 - **Quick actions:** New manpower request, Register personnel, New stores requisition
 - **Working panels:** dashboard kind `DISTRICT_COMMAND`
-- **Permissions (26):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.receive` (S), `disposition.change` (S), `stores.requisition` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S), `correspondence.manage` (S), `command.structure.view` (S)
+- **Permissions (30):** `dashboard.district.view` (U), `org.view` (N), `report.view` (S), `personnel.view` (S), `personnel.register` (S), `personnel.edit` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.create` (U), `manpower.review` (S), `manpower.contribute` (S), `roster.view` (S), `roster.build` (S), `area.view` (S), `assignment.view` (S), `assignment.propose` (S), `assignment.transfer` (S), `assignment.receive` (S), `disposition.change` (S), `stores.requisition` (S), `schedule.view` (S), `schedule.manage` (S), `correspondence.view` (S), `correspondence.register` (S), `correspondence.manage` (S), `training.view` (S), `opsadmin.view` (S), `opsadmin.manage` (S), `secservice.view` (S), `command.structure.view` (S)
 
 ### Role 24 — Deputy Operations Officer — District
 
@@ -65,7 +65,7 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** District Command — assignable at: district
 - **Purpose:** Assists the Operations Officer: prepares submissions, verifies contributions, maintains workflow records. No Operations Officer approval authority.
 - **Workspace purpose line:** Preparation and verification of district submissions and workflow records.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`) · Reports (`/app/reports`) · Administrative records (`/app/calendar`, `/app/correspondence`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and manpower (`/app/personnel`, `/app/manpower`, `/app/manpower/contributions`, `/app/rosters`, `/app/assignments`, `/app/transfers`, `/app/areas`, `/app/import`) · Reports (`/app/reports`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `personnel`, `unverified`, `contributionsDue`, `activeAssignments`, `myTasks`, `unread`
 - **Quick actions:** Register personnel, Prepare contribution
 - **Working panels:** dashboard kind `PERSONNEL_ADMIN`
@@ -104,11 +104,11 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** Police Station (and its posts) — assignable at: station, post
 - **Purpose:** Station-level general duties administrative oversight: personnel, contributions, submissions; approves specifically delegated matters.
 - **Workspace purpose line:** Station general duties administrative oversight: personnel, contributions and submissions.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and contributions (`/app/personnel`, `/app/manpower/contributions`, `/app/manpower`, `/app/rosters`, `/app/assignments`) · Administration (`/app/assets`, `/app/stores`, `/app/stores/requisitions`) · Reports (`/app/reports`) · Organisation (`/app/org`) · Administrative records (`/app/calendar`, `/app/correspondence`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and contributions (`/app/personnel`, `/app/manpower/contributions`, `/app/manpower`, `/app/rosters`, `/app/assignments`, `/app/import`) · Administration (`/app/assets`, `/app/stores`, `/app/stores/requisitions`) · Reports (`/app/reports`) · Organisation (`/app/org`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `personnel`, `available`, `activeAssignments`, `contributionsDue`, `storesAwaitingDecision`, `pendingDecisions`
 - **Quick actions:** Review approvals, Prepare contribution, Stores and stock
 - **Working panels:** dashboard kind `STATION`
-- **Permissions (16):** `dashboard.station.view` (U), `org.view` (N), `asset.view` (S), `report.view` (S), `personnel.view` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S)
+- **Permissions (18):** `dashboard.station.view` (U), `org.view` (N), `asset.view` (S), `report.view` (S), `personnel.view` (S), `personnel.verify` (S), `manpower.view` (S), `manpower.contribute` (S), `roster.view` (S), `area.view` (S), `assignment.view` (S), `stores.view` (S), `stores.approve` (S), `schedule.view` (S), `correspondence.view` (S), `correspondence.manage` (S), `training.view` (S), `training.nominate` (S)
 
 ### Role 28 — Station Inspector — Police Station GD
 
@@ -117,7 +117,7 @@ Status, tests and evidence per role: `docs/development/ROLE_BACKOFFICE_DEVELOPME
 - **Organisational context:** Police Station or Police Post — assignable at: station, post
 - **Purpose:** Supports Station administration: personnel register, contributions and submissions; delegated supervisory functions only. Does not inherit OIC approvals.
 - **Workspace purpose line:** Station administration support: personnel register, contributions and submissions.
-- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and contributions (`/app/personnel`, `/app/manpower/contributions`, `/app/manpower`, `/app/rosters`, `/app/assignments`) · Reports (`/app/reports`) · Organisation (`/app/org`) · Administrative records (`/app/calendar`, `/app/correspondence`)
+- **Navigation:** Overview (`/app`, `/app/tasks`, `/app/approvals`) · Personnel and contributions (`/app/personnel`, `/app/manpower/contributions`, `/app/manpower`, `/app/rosters`, `/app/assignments`, `/app/import`) · Reports (`/app/reports`) · Organisation (`/app/org`) · Administrative records (`/app/calendar`, `/app/correspondence`)
 - **Headline figures:** `personnel`, `available`, `unverified`, `contributionsDue`, `myTasks`, `unread`
 - **Quick actions:** Register personnel, Prepare contribution
 - **Working panels:** dashboard kind `STATION`

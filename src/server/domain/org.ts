@@ -8,12 +8,17 @@ import { all, one, run, tx } from "../db/connection";
 import { audit } from "./audit";
 import { conflict, forbidden, invalid, newId, nextReference, notFound, notify, nowIso, today } from "./core";
 import { type Actor, HQ_ID, canApprove, requirePermission } from "./policy";
+import { isProduction } from "../lib/environment";
 
 export interface OrgUnit {
   id: string;
   code: string;
   name: string;
   short_name: string | null;
+  /** Administrative duty station (town or camp where the unit is based); never a tracked position. */
+  duty_station: string | null;
+  /** 0 = established structure recorded from the Service's confirmed information; 1 = synthetic development record. */
+  synthetic: number;
   unit_type: string;
   status: string;
   effective_from: string;
@@ -113,6 +118,10 @@ export const changeSchema = z.discriminatedUnion("changeType", [
     parentId: z.string().min(1),
     reason: z.string().trim().min(10, "Give a reason of at least 10 characters."),
     effectiveDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    /** Administrative base (DEC-078), never a tracked position. */
+    dutyStation: z.string().trim().max(120).optional(),
+    /** ESTABLISHED = confirmed institutional structure; SYNTHETIC = development example. Production units are always established. */
+    recordBasis: z.enum(["ESTABLISHED", "SYNTHETIC"]).optional(),
   }),
   z.object({
     changeType: z.literal("RENAME_UNIT"),
@@ -238,8 +247,10 @@ export async function applyDueChanges(db: DB) {
           const parent = (await one<{ tenant_id: string; branch: string }>(db, "SELECT tenant_id, branch FROM org_units WHERE id = ?", p.parentId))!;
           const branch = p.unitType === "PROVINCIAL_DIVISION" || ["DISTRICT", "STATION", "POST"].includes(p.unitType) ? "TERRITORIAL"
             : p.unitType === "HQ_OFFICE" ? "HQ" : parent.branch === "HQ" ? "FORMATION" : parent.branch;
-          await run(db, `INSERT INTO org_units (id, tenant_id, code, name, unit_type, branch, status, effective_from, approval_ref, validation_note, created_at)
-                   VALUES (?,?,?,?,?,?, 'ACTIVE', ?,?,?,?)`, id, parent.tenant_id, p.code, p.name, p.unitType, branch, eff, c.approval_ref, "Created via approved change " + c.reference, t);
+          // Production records are Service data; outside production a unit is synthetic unless proposed as established.
+          const synthetic = isProduction() || p.recordBasis === "ESTABLISHED" ? 0 : 1;
+          await run(db, `INSERT INTO org_units (id, tenant_id, code, name, duty_station, unit_type, branch, status, effective_from, approval_ref, validation_note, synthetic, created_at)
+                   VALUES (?,?,?,?,?,?,?, 'ACTIVE', ?,?,?,?,?)`, id, parent.tenant_id, p.code, p.name, p.dutyStation || null, p.unitType, branch, eff, c.approval_ref, "Created via approved change " + c.reference, synthetic, t);
           await run(db, "INSERT INTO org_relationships (id, child_id, parent_id, relationship, effective_from, approval_ref, created_at) VALUES (?,?,?, 'REPORTS_TO', ?,?,?)",
             newId("rel"), id, p.parentId, eff, c.approval_ref, t);
           break;

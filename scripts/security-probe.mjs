@@ -100,6 +100,52 @@ if (cmdDir && cmdRpt) {
   const r = await get("/app/command", tech);
   check("technical administrator → /app/command (no office)", r.status === 200 && /do not hold a command office/i.test(r.body), `${r.status}`);
 } else check("command records seeded", false, "seed step 014 has not run");
+// 4c. Field command workspaces (institutional directive 28 Nov 2026): office-based, out-of-scope offices are a neutral 404,
+// the Area Commander never receives individual attendance or personnel, and a Detachment cannot open another Company.
+const [[kmu]] = await db.query("SELECT COUNT(*) AS c FROM command_positions WHERE id IN ('pos_mu_hq_cc','pos_mu_hq5_dc','pos_mu_d3_dc','pos_mu_plt','pos_mu_area_a')");
+if (Number(kmu.c) === 5) {
+  const [[member]] = await db.query("SELECT personnel_ref FROM personnel_records WHERE home_unit_id IN (SELECT descendant_id FROM org_unit_closure WHERE ancestor_id = 'org_mu_a1p1') AND employment_status = 'SERVING' LIMIT 1");
+  const d3 = await session("u_mu_d3"), area = await session("u_mu_acoy"), plt = await session("u_mu_plt");
+  for (const p of ["/app/command/company?office=pos_mu_hq_cc", "/app/command/company?office=pos_mu_hq5_dc"]) {
+    const r = await get(p, d3);
+    check(`D3 Detachment Commander → ${p}`, r.status === 404, `${r.status}`);
+  }
+  const a = await get("/app/command/platoon?office=pos_mu_plt", area);
+  check("Area Commander → Platoon workspace (no platoon office, no personnel)", a.status === 200 && /do not hold a Platoon Commander office/i.test(a.body) && !a.body.includes(member.personnel_ref), `${a.status}`);
+  const ar = await get("/app/command/area", area);
+  check("Area Commander workspace shows counts, not personnel", ar.status === 200 && /Platoons under this area command/.test(ar.body) && !ar.body.includes(member.personnel_ref), `${ar.status}`);
+  const pa = await get("/app/command/area?office=pos_mu_area_a", plt);
+  check("Platoon Commander → Area workspace (no area office)", pa.status === 200 && /do not hold an Area Commander office/i.test(pa.body) && !/Partner-organisation engagements/.test(pa.body), `${pa.status}`);
+  const pl = await get("/app/command/platoon?office=pos_mu_area_a", plt);
+  check("Platoon Commander → foreign office id", pl.status === 404, `${pl.status}`);
+} else check("KMU command structure seeded", false, "seed step 016 has not run");
+// 4d. Controlled import (#8): technical administrators get the access-denied page; a registry officer gets the form.
+{
+  const t = await get("/app/import", await session("u_cb_tech"));
+  check("tech admin → /app/import", t.status === 200 && /not authorised/i.test(t.body) && !/Validate file/.test(t.body), `${t.status}`);
+  const o = await get("/app/import", await session("u_cb_per"));
+  check("personnel officer → /app/import (form, synthetic-only notice)", o.status === 200 && /Validate file/.test(o.body) && /synthetic/i.test(o.body), `${o.status}`);
+}
+// 4e. Executive portfolios (DEC-086 … DEC-088): offices see only their mandate; restricted coordination; scoped registers.
+{
+  const [[cr]] = await db.query("SELECT id FROM coordination_requests WHERE requesting_position_id = 'pos_dig_ops' AND receiving_position_id = 'pos_dig_sd' LIMIT 1");
+  const [[act]] = await db.query("SELECT id FROM ops_activities WHERE responsible_unit_id = 'org_cb' LIMIT 1");
+  if (cr && act) {
+    const adm = await session("u_digadm"), sd = await session("u_digsd"), lsk = await session("u_lsk_sops"), tech2 = await session("u_cb_tech");
+    const a1 = await get("/app/operations", adm);
+    check("DIG Administration → operations register (not authorised)", a1.status === 200 && /not authorised/i.test(a1.body), `${a1.status}`);
+    const a2 = await get(`/app/coordination/${cr.id}`, adm);
+    check("DIG Administration → Ops↔Special Duties request (404)", a2.status === 404, `${a2.status}`);
+    const a3 = await get("/app/training", sd);
+    check("DIG Special Duties → training (not authorised)", a3.status === 200 && /not authorised/i.test(a3.body), `${a3.status}`);
+    const a4 = await get(`/app/operations/${act.id}`, lsk);
+    check("Lusaka staff → Copperbelt operations record (404)", a4.status === 404, `${a4.status}`);
+    const a5 = await get("/app/training", tech2);
+    check("technical administrator → training (not authorised)", a5.status === 200 && /not authorised/i.test(a5.body), `${a5.status}`);
+    const a6 = await get(`/app/coordination/${cr.id}`, sd);
+    check("DIG Special Duties → its own request (200)", a6.status === 200 && /Respond|Request/.test(a6.body), `${a6.status}`);
+  } else check("portfolio data seeded", false, "seed step 019 has not run");
+}
 // 5. Setup is closed on a database with accounts; /modules redirects.
 const s = await get("/setup");
 check("/setup closed", s.status === 200 && /Setup has been completed/.test(s.body) && !/name="token"/.test(s.body), `${s.status}`);

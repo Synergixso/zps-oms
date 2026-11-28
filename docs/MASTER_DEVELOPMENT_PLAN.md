@@ -115,4 +115,54 @@ Deny by default; authority from offices (never rank or role alone); data access 
 After each phase: implementation summary, verification report (tests executed / passed / failed, defects, security findings), progress assessment (phase and overall percentages from `npm run docs:status`), outstanding matters with issue references, next phase. Percentages are never estimated by hand.
 
 ## 9. GitHub issues
-Master tracking issue, and one issue per Project Manager action: role-catalogue reference (27 vs 31); KMU HQ superior of Company Commanders; full KMU detachment and platoon establishment; Area Commander application role (M-3); CF-1; H-3; C-18 / DEC-075 sign-off; establishment and personnel data; single sign-on; official identifier formats; production infrastructure; malware scanner; independent penetration test; Excel licence (M05-5); manual assistive-technology audit (X-04). Issue numbers are recorded in `docs/final-delivery/EXECUTION_REGISTER.md` once opened.
+Master tracking issue, and one issue per Project Manager action: role-catalogue reference (27 vs 31); KMU HQ superior of Company Commanders; full KMU detachment and platoon establishment; Area Commander application role (M-3); CF-1; H-3; C-18 / DEC-075 sign-off; establishment and personnel data; single sign-on; official identifier formats; production infrastructure; malware scanner; independent penetration test; Excel licence (M05-5); manual assistive-technology audit (X-04). Opened 28 Nov 2026 — master tracking issue [#17](https://github.com/Synergixso/zps-oms/issues/17).
+
+| # | Issue | Kind |
+|---|---|---|
+| [#1](https://github.com/Synergixso/zps-oms/issues/1) | Role catalogue reference (27 vs approved 31), DEC-081 | Project Manager |
+| [#2](https://github.com/Synergixso/zps-oms/issues/2) | KMU HQ office to which Company Commanders report | Project Manager |
+| [#3](https://github.com/Synergixso/zps-oms/issues/3) | Complete KMU Detachment and Platoon establishment (K-13) | Project Manager |
+| [#4](https://github.com/Synergixso/zps-oms/issues/4) | Area Commander application role (M-3) | Project Manager |
+| [#5](https://github.com/Synergixso/zps-oms/issues/5) | CF-1 Conflict Referral Office | Service decision |
+| [#6](https://github.com/Synergixso/zps-oms/issues/6) | H-3 DIG Administration read access | Service decision |
+| [#7](https://github.com/Synergixso/zps-oms/issues/7) | C-18 DEC-075 sign-off | Service decision |
+| [#8](https://github.com/Synergixso/zps-oms/issues/8) | Establishment and personnel information (M01-5) | External |
+| [#9](https://github.com/Synergixso/zps-oms/issues/9) | Single sign-on (M02-8) | External |
+| [#10](https://github.com/Synergixso/zps-oms/issues/10) | Official identifier formats (M03-5, M10-3) | External |
+| [#11](https://github.com/Synergixso/zps-oms/issues/11) | Production infrastructure (M14-4, M15-3) | External |
+| [#12](https://github.com/Synergixso/zps-oms/issues/12) | Malware scanning (M17-3) | External |
+| [#13](https://github.com/Synergixso/zps-oms/issues/13) | Penetration test and DPIA (X-08) | External |
+| [#14](https://github.com/Synergixso/zps-oms/issues/14) | .xlsx in licensed Excel (M05-5) | External |
+| [#15](https://github.com/Synergixso/zps-oms/issues/15) | Manual assistive-technology audit (X-04) | External |
+| [#16](https://github.com/Synergixso/zps-oms/issues/16) | X-10 institutional approval and pilot authorisation | Service decision |
+
+## 10. Progress (updated 28 Nov 2026, v0.14.0 — master execution instruction)
+
+| Phase (instruction §9) | Status | Evidence |
+|---|---|---|
+| 1 Requirement and document reconciliation | Done | ORGANISATIONAL_MODEL rewritten; MOBILE_UNIT_REPORTING_STRUCTURE and DEC-075 review updated; official public references recorded; DEC-081 confirmed |
+| 2 Organisational and command requirements | Done to the extent confirmed | DEC-078 … DEC-080, DEC-085; #2 and #3 await the Project Manager |
+| 3 Command and workflow integration | Done | accountability record; `command`, `command-accountability`, `command-negative`, `field-command`, `kmu-structure` tests |
+| 4 Remaining functional improvements | Done | controlled import (#8); scanner interface (#12); configuration check (#11); defects fixed (`GITHUB_ISSUE_RECONCILIATION.md` §2) |
+| 5 Security hardening | Done | negative tests; security probes (import, field command); production upload fail-closed |
+| 6 Full regression | Recorded in CHANGELOG [0.14.0] "Verified" | v0.14.0 chain |
+| 7 Documentation and issue reconciliation | Done | `final-delivery/GITHUB_ISSUE_RECONCILIATION.md`; issues updated; #1 closed |
+| 8 Pilot readiness | Updated | `final-delivery/PILOT_READINESS.md` |
+
+Additional delivery areas found by the audit are tracked as status-register criteria M01-6, M03-6, M15-5, M17-4 and X-11.
+
+## 11. Final master directive (28 Nov 2026) — executive portfolios and presentation readiness (v0.15.0)
+
+| Part | Delivered | Evidence | Remaining |
+|---|---|---|---|
+| A Continuation and control | Work preserved; regression re-run on the final tree; skills plugin verified | CHANGELOG [0.15.0] "Verified" | — |
+| B Executive hierarchy | IG at the top; three DIGs directly under the IG; no cross-instruction; "State House" terminology | `portfolios` test; DEC-088 | DEC-075 sign-off (#7) |
+| C DIG Administration | Training management (needs → catalogue → sessions → nominations → approval → attendance → certification → oversight); aggregate workforce; coverage matrix | `docs/portfolios/DIG_ADMINISTRATION_COVERAGE.md`; DEC-086 | Individual-record access (H-3, #6); medical/welfare and procurement outside scope pending specification (#18) |
+| D DIG Operations | Operations administration (public order, illegal mining), mining security services, coordination with DIG Special Duties; coverage matrix | `docs/portfolios/DIG_OPERATIONS_COVERAGE.md`; DEC-087 | — |
+| E DIG Special Duties / State House | Separate portfolio; executive appointment; restricted coordination | `docs/portfolios/SPECIAL_DUTIES_COORDINATION_SPEC.md` | Institutional validation (#7) |
+| F Kamfinsa Mobile Unit | Company Commander route via Staff II → Staff I → Divisional Commander (#2) | seed step 018; `kmu-structure` | Full detachment list (#3) |
+| G Application audit | Traceability matrix; status register (P-01 … P-15) | `final-delivery/TRACEABILITY_MATRIX.md` | — |
+| H Regression | Migrations-test budget measured and targeted; e2e diagnostics; full chain | CHANGELOG [0.15.0] | — |
+| I Presentation readiness | Runbook, account matrix, data catalogue, readiness report; e2e portfolio journeys | `docs/presentation/` | — |
+| J Security scope | Exclusions preserved; 51 development probes | `scripts/security-probe.mjs` | Independent test (#13) |
+| K GitHub | Issues reconciled; #1 and #2 closed with evidence; scope issue for medical/welfare and procurement | issue register | — |

@@ -2,6 +2,55 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.15.0] — 2026-11-28 — Executive portfolios: training, operations administration, coordination; presentation readiness
+Final master development directive of 28 Nov 2026 (Parts A–N).
+### Added
+- **Executive hierarchy and appointments** (DEC-088): the IG has no superior; DIG Operations, DIG Administration and DIG Special Duties / State House report directly to the IG and never instruct one another. DIG Administration and DIG Special Duties appointees hold their own office without a new application role (the catalogue stays at 31 roles).
+- **Differentiated executive dashboards**: IG oversight of the three portfolios; DIG Operations operations administration; DIG Administration training and aggregate workforce strength; DIG Special Duties coordination.
+- **Training and professional development** (`/app/training`, migration 018, DEC-086): needs, institutions, course catalogue, sessions and capacity, nominations, recommendation by a different officer, approval by the DIG Administration office, attendance, results, certificates and renewal; oversight by Division; SPOM / Mobile Unit delivers without administrative subordination.
+- **Operations administration** (`/app/operations`, DEC-087): public-order and illegal-mining administrative register with progress, resource requests, outcome and post-event review; **mining security services** (`/app/operations/security-services`): partners, agreements on duty areas, officers required vs assigned, service reports.
+- **Inter-office coordination** (`/app/coordination`): restricted requests between executive offices (DIG Operations ↔ DIG Special Duties / State House, DIG Administration ↔ DIG Operations); the receiver acts; protection and movement terms refused.
+- Navigation group "Portfolios"; help text; seed step 019 (synthetic portfolio data); e2e `portfolios` journeys; portfolio coverage matrices, Special Duties coordination specification, presentation runbook, account matrix, data catalogue and readiness report (`docs/portfolios/`, `docs/presentation/`).
+### Changed
+- Company Commander reporting route: Company Commander → Staff II → Staff I → Divisional Commander, Mobile Unit, as stated by the stakeholders (issue #2; seed step 018 end-dates the interim direct line).
+- Permissions: `training.*`, `opsadmin.*`, `secservice.*` granted to existing roles (102 permissions × 31 roles).
+### Fixed
+- Migrations test: targeted 120 s budget for the one test that provisions a complete database twice (measured ~19 s unloaded, ~34 s under load); the suite default is unchanged.
+- e2e network-idle waits now fail with the list of still-open requests instead of timing out silently (`e2e/settle.ts`).
+
+## [0.14.0] — 2026-11-28 — GitHub issue resolution: controlled import, scanner interface, configuration check, negative tests
+Master execution instruction of 28 Nov 2026 (issues #1–#17).
+### Added
+- **Controlled data import** (`/app/import`, issue #8, DEC-082): validate a CSV, review every row, import all or nothing; personnel rows follow the registry rules and scope (synthetic only outside production); establishment rows become organisation change proposals approved by a different officer; duty station and record basis on CREATE_UNIT; audited with the file fingerprint.
+- **Malware scanner interface** (issue #12, DEC-083): ClamAV `clamd` adapter (free, no dependency); production refuses uploads until a scanner is configured; correspondence uploads are scanned and the outcome audited.
+- **Deployment configuration check** (issue #11, DEC-084): `npm run check:config`, also logged at start-up; deployment runbook (TLS, release, rollback, logging) in DEPLOYMENT_GUIDE.
+- Official public references for the national structure (`command-architecture/OFFICIAL_PUBLIC_REFERENCES.md`), DPIA preparation pack (#13), SSO integration design (#9), assistive-technology audit plan (#15), DEC-075 review updated with directive-confirmed items and required signatories (#7).
+### Fixed
+- Personnel registered and units created in **production** were flagged as synthetic (`synthetic = 1`); they are now Service records.
+- The synthetic Area Commander account also held the A Company Commander office (v0.13.0), so its report form defaulted to the wrong office; the Area Commander is again a distinct appointment (seed step 017, DEC-085).
+- DIG Special Duties office title corrected to "Special Duties / State House"; Divisional / Deputy Divisional Commander rank labels follow the published structure.
+### Security
+- Negative tests: DIG Administration cannot reach Operations records by list, id, workspace or personnel register (H-3 pending, #6); report recipients cannot be added or hijacked; a junior office cannot decide a conflict (#5); expired acting authority stops at once. Security probes for the import page.
+### Documentation
+- Organisational model rewritten (established vs synthetic records); Mobile Unit reporting structure extended to Companies and Detachments; DEC-081 confirmed (issue #1 closed).
+
+## [0.13.0] — 2026-11-28 — Kamfinsa Mobile Unit established structure and field command
+Institutional compliance directive of 28 Nov 2026 (Technical Services Section, Kamfinsa Mobile Unit). Plan: `docs/MASTER_DEVELOPMENT_PLAN.md`.
+### Added
+- **Established Kamfinsa Mobile Unit structure** (DEC-078): HQ, A, B, C and D Companies; HQ 5 (Kitwe), B4 (Sikanze Police Camp, Lusaka), A2 (Kabwe), A4 (Mansa), D3 (Mufulira) and D4 (Choma) Detachments under their stated Companies, recorded as established (not synthetic) with the directive as source. New `org_units.duty_station` (migration 016) — the administrative base, never a tracked position. Organisation directory and unit pages show the duty station and the record basis (established or synthetic). Provincial Divisions and the named formations are recorded as established coverage.
+- **Company, Deputy Company and Detachment Commander offices** (DEC-079): Detachment Commander → Company Commander (primary) and Deputy (parallel recipient); Deputy → Company Commander; Company Commander → Divisional Commander, Mobile Unit (interim, to be confirmed). The Deputy assumes duties only through a dated acting appointment.
+- **Platoon command** (`/app/command/platoon`, DEC-080): for the Platoon Commander, directly in charge of the officers on the ground — field chain, platoon officers and availability, daily attendance register (migration 017: one status per officer, complete, correctable for 7 days, delegable as *Record platoon attendance*, audited), instructions and reports.
+- **Area command** (`/app/command/area`): platoon attendance as counts only, both reporting channels, reports awaiting the office, reports submitted with each recipient's status, and the partner-organisation engagement register (metadata only; delegable as *Record partner-organisation engagements*).
+- **Company / detachment command** (`/app/command/company`): Detachments or Platoons with duty stations, commanders, strength and the latest report addressed to the office.
+- **Accountability record** on every directive (§13.4): originating officer, issuing authority (acting reference), responsible officer, parent unit, acknowledgement, latest progress, completion, escalation history and audit trail.
+- Navigation entries per office type; help text; breadcrumbs.
+### Security
+- Six new security probes (43 in development): foreign offices are a neutral 404; the Area Commander never receives individual attendance or personnel; a Detachment cannot open another Company. Refusals are SECURITY audit events.
+### Changed
+- Office label "Platoon Commander (Section/Platoon Commander)". Status register gains 13 criteria (K-01 … K-13).
+### Referred to the Project Manager
+- Role catalogue reference (27 vs the approved 31, DEC-081); the KMU HQ superior of Company Commanders; the full detachment list; Area Commander role (M-3); CF-1, H-3, C-18; external dependencies.
+
 ## [0.12.0] — 2026-11-28 — Personnel availability in scheduling, strict style policy, CI observed
 ### Added
 - **Personnel availability in the administrative calendar** (Module 16, M16-2): current availability of serving personnel in the user's personnel scope, grouped as available, in the assignment process, on assignment or unavailable, derived from disposition status; changes between those groups on the day they took effect (one line per day and home unit, linking to the unit's personnel register); approved assignments due to commence. Scoped by `personnel.view` and `assignment.view`; an administrative status only, never a location.

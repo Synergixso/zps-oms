@@ -66,12 +66,29 @@ A mapping records which of the 31 application roles the holder of an office woul
 | CF-1 | Conflicts are referred to the nearest common superior office (for a Mobile Unit area versus Kitwe District, the Commissioner – Operations HQ) | **Q** | Mechanically correct. Administratively, many services first refer a dispute between a deployed formation element and a territorial district to the Provincial Commanding Officer of the Province, keeping it out of national HQ | Decide the referral level. Today the system always uses the nearest common superior office. A configured referral office (for example "conflicts in this Province go to the Provincial Commanding Officer") would be a small, not yet implemented change, made once the Service decides |
 | CF-2 | No automatic precedence | S | Required by the directive | Confirm |
 
+## 5A. Items confirmed by the stakeholders' directive of 28 November 2026 (not a signature)
+
+The institutional compliance directive (Technical Services Section, Kamfinsa Mobile Unit, 28 Nov 2026) states the following as **established facts**. They are no longer treated as inferences in the software; the formal DEC-075 sign-off below (issue #7) is still required, and nothing here is recorded as a signed approval.
+
+| Item | Confirmed by the directive | Software |
+|---|---|---|
+| H-1, H-2 | IG is the head of the Service; DIGs report to the IG and never instruct the IG (§6) | Unchanged (Test A) |
+| H-3 | DIG Administration's portfolio is distinct from Operations; access pending H-3 decision (#6) | Unchanged; negative tests extended (v0.13.x) |
+| MU-1 | Constable → Sergeant → Inspector → Chief Inspector / Platoon Commander → Area Commander (§12) | Unchanged |
+| MU-4, MU-5 | Area Commander reports through Staff I or Staff II (Mobile Unit channel) and to the District Operations Officer and Officer Commanding (geographic channel) (§13) | Unchanged: Staff II primary (configurable to Staff I) |
+| New | Five Companies, six Detachments with duty stations; Company Commander, Deputy, Detachment Commander; Detachment → Company Commander / Deputy → KMU HQ (§9) | DEC-078, DEC-079 |
+| New | Platoon Commander directly in charge of officers on the ground; Area Commander distinct (§10–§11) | DEC-080 |
+
+Still open for the authorised officers: H-6 (provincial command lines), MU-2, MU-3, MU-6, M-1, M-4, M-5, M-7, CF-1 (#5), the Company Commander's KMU HQ superior (#2), the Area Commander role (M-3, #4) and appointment-only access in production (DEC-076).
+
+**Required signatories (to be named by the Service):** an officer holding authority over the national Operations command structure (the Inspector General or the DIG Operations, or an officer they designate) for the national hierarchy and conflict referral; the Kamfinsa Mobile Unit Divisional Commander (or designated officer) for the Mobile Unit structure; and the officer responsible for access control policy for the office-to-role mappings and appointment-only access. The development team does not sign and does not record any signature.
+
 ## 6. Formal validation (to be completed by authorised officers)
 
 | Item group | Decision (confirm / change / reject) | Name, rank and appointment | Signature | Date | Reference |
 |---|---|---|---|---|---|
 | National hierarchy (H-1 … H-6) | | | | | |
-| Mobile Unit structure (MU-1 … MU-8) | | | | | |
+| Mobile Unit structure (MU-1 … MU-8; Company and Detachment offices, DEC-079) | | | | | |
 | Office-to-role mappings (M-1 … M-7) | | | | | |
 | Conflict referral (CF-1, CF-2) | | | | | |
 | Appointment-only access in production (DEC-076) | | | | | |

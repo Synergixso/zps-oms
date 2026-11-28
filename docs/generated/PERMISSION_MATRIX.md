@@ -97,6 +97,15 @@ Approval authority is never a role permission: it needs an active delegation (do
 | `liaison.reference.route` |  |  |  |  |  |  | N |  |  |  |  |  |  |  |  |  |  |  | S |  |  |  |  |  |  |  |  |  |  | S | U |
 | `liaison.status.view` |  |  |  |  |  |  | N |  |  |  |  |  |  |  |  |  |  |  | S |  |  |  |  |  |  |  |  |  |  | S | U |
 | `liaison.audit.view` |  |  |  |  |  |  | N |  |  |  |  |  |  |  |  |  |  |  | S |  |  |  |  |  |  |  |  |  |  | S | U |
+| `training.view` |  | N | N | N | N |  |  |  | S | S | S | S | S | S | S |  |  |  |  |  | S | S | S |  |  |  | S |  |  |  |  |
+| `training.need.submit` |  |  |  | N |  |  |  |  | S |  | S |  | S |  |  |  |  |  |  |  | S |  |  |  |  |  |  |  |  |  |  |
+| `training.nominate` |  |  |  | N | N |  |  |  | S |  | S | S | S | S |  |  |  |  |  |  | S |  |  |  |  |  | S |  |  |  |  |
+| `training.recommend` |  |  |  |  |  |  |  |  | S | S |  |  |  |  |  |  |  |  |  |  | S |  |  |  |  |  |  |  |  |  |  |
+| `training.deliver` |  |  |  |  |  |  |  |  | S |  |  |  |  |  | S |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `opsadmin.view` |  | N | N | N | N |  |  |  | S | S | S | S |  |  | S |  |  |  |  |  | S |  | S |  |  |  |  |  |  |  |  |
+| `opsadmin.manage` |  |  | N | N | N |  |  |  | S |  | S | S |  |  |  |  |  |  |  |  | S |  | S |  |  |  |  |  |  |  |  |
+| `secservice.view` |  | N | N | N | N |  |  |  | S | S | S | S |  |  |  |  |  |  |  |  | S |  | S |  |  |  |  |  |  |  |  |
+| `secservice.manage` |  |  | N | N |  |  |  |  | S |  | S |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `command.structure.view` |  | N | N | N | N |  |  |  | S | S | S | S |  |  | S |  |  |  |  |  | S | S | S |  |  |  |  |  |  |  |  |
 | `command.structure.manage` |  |  |  | N |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `contact.view` | N |  |  | N |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |

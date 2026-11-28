@@ -36,7 +36,11 @@ $env:ZPS_INSECURE_COOKIE = "1"; npm start   # cookie 'Secure' flag needs HTTPS; 
 | `ZPS_AUTOMATION` | on | `off` disables the in-process automation scheduler |
 | `ZPS_ENVIRONMENT` | `development` | `development`, `test` or `production` (DEC-069): environment labels, demo account list, identifier formats, production baseline seed |
 | `ZPS_SETUP_TOKEN` | unset | One-time token (≥ 24 characters) for `/setup`, which creates the first Superadmin on an empty database; remove after use |
+| `ZPS_MALWARE_SCANNER` | unset | `clamd` enables the ClamAV adapter (`src/server/lib/malware-scan.ts`, issue #12). **Production refuses document uploads while unset** |
+| `ZPS_CLAMD_HOST` / `ZPS_CLAMD_PORT` / `ZPS_CLAMD_TIMEOUT_MS` | `127.0.0.1` / `3310` / `15000` | clamd endpoint for the scanner |
 | `ZPS_FORMAT_*` | unset | Production identifier formats (`SERVICE_NUMBER`, `VEHICLE_REGISTRATION`, `FLEET_REF`, `ASSET_TAG`, `STORE_CODE`, `USERNAME`); see `DEPLOYMENT_READINESS.md` |
+
+**Check the configuration** before every start of a deployed instance: `npm run check:config` validates the environment (database account and name, Secure cookies, production build, setup token, identifier formats, scanner, backup folder), prints findings without secret values and exits 1 on any ERROR. The same findings are logged at server start-up (issue #11).
 
 All application and migration connections run in **strict SQL mode** (`src/server/db/sql-mode.ts`, DEC-061), whatever the server default; XAMPP ships non-strict.
 
@@ -66,4 +70,20 @@ Stop the server, run `npm run db:reset` (drops and recreates the local `zps_oms_
 3. Create a dedicated least-privilege MySQL user for the application and enable TLS to the database.
 4. Put a TLS-terminating reverse proxy with rate limiting in front. The application already sends a per-request nonce Content-Security-Policy (DEC-067): the proxy must pass the `Content-Security-Policy` response header through unchanged and must not cache HTML pages (each carries its own nonce).
 5. Ship audit events off-host to WORM storage; configure NTP.
-6. Run security testing, DPIA and accreditation before any real data.
+6. Run security testing, DPIA and accreditation before any real data (`docs/governance/DPIA_REQUIREMENTS.md`, issue #13).
+
+## Deployment runbook (infrastructure-independent, issue #11)
+
+**TLS requirements.** HTTPS only, TLS 1.2 minimum (1.3 preferred), HSTS at the proxy; certificate from the Service's CA or an approved free CA; the session cookie is `Secure`, `HttpOnly`, `SameSite=Lax` (never set `ZPS_INSECURE_COOKIE` outside localhost); database connections over TLS where the database is on another host.
+
+**Release procedure.**
+1. On the build host: `npm ci`, `npx tsc --noEmit`, `npm run lint`, `npm test` (against a test database), `npm run build`.
+2. On the target: set the environment (secrets from the host's secret store or process manager — never in the repository), then `npm run check:config` (must report no ERROR).
+3. Take a verified backup (*System health → Database backups*) and note its SHA-256.
+4. Stop the application, deploy the build, run `npm run db:migrate` (migrations are additive and checksummed; the runner refuses a changed migration).
+5. Start with `npm start`; confirm `GET /api/health` returns 200, then `npm run verify:audit` (audit hash chain) and `npm run test:security` against the instance.
+6. Record the release (version, commit, backup reference, operator) in the change log of the environment.
+
+**Rollback.** Stop the application; redeploy the previous build; if the release ran migrations, restore the step-3 backup into an empty database, run the previous build's `npm run db:migrate` and start; confirm `/api/health` and the audit chain. Never edit or delete applied migration files.
+
+**Logging and monitoring.** Application logs go to standard output/error (configuration findings, migration and automation messages, unexpected errors without payloads); capture them with the process manager and forward to the central log service. Monitor `GET /api/health` (readiness) and `?probe=live` (liveness); alert on non-200. Audit events stay in the database hash chain; off-host WORM storage is a production requirement (M14-4).

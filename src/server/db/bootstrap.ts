@@ -18,6 +18,8 @@ import { audit } from "../domain/audit";
 import { seedThreeTier } from "./seed-three-tier";
 import { seedLiaison } from "./seed-liaison";
 import { seedCommand } from "./seed-command";
+import { seedCompanyRoute, seedKmu, seedKmuCorrections } from "./seed-kmu";
+import { seedPortfolios } from "./seed-portfolios";
 import { REPORTS } from "../domain/reports";
 import { assignMissingUserRefs } from "../domain/iam";
 
@@ -28,6 +30,10 @@ export const SEED_STEPS: Array<[name: string, fn: (db: DB) => Promise<void>]> = 
   ["012_calendar_correspondence", seedAdminRecords],
   ["013_liaison_roles", seedLiaison],
   ["014_command_structure", seedCommand],
+  ["016_kmu_establishment", seedKmu],
+  ["017_kmu_corrections", seedKmuCorrections],
+  ["018_company_commander_route", seedCompanyRoute],
+  ["019_portfolios", seedPortfolios],
 ];
 
 /**

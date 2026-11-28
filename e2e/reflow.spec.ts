@@ -10,6 +10,7 @@ import fs from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import mysql from "mysql2/promise";
 import { DEV_PASSWORD, e2eDatabaseUrl } from "./env";
+import { settle, watch } from "./settle";
 
 // Reflow widths (WCAG) plus the two tablet layouts: portrait, and landscape where the 268 px sidebar first appears.
 const WIDTHS = [
@@ -67,7 +68,7 @@ async function check(page: Page, path: string, who: string) {
 
 async function visit(page: Page, path: string) {
   const res = await page.goto(path);
-  await page.waitForLoadState("networkidle");
+  await settle(page);
   return res?.status() ?? 0;
 }
 
@@ -146,3 +147,5 @@ test("Reflow: evidence and result", async () => {
   expect(roleCount).toBe(31);
   expect(findings, JSON.stringify(findings.slice(0, 10), null, 1)).toEqual([]);
 });
+
+test.beforeEach(({ page }) => watch(page));

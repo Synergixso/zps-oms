@@ -14,6 +14,10 @@ Reviewed 26 November 2026 against the code, the test evidence in `docs/evidence/
 
 ## 2. Production prerequisites (engineering, on the target infrastructure)
 - The local database uses the XAMPP `root` account. `db/admin/create_app_user.sql` creates least-privilege application and read-only accounts; TLS to the database, encryption at rest and off-host backups are infrastructure work.
+- Kamfinsa Mobile Unit: only the six Detachments stated in the 28 Nov 2026 directive are recorded as established; the full detachment and platoon establishment, and the exact KMU HQ office to which Company Commanders report, await the Project Manager (interim: Divisional Commander, Mobile Unit). Platoon attendance is an administrative status register only; it is not a roll-call or location system.
+- Executive portfolios: medical and welfare administration is not implemented (clinical or personal health data needs a separate approved specification and security review); procurement and finance are outside the approved scope; DIG Administration sees aggregate workforce figures only until the H-3 decision (#6).
+- Document uploads: structural PDF screening plus a malware-scanner interface; production refuses uploads until the Service's approved scanner is configured (issue #12).
+- Controlled import (`/app/import`) accepts CSV only, at most 500 rows; sub-units whose parents are in the same file are imported in a second pass after the parents are approved.
 - Content Security Policy: scripts are nonce-based (no `'unsafe-inline'`, DEC-067); since v0.12.0 production styles are also restricted to this origin (`style-src 'self'`). Development keeps `'unsafe-inline'` for the Next.js dev server.
 - Rate limiting is applied in the application to sign-in (per account lockout and per-device throttling) and to the public contact form; general request rate limiting belongs at the reverse proxy, which does not exist locally.
 - The audit hash chain detects tampering when verified (`npm run verify:audit`, restore drills); protection against an attacker who can rewrite the whole database needs external anchoring or WORM storage.

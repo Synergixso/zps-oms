@@ -1,5 +1,6 @@
 /**
  * Runs once per server process:
+ *  0. check the deployment configuration (lib/config-check.ts) and log any finding;
  *  1. migrate the database, synchronise the role catalogue and apply missing synthetic seed steps;
  *  2. start the in-process automation engine (initial run, then every `automation.interval_minutes`).
  */
@@ -10,6 +11,9 @@ export async function register() {
     console.error("[zps-oms] DATABASE_URL is not set. Copy .env.example to .env.local and start MySQL in XAMPP.");
     return;
   }
+  // Deployment configuration check (issue #11): findings are logged; secrets are never printed.
+  const { checkConfig } = await import("./server/lib/config-check");
+  for (const f of checkConfig()) if (f.level !== "OK") console[f.level === "ERROR" ? "error" : "warn"](`[zps-oms] config ${f.level} ${f.code}: ${f.message}`);
   const { bootstrap } = await import("./server/db/bootstrap");
   try {
     const r = await bootstrap(url);

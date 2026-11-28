@@ -1,6 +1,6 @@
 # Accessibility scan — command and reporting pages (axe-core, WCAG 2.0/2.1/2.2 A and AA)
 
-Generated 2026-11-28T03:39:02.588Z. Synthetic data only.
+Generated 2026-11-28T09:47:56.727Z. Synthetic data only.
 
 **Violations: 0**
 

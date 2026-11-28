@@ -9,7 +9,8 @@
  *
  * Documents: PDF only, at most 5 MB, structurally screened before storage (signature, end marker, no encryption,
  * no JavaScript / launch / embedded-file / auto-run actions, including inside compressed streams). This is a
- * screen, not antivirus: production use needs malware scanning and information-security approval
+ * screen, not antivirus: files are also passed to the configured malware scanner (lib/malware-scan.ts, issue #12),
+ * and production refuses uploads until an approved scanner is configured; information-security approval still applies
  * (KNOWN_LIMITATIONS). Storage can be switched off with the correspondence.files_enabled setting.
  *
  * Status flow: REGISTERED → ASSIGNED → IN_PROGRESS ⇄ AWAITING_REPLY → CLOSED → FILED (filing needs a file reference).
@@ -24,6 +25,7 @@ import { audit } from "./audit";
 import { PROHIBITED_TERMS } from "./catalogue";
 import { conflict, forbidden, invalid, newId, nextReference, notFound, notify, nowIso, tenantOf, today } from "./core";
 import { type Actor, can, hasPermission, loadActor, requirePermission, scopeFor } from "./policy";
+import { requireScan } from "../lib/malware-scan";
 
 export const CORR_STATUS_LABEL: Record<string, string> = {
   REGISTERED: "Registered", ASSIGNED: "Assigned", IN_PROGRESS: "In progress", AWAITING_REPLY: "Awaiting reply", CLOSED: "Closed", FILED: "Filed",
@@ -285,6 +287,12 @@ export async function attachFile(db: DB, actor: Actor, id: string, fileName: str
     await audit(db, { actorId: actor.userId, action: "correspondence.file.attach", outcome: "DENIED", category: "SECURITY", entityType: "correspondence", entityId: id, details: { reason, size: bytes.length } });
     throw invalid(reason);
   }
+  // Malware scan (issue #12): fails closed in production when no approved scanner is configured.
+  const scan = await requireScan(bytes);
+  if (scan.refusal) {
+    await audit(db, { actorId: actor.userId, action: "correspondence.file.attach", outcome: "DENIED", category: "SECURITY", entityType: "correspondence", entityId: id, details: { reason: scan.refusal, scan: scan.verdict.outcome, size: bytes.length } });
+    throw invalid(scan.refusal);
+  }
   const count = Number((await one<{ n: number }>(db, "SELECT COUNT(*) AS n FROM correspondence_files WHERE correspondence_id = ? AND removed_at IS NULL", id))?.n ?? 0);
   if (count >= 10) throw conflict("A record can hold at most 10 documents.");
   const sha256 = createHash("sha256").update(bytes).digest("hex");
@@ -295,7 +303,7 @@ export async function attachFile(db: DB, actor: Actor, id: string, fileName: str
     await run(db, "INSERT INTO correspondence_files (id, correspondence_id, file_name, content_type, size_bytes, sha256, content, uploaded_by, uploaded_at) VALUES (?,?,?,?,?,?,?,?,?)",
       fid, id, name, "application/pdf", bytes.length, sha256, bytes, actor.userId, nowIso());
     await event(db, id, actor.userId, "FILE_ADD", null, null, name);
-    await audit(db, { actorId: actor.userId, action: "correspondence.file.attach", category: "BUSINESS", entityType: "correspondence", entityId: id, orgUnitId: c.org_unit_id, details: { file: fid, name, size: bytes.length, sha256 } });
+    await audit(db, { actorId: actor.userId, action: "correspondence.file.attach", category: "BUSINESS", entityType: "correspondence", entityId: id, orgUnitId: c.org_unit_id, details: { file: fid, name, size: bytes.length, sha256, scan: scan.verdict.outcome, scanEngine: scan.verdict.engine } });
   });
   return fid;
 }

@@ -10,7 +10,7 @@ import fs from "node:fs";
 import { ROLES, TIER_NAMES, type Tier } from "../src/server/domain/catalogue.ts";
 import { WORKSPACE_CONFIG } from "../src/server/domain/workspace-config.ts";
 import { NAV } from "../src/lib/nav.ts";
-import { CMD, COMMAND_ROLES, CRITERIA, MODULES, XC, type Criterion, type Status } from "./status-register.mts";
+import { CMD, COMMAND_ROLES, CRITERIA, KMU, MODULES, PORT, XC, type Criterion, type Status } from "./status-register.mts";
 
 const NAV_ITEMS = Object.fromEntries(NAV.flatMap((g) => g.items).map((i) => [i.href, i]));
 const nn = (n: number) => String(n).padStart(2, "0");
@@ -95,7 +95,7 @@ const outstanding = CRITERIA.filter((x) => x.current !== "V");
 
 function moduleTable(phase: Phase) {
   const out = ["| No. | Module | Status | Criteria | Implemented and tested | Partial | Not developed | Blocked | Implementation | Verification | Remaining |", "|--:|---|---|--:|--:|--:|--:|--:|--:|--:|--:|"];
-  for (const m of [...MODULES, CMD, XC]) {
+  for (const m of [...MODULES, CMD, KMU, PORT, XC]) {
     const list = CRITERIA.filter((x) => x.area === m);
     const s = score(list, phase);
     out.push(`| ${m.match(/^\d+/)?.[0] ?? "—"} | ${m.replace(/^\d+ /, "")} | ${moduleState(list, phase)} | ${s.n} | ${s.done} | ${s.partial} | ${s.none} | ${s.blocked} | ${pct(s.impl)} | ${pct(s.ver)} | ${pct(1 - s.impl)} |`);

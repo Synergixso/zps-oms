@@ -20,8 +20,8 @@ export default async function OrgDetail({ params }: { params: Promise<{ id: stri
       <PageHeader eyebrow={`${u.code} · ${UNIT_TYPE_LABEL[u.unit_type]}`} title={u.name} description={<Badge status={u.status} />} />
       <div className="grid gap-4 lg:grid-cols-2">
         <Card title="Organisation record">
-          <DL items={[["Stable identifier", <span key="i" className="font-mono text-xs">{u.id}</span>], ["Code", u.code], ["Entity type", UNIT_TYPE_LABEL[u.unit_type]], ["Current parent", u.parent_name ?? "—"], ["Effective from", fmtDate(u.effective_from)], ["Effective to", fmtDate(u.effective_to)], ["Approval reference", u.approval_ref ?? "Not yet approved (synthetic baseline)"]]} />
-          {u.validation_note && <div className="mt-4"><Notice tone="warn">{u.validation_note}</Notice></div>}
+          <DL items={[["Stable identifier", <span key="i" className="font-mono text-xs">{u.id}</span>], ["Code", u.code], ["Entity type", UNIT_TYPE_LABEL[u.unit_type]], ["Duty station", u.duty_station ?? "—"], ["Record basis", u.synthetic ? "Synthetic development record" : "Established structure"], ["Current parent", u.parent_name ?? "—"], ["Effective from", fmtDate(u.effective_from)], ["Effective to", fmtDate(u.effective_to)], ["Approval reference", u.approval_ref ?? (u.synthetic ? "None (synthetic baseline)" : "—")]]} />
+          {u.validation_note && <div className="mt-4"><Notice tone={u.synthetic ? "warn" : "info"}>{u.validation_note}</Notice></div>}
         </Card>
         <Card title="Reporting relationship history" subtitle="Effective-dated; historical relationships are end-dated, never deleted" bodyClass="p-0">
           <Table head={["Parent", "Relationship", "From", "To", "Approval ref"]} empty="No relationships (root).">

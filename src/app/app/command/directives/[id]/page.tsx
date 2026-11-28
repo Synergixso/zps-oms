@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireActor } from "@/server/auth/session";
 import { loadOr404 } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
-import { directiveDetail, instructableOffices, listDirectives, DIRECTIVE_CATEGORY, DIRECTIVE_STATUS, RELATIONSHIP_LABEL } from "@/server/domain/command";
+import { directiveAccountability, directiveDetail, instructableOffices, listDirectives, DIRECTIVE_CATEGORY, DIRECTIVE_STATUS, RELATIONSHIP_LABEL } from "@/server/domain/command";
 import { directiveStepAction, flagConflictAction, issueDirectiveAction } from "@/server/actions/command";
 import { Badge, Card, PageHeader, Table, td, fmtDate, fmtDateTime } from "@/components/ui";
 import { ActionForm, Hidden, Select, Submit, TextArea, TextField } from "@/components/forms";
@@ -21,6 +21,7 @@ export default async function DirectivePage({ params, searchParams }: { params: 
   const { id } = await params;
   const { done } = await searchParams;
   const { directive: d, events, tree, parent, conflicts, reports, consolidated, held } = await loadOr404(() => directiveDetail(db, actor, id));
+  const acc = await directiveAccountability(db, actor, id);
   const mine = (pos: string, action: string) => held.some((h) => h.positionId === pos && h.actions.includes(action as never));
   const recipient = mine(d.recipient_position_id, "ACKNOWLEDGE") || mine(d.recipient_position_id, "FORWARD_DIRECTIVE");
   const open = ["ISSUED", "ACKNOWLEDGED", "IN_PROGRESS"].includes(d.status);
@@ -48,6 +49,23 @@ export default async function DirectivePage({ params, searchParams }: { params: 
             </dl>
             <h3 className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted">General instructions</h3>
             <p className="mt-1 whitespace-pre-line text-sm">{d.instructions}</p>
+          </Card>
+          <Card title="Accountability record" subtitle="Who originated, issued, holds and has acted on this directive (§13.4); administrative facts only">
+            <dl className="grid gap-4 sm:grid-cols-2">
+              <F label="Originating officer" value={acc.originating.id === d.id ? `${acc.originating.issuer} — ${acc.originating.office}` : <>{acc.originating.issuer} — {acc.originating.office} (<Link className="font-mono text-zp-blue hover:underline" href={`/app/command/directives/${acc.originating.id}`}>{acc.originating.reference}</Link>)</>} />
+              <F label="Issuing authority" value={`${acc.issuing.office} — ${acc.issuing.by}${acc.issuing.authority === "ACTING" ? ` (acting${acc.issuing.actingRef ? `, ${acc.issuing.actingRef}` : ""}${acc.issuing.actingUntil ? `, until ${fmtDate(acc.issuing.actingUntil.slice(0, 10))}` : ""})` : " (substantive)"}`} />
+              <F label="Responsible officer" value={acc.responsible.length ? acc.responsible.map((h) => `${h.name}${h.authority === "ACTING" ? " (acting)" : ""}`).join(", ") : `Vacant — ${acc.responsibleOffice}`} />
+              <F label="Unit / parent unit" value={`${acc.unit}${acc.parentUnit ? ` / ${acc.parentUnit}` : ""}`} />
+              <F label="Issued" value={fmtDateTime(acc.issuedAt)} />
+              <F label="Acknowledged" value={acc.acknowledged ? `${fmtDateTime(acc.acknowledged.at)}${acc.acknowledged.by ? ` — ${acc.acknowledged.by}` : ""}` : d.ack_required ? "Not yet" : "Not required"} />
+              <F label="Latest progress" value={acc.progress ? `${acc.progress.progress_status.replace("_", " ").toLowerCase()} (${fmtDate(acc.progress.reporting_date)})` : "No report yet"} />
+              <F label="Completion" value={acc.completed ? `${fmtDateTime(acc.completed.at)}${acc.completed.by ? ` — ${acc.completed.by}` : ""}${acc.closed ? `; closed ${fmtDateTime(acc.closed.at)}` : ""}` : "Not reported"} />
+              <F label="Audit trail" value={acc.auditLink ? <Link className="text-zp-blue hover:underline" href={acc.auditLink}>{acc.auditEvents} audit event(s)</Link> : `${acc.auditEvents} audit event(s)`} />
+            </dl>
+            <h3 className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted">Escalation history</h3>
+            {acc.escalations.length ? (
+              <ul className="mt-1 space-y-0.5 text-sm">{acc.escalations.map((e, i) => <li key={i}><span className="text-muted">{fmtDate(e.at)}</span> · {e.what}{e.count > 1 ? ` (${e.count} recipients)` : ""}</li>)}</ul>
+            ) : <p className="mt-1 text-sm text-ink-2">No reminders, escalations or conflicts.</p>}
           </Card>
           <Card title="Assigned onward (consolidated status)" subtitle={Object.entries(consolidated).map(([k, n]) => `${n} ${DIRECTIVE_STATUS[k].toLowerCase()}`).join(" · ") || "Not assigned onward"} bodyClass="p-0">
             <Table head={["Reference", "To", "Status", "Due"]} caption="Directives assigned onward" empty="This directive has not been assigned to a lower level.">
