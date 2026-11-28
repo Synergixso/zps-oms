@@ -100,27 +100,38 @@ test("Journey 4 — a restricted coordination request from DIG Operations to DIG
   expect(r?.status()).toBe(404); // the third DIG cannot see it
 });
 
-test("Journey 5 — training chain: Division nominates, Divisional Commander recommends, DIG Administration approves, SPOM delivers", async ({ page }) => {
-  // Four sign-ins and first-time compilation of each page on the development server: measured 5.5 min on 28 Nov 2026
-  // with every step succeeding (attendance recorded), so this journey alone gets 8 minutes.
-  test.setTimeout(480_000);
+// Journey 5 — training chain across four offices. Split into four serial stages (one sign-in each) so that each stage
+// has its own budget: as one test it measured 5.5 min on an idle machine and exceeded 8 min under load (28 Nov 2026).
+let session = "";
+test("Journey 5a — the Division nominates an officer", async ({ page }) => {
+  test.setTimeout(240_000);
   await login(page, "demo.cb.staffops");
   await page.goto("/app/training?tab=sessions");
   await page.getByRole("row", { name: /Public Order Maintenance — Basic Course.*Open for nominations/ }).getByRole("link").first().click();
   await page.waitForURL(/\/app\/training\/sessions\/tss_/);
-  const session = page.url().replace(/^https?:\/\/[^/]+/, "").split("?")[0];
+  session = page.url().replace(/^https?:\/\/[^/]+/, "").split("?")[0];
   await page.getByLabel("Officer").selectOption({ index: 5 });
   await page.getByRole("button", { name: "Nominate" }).click();
   await page.waitForURL(/done=/, { timeout: 120_000 });
   await scan(page, "Division Staff I");
+});
+test("Journey 5b — the Divisional Commander recommends", async ({ page }) => {
+  test.setTimeout(240_000);
+  expect(session, "stage 5a recorded the session").not.toBe("");
   await login(page, "demo.cb.commander");
   await page.goto(session);
   await page.getByRole("button", { name: "Recommend", exact: true }).first().click();
   await page.waitForURL(/done=Recommended/, { timeout: 120_000 });
+});
+test("Journey 5c — DIG Administration approves", async ({ page }) => {
+  test.setTimeout(240_000);
   await login(page, "demo.dig.admin");
   await page.goto(session);
   await page.getByRole("row", { name: /Recommended/ }).first().getByRole("button", { name: "Approve" }).click();
   await page.waitForURL(/done=Approved/, { timeout: 120_000 });
+});
+test("Journey 5d — SPOM / Mobile Unit, the delivering unit, records attendance", async ({ page }) => {
+  test.setTimeout(240_000);
   await login(page, "demo.mu.commander");
   await page.goto(session);
   await expect(page.getByText("Your unit delivers this session")).toBeVisible();

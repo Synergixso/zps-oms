@@ -1,6 +1,6 @@
 # Accessibility scan — executive portfolio pages (axe-core, WCAG 2.0/2.1/2.2 A and AA)
 
-Generated 2026-11-28T12:18:01.476Z. Synthetic data only.
+Generated 2026-11-28T15:40:26.470Z. Synthetic data only.
 
 **Violations: 0**
 

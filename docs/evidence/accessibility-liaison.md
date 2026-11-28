@@ -1,6 +1,6 @@
 # Accessibility scan — liaison administration pages (axe-core, WCAG 2.0/2.1/2.2 A and AA)
 
-Generated 2026-11-28T09:57:50.588Z as roles 31, 30, 19 and 07 (synthetic accounts). Synthetic data only.
+Generated 2026-11-28T12:57:28.543Z as roles 31, 30, 19 and 07 (synthetic accounts). Synthetic data only.
 
 **Violations: 0**
 

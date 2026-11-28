@@ -69,13 +69,13 @@ Plan: `docs/MASTER_DEVELOPMENT_PLAN.md`. Project Manager actions: GitHub issues 
 | ID | Phase | Area | Requirement | Status | Test result | Evidence |
 |---|---|---|---|---|---|---|
 | K1 | 1 | Audit | Skills verified (mattpocock-skills 1.3.1); repository audit against the directive; master plan committed | Completed and Verified | — | `MASTER_DEVELOPMENT_PLAN.md` (commit ea6e11e) |
-| K2 | 2 | Organisation | Established KMU Companies and Detachments with duty stations; established coverage labels (K-01 … K-03) | RESULT_K | `kmu-structure` 8/8 | DEC-078; migration 016; seed step 016 |
-| K3 | 2 | Command | Company, Deputy Company and Detachment Commander offices and relationships; Deputy acting (K-04, K-05) | RESULT_K | `kmu-structure` 8/8 | DEC-079 |
-| K4 | 3 | Command | Accountability record for each instruction (§13.4) (K-11) | RESULT_K | `command-accountability` 2/2 | `directiveAccountability` |
-| K5 | 4 | Field command | Platoon Commander workspace and attendance register (K-06, K-07) | RESULT_K | `field-command` 7/7; Playwright `field-command` 4/4; browser | DEC-080; migration 017 |
-| K6 | 4 | Field command | Area Commander workspace and engagement register; Company / Detachment workspace (K-08 … K-10) | RESULT_K | `field-command` 7/7; Playwright; browser | DEC-080 |
-| K7 | 6 | Security | Field command probes; office-based access; neutral 404 (K-12) | RESULT_K | security probes 43/43 (development) | `scripts/security-probe.mjs` §4c |
-| K8 | 7 | QA | Full regression | RESULT_K | RESULT_FULL | `CHANGELOG.md` [0.13.0] |
+| K2 | 2 | Organisation | Established KMU Companies and Detachments with duty stations; established coverage labels (K-01 … K-03) | Completed and Verified | `kmu-structure` 8/8 | DEC-078; migration 016; seed step 016 |
+| K3 | 2 | Command | Company, Deputy Company and Detachment Commander offices and relationships; Deputy acting (K-04, K-05) | Completed and Verified | `kmu-structure` 8/8 | DEC-079 |
+| K4 | 3 | Command | Accountability record for each instruction (§13.4) (K-11) | Completed and Verified | `command-accountability` 2/2 | `directiveAccountability` |
+| K5 | 4 | Field command | Platoon Commander workspace and attendance register (K-06, K-07) | Completed and Verified | `field-command` 7/7; Playwright `field-command` 4/4; browser | DEC-080; migration 017 |
+| K6 | 4 | Field command | Area Commander workspace and engagement register; Company / Detachment workspace (K-08 … K-10) | Completed and Verified | `field-command` 7/7; Playwright; browser | DEC-080 |
+| K7 | 6 | Security | Field command probes; office-based access; neutral 404 (K-12) | Completed and Verified | security probes 43/43 (development) | `scripts/security-probe.mjs` §4c |
+| K8 | 7 | QA | Full regression | Completed and Verified | v0.15.0 regression 28 Nov 2026: config OK; tsc 0; lint 0; unit 236/236; Playwright 39/40 + Journey 5 re-run after split (see PRESENTATION_READINESS_REPORT); route audit 0 server errors; build OK; probes 53/53 production, 51/51 development; load PASS; audit chain verified | `CHANGELOG.md` [0.13.0] |
 | K9 | 8 | Pilot | Pilot readiness assessment | Completed | — | `PILOT_READINESS.md` |
 | K10 | 2 | Organisation | Complete KMU detachment and platoon establishment (K-13) | Blocked by External Dependency | — | Project Manager issue |
 
