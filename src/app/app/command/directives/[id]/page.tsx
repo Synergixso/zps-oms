@@ -7,6 +7,7 @@ import { directiveStepAction, flagConflictAction, issueDirectiveAction } from "@
 import { Badge, Card, PageHeader, Table, td, fmtDate, fmtDateTime } from "@/components/ui";
 import { ActionForm, Hidden, Select, Submit, TextArea, TextField } from "@/components/forms";
 import { Done } from "../../shared";
+import { indent } from "@/components/sizing";
 
 export const metadata = { title: "Directive" };
 
@@ -51,7 +52,7 @@ export default async function DirectivePage({ params, searchParams }: { params: 
           <Card title="Assigned onward (consolidated status)" subtitle={Object.entries(consolidated).map(([k, n]) => `${n} ${DIRECTIVE_STATUS[k].toLowerCase()}`).join(" · ") || "Not assigned onward"} bodyClass="p-0">
             <Table head={["Reference", "To", "Status", "Due"]} caption="Directives assigned onward" empty="This directive has not been assigned to a lower level.">
               {tree.map((c) => (
-                <tr key={c.id}><td className={td} style={{ paddingLeft: `${c.depth}rem` }}><Link className="font-mono text-xs font-semibold text-zp-blue hover:underline" href={`/app/command/directives/${c.id}`}>{c.reference}</Link></td>
+                <tr key={c.id}><td className={`${td} ${indent(c.depth, 16)}`}><Link className="font-mono text-xs font-semibold text-zp-blue hover:underline" href={`/app/command/directives/${c.id}`}>{c.reference}</Link></td>
                   <td className={td}>{c.recipient_title}</td><td className={td}><Badge status={c.status} label={DIRECTIVE_STATUS[c.status]} /></td><td className={`${td} text-muted`}>{c.due_date ? fmtDate(c.due_date) : "—"}</td></tr>
               ))}
             </Table>

@@ -4,11 +4,11 @@
 
 | Measure | Baseline | Current | Change |
 |---|--:|--:|--:|
-| Implementation (all approved criteria, weighted) | 64.0 % | 88.4 % | 24.4 % |
-| Verification (all approved criteria, weighted) | 63.1 % | 87.6 % | 24.4 % |
-| Implementation excluding externally blocked criteria | 71.7 % | 99.0 % | 27.4 % |
-| Remaining (all approved criteria) | 36.0 % | 11.6 % | |
-| Modules fully implemented (of 17) | 12 | 16 | |
+| Implementation (all approved criteria, weighted) | 64.0 % | 88.8 % | 24.8 % |
+| Verification (all approved criteria, weighted) | 63.1 % | 88.4 % | 25.3 % |
+| Implementation excluding externally blocked criteria | 71.7 % | 99.5 % | 27.8 % |
+| Remaining (all approved criteria) | 36.0 % | 11.2 % | |
+| Modules fully implemented (of 17) | 12 | 17 | |
 | Role back offices fully implemented and verified (of 31) | 16 | 31 | |
 
 ## By area (current)
@@ -30,10 +30,10 @@
 | 13 | Notifications, Tasks and Reminders | Fully implemented | 2 | 2 | 0 | 0 | 0 | 100.0 % | 100.0 % | 0.0 % |
 | 14 | Audit and Compliance Management | Fully implemented (external items blocked) | 4 | 3 | 0 | 0 | 1 | 80.0 % | 80.0 % | 20.0 % |
 | 15 | Platform Administration and System Monitoring | Fully implemented (external items blocked) | 3 | 2 | 0 | 0 | 1 | 66.7 % | 66.7 % | 33.3 % |
-| 16 | Administrative Scheduling and Availability | Partially implemented | 2 | 1 | 1 | 0 | 0 | 80.0 % | 80.0 % | 20.0 % |
+| 16 | Administrative Scheduling and Availability | Fully implemented | 2 | 2 | 0 | 0 | 0 | 100.0 % | 100.0 % | 0.0 % |
 | 17 | Administrative Correspondence Management | Fully implemented (external items blocked) | 3 | 2 | 0 | 0 | 1 | 71.4 % | 71.4 % | 28.6 % |
 | — | Command and Reporting (new direction) | Fully implemented (external items blocked) | 18 | 17 | 0 | 0 | 1 | 94.0 % | 94.0 % | 6.0 % |
-| — | Cross-cutting: security, quality, operations | Partially implemented | 10 | 6 | 1 | 1 | 2 | 69.6 % | 65.2 % | 30.4 % |
+| — | Cross-cutting: security, quality, operations | Partially implemented | 10 | 7 | 0 | 1 | 2 | 69.6 % | 69.6 % | 30.4 % |
 
 ## Status vocabulary
 

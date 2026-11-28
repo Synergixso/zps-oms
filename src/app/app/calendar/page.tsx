@@ -4,16 +4,18 @@ import { pageAllowed } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
 import { today } from "@/server/domain/core";
 import { hasPermission } from "@/server/domain/policy";
-import { calendar, type CalendarItem } from "@/server/domain/schedule";
+import { AVAILABILITY_GROUPS, availabilitySummary, calendar, type AvailabilityGroup, type CalendarItem } from "@/server/domain/schedule";
 import { AccessDenied, Badge, ButtonLink, Card, Notice, PageHeader, fmtDate } from "@/components/ui";
 
 export const metadata = { title: "Administrative calendar" };
 
 const KIND_LABEL: Record<CalendarItem["kind"], string> = {
   EVENT: "Event", ASSIGNMENT_REVIEW: "Assignment review", CONTRIBUTION_DEADLINE: "Contribution deadline", TASK: "My task", CORRESPONDENCE_FOLLOW_UP: "Correspondence follow-up",
+  AVAILABILITY_CHANGE: "Availability change", ASSIGNMENT_COMMENCEMENT: "Assignment commences",
 };
 const KIND_TONE: Record<CalendarItem["kind"], string> = {
   EVENT: "border-l-zp-green", ASSIGNMENT_REVIEW: "border-l-zp-blue", CONTRIBUTION_DEADLINE: "border-l-[#a84a05]", TASK: "border-l-slate-400", CORRESPONDENCE_FOLLOW_UP: "border-l-[#6b3fa0]",
+  AVAILABILITY_CHANGE: "border-l-[#0e7490]", ASSIGNMENT_COMMENCEMENT: "border-l-[#9f1239]",
 };
 
 function monthBounds(month: string) {
@@ -31,15 +33,30 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
   const sp = await searchParams;
   const month = sp.month && /^\d{4}-(0[1-9]|1[0-2])$/.test(sp.month) ? sp.month : today().slice(0, 7);
   const b = monthBounds(month);
-  const items = await calendar(getDb(), actor, b.from, b.to);
+  const db = getDb();
+  const [items, avail] = await Promise.all([calendar(db, actor, b.from, b.to), availabilitySummary(db, actor)]);
   const days = new Map<string, CalendarItem[]>();
   for (const i of items) days.set(i.date, [...(days.get(i.date) ?? []), i]);
   const t = today();
   return (
     <>
       <PageHeader eyebrow="Module 16 · Administrative scheduling" title="Administrative calendar"
-        description="Non-sensitive administrative events for your units, with review dates, contribution deadlines, your tasks and correspondence follow-ups drawn from the registers you can see. Operational, patrol or deployment scheduling is not recorded here."
+        description="Non-sensitive administrative events for your units, with review dates, contribution deadlines, personnel availability, your tasks and correspondence follow-ups drawn from the registers you can see. Operational, patrol or deployment scheduling is not recorded here."
         actions={hasPermission(actor, "schedule.manage") ? <ButtonLink href="/app/calendar/new" variant="primary">Schedule an event</ButtonLink> : undefined} />
+      {avail && (
+        <Card title="Personnel availability" subtitle={`${avail.serving} serving officer(s) in your personnel scope, today, derived from disposition status`}>
+          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {(Object.keys(AVAILABILITY_GROUPS) as AvailabilityGroup[]).map((g) => (
+              <div key={g} className="rounded-md border border-line bg-white px-3 py-2">
+                <dt className="text-xs text-ink-2">{AVAILABILITY_GROUPS[g]}</dt>
+                <dd className="text-xl font-bold text-ink">{avail.groups[g]}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-2 text-xs text-muted">Availability is an administrative status (DEC-068), not a location. Changes between these groups and approved assignments due to commence appear on their dates below.{" "}
+            <Link href="/app/personnel" className="font-semibold text-zp-blue hover:underline">Personnel register</Link></p>
+        </Card>
+      )}
       <Card>
         <nav aria-label="Month" className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <Link href={`/app/calendar?month=${b.prev}`} className="text-sm font-semibold text-zp-blue hover:underline">← Previous month</Link>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { widthPct } from "./sizing";
 
 export function Crest({ className = "h-10 w-[69px]" }: { className?: string }) {
   // Exact supplied crest asset (339×197 PNG). Never altered; object-fit: contain.
@@ -206,7 +207,7 @@ export function Bar({ label, value, max, tone = "green" }: { label: string; valu
         <span className="font-semibold tabular-nums">{value}</span>
       </div>
       <div className="mt-1 h-1.5 rounded-full bg-slate-100" role="presentation">
-        <div className={`h-1.5 rounded-full ${col}`} style={{ width: `${pct}%` }} />
+        <div className={`h-1.5 rounded-full ${col} ${widthPct(pct)}`} />
       </div>
     </div>
   );

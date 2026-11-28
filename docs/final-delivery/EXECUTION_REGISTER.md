@@ -57,6 +57,9 @@ Live task register (directive §15). Statuses: Not Started · In Progress · Par
 | W08 | 11 | Security | Visibility by office chain; refusals audited; technical and liaison exclusion; loops refused | Completed and Verified | Test I; 10 probes | `MULTI_TENANT_SECURITY_REPORT.md` |
 | W09 | 11 | Integration | Directives referencing manpower requests, assignments and transfers within scope; notifications; audit | Completed and Verified | Test J | `COMMAND_AND_REPORTING_TEST_RESULTS.md` |
 | W10 | 11–13 | All | Full regression, defects fixed, percentages updated, readiness report | Completed and Verified | full chain exit 0 (27–28 Nov 2026) | `END_TO_END_TEST_RESULTS.md` |
+| W11 | 12 | 16 | Personnel availability in the administrative calendar, derived from disposition, within scope (M16-2) | Completed and Verified | `scheduling-correspondence` test (191/191 unit tests); browser; Playwright 30/30; route audit 0 server errors | `CHANGELOG.md` [0.12.0] |
+| W12 | 11 | Security | Production `style-src 'self'`: inline style attributes replaced by literal classes (KNOWN_ISSUES 14) | Completed and Verified | `csp` test; 2 new security probes (39/39); production browser check | `SECURITY_ARCHITECTURE.md` |
+| W13 | 13 | CI | GitHub Actions observed (runs #1–#7 successful); checkout action moved to v5 | Completed and Verified | GitHub Actions run #7 | KNOWN_ISSUES 11 |
 | X08 | — | Command | Validation of the command structure, channels, precedence and mappings; decision on appointment-only access | Blocked by External Dependency | — | DEC-075, DEC-076 |
 
 ## External dependencies

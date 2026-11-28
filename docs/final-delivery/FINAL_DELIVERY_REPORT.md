@@ -62,7 +62,7 @@ FINAL_REGRESSION_SUMMARY
 
 ## 14. Known issues
 
-`docs/development/KNOWN_ISSUES.md`. None critical or high. Notable: development uses the XAMPP root account (production script ready); `style-src 'unsafe-inline'` remains; the first GitHub Actions run is to be observed by the owner.
+`docs/development/KNOWN_ISSUES.md`. None critical or high. Notable: development uses the XAMPP root account (production script ready); `style-src 'unsafe-inline'` remained (removed for production in v0.12.0); the first GitHub Actions run was to be observed (observed 28 Nov 2026: all runs successful).
 
 ## 15. External dependencies
 

@@ -42,7 +42,8 @@ jobs:
       ZPS_AUTOMATION: "off"
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
-      - uses: actions/checkout@v4
+      # v5 runs on Node.js 24; v4 targets Node.js 20, which GitHub runners deprecate.
+      - uses: actions/checkout@v5
 
       - name: Install MariaDB client tools
         run: apt-get update && apt-get install -y --no-install-recommends mariadb-client

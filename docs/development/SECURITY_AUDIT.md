@@ -39,4 +39,4 @@ Recorded 27 November 2026 for v0.9.0. This is the development team's own review 
 
 ## Residual risks (need external action)
 
-Independent penetration test; IdP with MFA; TLS and reverse-proxy rate limiting; least-privilege database account in use; encryption at rest; off-host/WORM audit storage; central logging; malware scanning for documents; DPIA. `'unsafe-inline'` remains in `style-src` (styles cannot execute code; removing it needs React style attributes converted to classes). Dependency audit: `npm audit --omit=dev` reports 0 vulnerabilities (CI step).
+Independent penetration test; IdP with MFA; TLS and reverse-proxy rate limiting; least-privilege database account in use; encryption at rest; off-host/WORM audit storage; central logging; malware scanning for documents; DPIA. `'unsafe-inline'` remained in `style-src` at the time of this audit (resolved for production in v0.12.0). Dependency audit: `npm audit --omit=dev` reports 0 vulnerabilities (CI step).

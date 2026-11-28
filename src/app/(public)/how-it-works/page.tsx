@@ -158,8 +158,7 @@ export default function HowItWorks() {
                 <li key={t.title}>
                   <div className="grid items-center gap-4 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
                     <div
-                      className={`bg-gradient-to-b px-8 py-4 text-center text-white shadow-[0_8px_18px_-8px_rgba(13,33,73,0.6)] ${t.bg}`}
-                      style={{ clipPath: "polygon(9% 0, 91% 0, 100% 100%, 0 100%)", borderRadius: "14px" }}
+                      className={`rounded-[14px] bg-gradient-to-b px-8 py-4 text-center text-white shadow-[0_8px_18px_-8px_rgba(13,33,73,0.6)] [clip-path:polygon(9%_0,91%_0,100%_100%,0_100%)] ${t.bg}`}
                     >
                       <Icon name={t.icon} className="mx-auto h-8 w-8" />
                       <p className="mt-1 text-[17px] font-extrabold leading-tight">{t.title}</p>

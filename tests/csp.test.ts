@@ -20,6 +20,11 @@ describe("content security policy (DEC-067)", () => {
     for (const d of ["object-src 'none'", "frame-ancestors 'none'", "form-action 'self'", "base-uri 'self'", "default-src 'self'"]) expect(csp).toContain(d);
   });
 
+  it("refuses inline styles in production (KNOWN_ISSUES 14) and allows them only for the development server", () => {
+    expect(directive(pageCsp("n", false), "style-src")).toBe("style-src 'self'");
+    expect(directive(pageCsp("n", true), "style-src")).toBe("style-src 'self' 'unsafe-inline'");
+  });
+
   it("adds eval and the reload socket in development only", () => {
     const csp = pageCsp("n", true);
     expect(directive(csp, "script-src")).toContain("'unsafe-eval'");

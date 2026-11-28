@@ -1,6 +1,6 @@
 # Accessibility scan (axe-core, WCAG 2.0/2.1/2.2 A and AA)
 
-Generated 2026-11-27T20:35:37.189Z · 69 page views scanned (7 public pages; dashboard and Help page for one account per role, 31 roles). Synthetic data only.
+Generated 2026-11-28T03:36:43.768Z · 69 page views scanned (7 public pages; dashboard and Help page for one account per role, 31 roles). Synthetic data only.
 
 **Violations: 0**
 

@@ -2,9 +2,20 @@
 
 All notable changes to ZPS-OMS. Dates are Africa/Lusaka.
 
+## [0.12.0] — 2026-11-28 — Personnel availability in scheduling, strict style policy, CI observed
+### Added
+- **Personnel availability in the administrative calendar** (Module 16, M16-2): current availability of serving personnel in the user's personnel scope, grouped as available, in the assignment process, on assignment or unavailable, derived from disposition status; changes between those groups on the day they took effect (one line per day and home unit, linking to the unit's personnel register); approved assignments due to commence. Scoped by `personnel.view` and `assignment.view`; an administrative status only, never a location.
+### Security
+- **Production `style-src 'self'`** (KNOWN_ISSUES 14): the 14 inline style attributes became literal utility classes (`src/components/sizing.ts` for widths, heights and tree indentation; class lists for chart colours, grid lines and hero positions; a stylesheet for the last-resort error page). Development keeps `'unsafe-inline'` for the Next.js dev server. New security probes check the production policy and that 11 public and back-office pages send no inline styles (39 probes).
+### Changed
+- CI uses `actions/checkout@v5` (Node.js 24); v4 raised GitHub's Node.js 20 deprecation warning.
+### Verified
+- GitHub Actions observed for the first time from this environment: runs #1–#7 all successful (KNOWN_ISSUES 11, X-07).
+- Full local run: type check and lint clean; 191/191 unit and integration tests; Playwright 30/30; route audit 0 server errors; production build 0 warnings; security probes 39/39. Status register: implemented 88.8 %, verified 88.4 % (baseline 64.0 % / 63.1 %).
+
 ## [0.11.0] — 2026-11-27 — Institutional command hierarchy, directives and status reporting
 ### Added
-- **Development status report** (`COMPLETE_ZPS_OMS_DEVELOPMENT_STATUS_REPORT.md`, `UPDATED_IMPLEMENTATION_PERCENTAGES.md`), generated from a weighted requirement register (`scripts/status-register.mts`, `npm run docs:status`): baseline 64.8 % implemented / 64.0 % verified; current 89.6 % / 88.7 % (remaining work is mostly blocked by external dependencies).
+- **Development status report** (`COMPLETE_ZPS_OMS_DEVELOPMENT_STATUS_REPORT.md`, `UPDATED_IMPLEMENTATION_PERCENTAGES.md`), generated from a weighted requirement register (`scripts/status-register.mts`, `npm run docs:status`): baseline 64.0 % implemented / 63.1 % verified; current 88.4 % / 87.6 % after the DEC-075 sign-off was added as a blocked criterion (remaining work is mostly blocked by external dependencies).
 - **Command and Reporting** (DEC-074): command offices separate from ranks and roles; dated appointments; typed reporting relationships (primary command, primary reporting, parallel reporting, administrative coordination) with loop prevention; the IG as the highest authority with no superior; directives issued only downward to the office directly below, acknowledged, assigned onward level by level, progressed, completed and closed with consolidated status; status reports routed automatically to the designated superior and parallel recipients as **one report with one recipient record per office**, with acknowledgement, review, return, resubmission, forwarding and closure; acting appointments with delegated actions and expiry (DEC-077); conflicting tasking referred to the nearest common superior, never decided automatically; integration with manpower requests, assignments and transfers within the issuer's scope.
 - Mobile Unit structure (synthetic, DEC-075): Constable → Sergeant → Inspector → Section/Platoon Commander → Area Commander; the Area Commander's channel A (Kitwe District coordination and parallel reporting) and channel B (Staff II → Staff I → Divisional Commander → Commissioner → DIG Operations → IG).
 - Pages: `/app/command` (overview), directives received/issued/new/detail, reports received/submitted/new/detail, acting appointments, conflicts, structure; a command panel on the dashboard of every office holder; appointment-only dashboard for ranks without an application role (DEC-076).

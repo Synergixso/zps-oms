@@ -121,7 +121,7 @@ export const CRITERIA: Criterion[] = [
   c("M15-3", m15, "Production hosting, TLS, least-privilege DB account, monitoring", 3, "B", "B", "`DEPLOYMENT_READINESS.md`", { blocker: "Production infrastructure (X01)" }),
   // ── 16 Scheduling ──
   c("M16-1", m16, "Non-sensitive administrative events; derived dates; tasks; reminders", 3, "V", "V", "`scheduling-correspondence`; admin-records journey"),
-  c("M16-2", m16, "Personnel availability shown in scheduling (derived from disposition)", 2, "P:0.5", "P:0.5", "availability exists as disposition status in the registry; not presented in the calendar"),
+  c("M16-2", m16, "Personnel availability shown in scheduling (derived from disposition)", 2, "P:0.5", "V", "baseline: disposition status in the registry only; now the calendar shows current availability by group, availability changes by day and unit, and approved assignments due to commence, within personnel and assignment scope (v0.12.0); `scheduling-correspondence` test; browser"),
   // ── 17 Correspondence ──
   c("M17-1", m17, "Register, assign, progress, file; RESTRICTED handling; history", 3, "V", "V", "`scheduling-correspondence`, `transactions`"),
   c("M17-2", m17, "PDF documents with structural screening; download sandboxed", 2, "V", "V", "security probes; `scheduling-correspondence`"),
@@ -154,7 +154,7 @@ export const CRITERIA: Criterion[] = [
   c("X-04", XC, "Manual accessibility audit with assistive technology", 1, "N", "N", "not performed"),
   c("X-05", XC, "Reflow 320–1024 px for every page in every role's navigation", 2, "V", "V", "`e2e/reflow.spec.ts`"),
   c("X-06", XC, "Load baseline on the production build within provisional budgets", 2, "V", "V", "`npm run test:load`"),
-  c("X-07", XC, "CI: type check, lint, tests on MariaDB, dependency audit, build", 2, "P:1:0.5", "P:1:0.5", "pipeline defined and each step passes locally; a run on GitHub has not been observed from here"),
+  c("X-07", XC, "CI: type check, lint, tests on MariaDB, dependency audit, build", 2, "P:1:0.5", "V", "observed on GitHub 28 Nov 2026: runs #1-#7 all succeeded; run #7 (v0.11.0) passed type check, lint, tests on MariaDB 10.4, dependency audit and build; checkout action moved to v5 (Node.js 20 deprecation warning)"),
   c("X-08", XC, "Independent penetration test and DPIA", 3, "B", "B", "", { blocker: "Assessor and production-configured environment (X03)" }),
   c("X-09", XC, "Liaison updates refuse a lost concurrent update (no orphan history)", 2, "P:0.8:0.8", "V", "baseline: version condition present but row count not checked; fixed 27 Nov (`guarded`), `liaison` › concurrency test"),
   c("X-10", XC, "Institutional approval and deployment authorisation", 3, "B", "B", "`INSTITUTIONAL_APPROVAL_STATUS.md`", { blocker: "Service decision (X06)" }),

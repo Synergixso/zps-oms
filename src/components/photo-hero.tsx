@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
 
 /** Approved hero photography (public/hero/*.webp), slowly cross-faded; reduced motion shows the first image only. */
-export function HeroImages({ className = "", position = "100% 100%" }: { className?: string; position?: string }) {
+/** Object positions as literal classes (strict CSP: no inline styles). */
+const POSITION = { right: "object-[100%_100%]", rightOfCentre: "object-[68%_100%]" } as const;
+
+export function HeroImages({ className = "", position = "right" }: { className?: string; position?: keyof typeof POSITION }) {
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -11,8 +14,7 @@ export function HeroImages({ className = "", position = "100% 100%" }: { classNa
         width={1774}
         height={887}
         fetchPriority="high"
-        className="absolute inset-0 h-full w-full object-cover"
-        style={{ objectPosition: position }}
+        className={`absolute inset-0 h-full w-full object-cover ${POSITION[position]}`}
       />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -21,8 +23,7 @@ export function HeroImages({ className = "", position = "100% 100%" }: { classNa
         width={1774}
         height={887}
         loading="lazy"
-        className="hero-fade absolute inset-0 h-full w-full object-cover"
-        style={{ objectPosition: position }}
+        className={`hero-fade absolute inset-0 h-full w-full object-cover ${POSITION[position]}`}
       />
     </div>
   );
@@ -50,7 +51,7 @@ export function PhotoHero({ labelledBy, children, compact = false }: { labelledB
       </div>
 
       <div className="relative -mt-6 lg:hidden" aria-hidden>
-        <HeroImages className="aspect-[4/3] w-full sm:aspect-[2/1]" position="68% 100%" />
+        <HeroImages className="aspect-[4/3] w-full sm:aspect-[2/1]" position="rightOfCentre" />
         <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#0d2149] to-transparent" />
       </div>
     </section>

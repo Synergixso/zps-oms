@@ -7,8 +7,13 @@
  */
 import Link from "next/link";
 import { useState } from "react";
+import { heightPx } from "./sizing";
 
 const SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300"]; // validated light palette, slots 1–6
+/** The same slots as background classes for legend swatches (no inline styles; strict CSP). */
+const SERIES_BG = ["bg-[#2a78d6]", "bg-[#eb6834]", "bg-[#1baf7a]", "bg-[#eda100]", "bg-[#e87ba4]", "bg-[#008300]"];
+/** Grid-line positions for the ticks at 0, half and full (30 px baseline + 150 px plot). */
+const TICK_BOTTOM = ["bottom-[30px]", "bottom-[105px]", "bottom-[180px]"];
 
 export function DonutChart({ data, centerLabel, emptyText = "No data in your scope." }: { data: Array<{ label: string; value: number }>; centerLabel: string; emptyText?: string }) {
   const [hover, setHover] = useState<number | null>(null);
@@ -55,7 +60,7 @@ export function DonutChart({ data, centerLabel, emptyText = "No data in your sco
       <ul className="w-full space-y-1.5 text-[13px]" aria-label="Legend">
         {data.map((d, i) => (
           <li key={d.label} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} className={`flex items-center gap-2 rounded px-1 ${hover === i ? "bg-slate-50" : ""}`}>
-            <span className="h-3 w-3 shrink-0 rounded-[3px]" style={{ background: SERIES[i % SERIES.length] }} aria-hidden />
+            <span className={`h-3 w-3 shrink-0 rounded-[3px] ${SERIES_BG[i % SERIES_BG.length]}`} aria-hidden />
             <span className="min-w-0 flex-1 text-ink">{d.label}</span>
             <span className="font-semibold tabular-nums text-ink">{d.value}</span>
             <span className="w-10 text-right tabular-nums text-ink-2">{pct(d.value)}%</span>
@@ -80,8 +85,8 @@ export function BarChart({ data, caption }: { data: Array<{ label: string; value
   return (
     <figure>
       <div className="relative flex h-[190px] gap-3 pl-8">
-        {ticks.map((t) => (
-          <div key={t} className="pointer-events-none absolute left-0 right-0 flex items-center" style={{ bottom: `${(t / nice) * 150 + 30}px` }}>
+        {ticks.map((t, n) => (
+          <div key={t} className={`pointer-events-none absolute left-0 right-0 flex items-center ${TICK_BOTTOM[n]}`}>
             <span className="w-7 pr-1 text-right text-[10px] tabular-nums text-muted">{t}</span>
             <span className="h-px flex-1 bg-line" />
           </div>
@@ -91,7 +96,7 @@ export function BarChart({ data, caption }: { data: Array<{ label: string; value
           const bar = (
             <div className="flex h-full flex-col items-center justify-end pb-[30px]" onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}>
               <span className="mb-1 text-[12px] font-bold tabular-nums text-ink">{d.value}</span>
-              <div className={`w-full max-w-[46px] rounded-t-[4px] transition-colors ${hover === i ? "bg-[#1f5fb0]" : "bg-[#2a78d6]"}`} style={{ height: `${h}px` }} />
+              <div className={`w-full max-w-[46px] rounded-t-[4px] transition-colors ${hover === i ? "bg-[#1f5fb0]" : "bg-[#2a78d6]"} ${heightPx(h)}`} />
               {hover === i && <span role="tooltip" className="absolute -top-1 z-10 rounded bg-ink px-2 py-1 text-[11px] font-semibold text-white shadow">{d.label}: {d.value} in 30 days</span>}
             </div>
           );

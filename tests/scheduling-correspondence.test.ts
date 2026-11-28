@@ -2,7 +2,8 @@ import { deflateSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
 import { all, one } from "@/server/db/connection";
 import { addDays, today } from "@/server/domain/core";
-import { calendar, createEvent, getEvent, listEvents, setEventStatus } from "@/server/domain/schedule";
+import { availabilityGroup, availabilitySummary, calendar, createEvent, getEvent, listEvents, setEventStatus } from "@/server/domain/schedule";
+import { changeDisposition } from "@/server/domain/personnel";
 import {
   assignCorrespondence, attachFile, downloadFile, getCorrespondence, listCorrespondence, listFiles, registerCorrespondence,
   removeFile, safeFileName, screenPdf, setCorrespondenceStatus,
@@ -73,6 +74,34 @@ describe("Module 16 — administrative scheduling", () => {
     expect(reviews.length).toBe(Math.min(expected, 500));
     expect([...items].map((i) => i.date)).toEqual([...items].map((i) => i.date).sort());
     await expect(calendar(db, staff, "2026-01-01", "2026-12-31")).rejects.toThrow(/three months/);
+  }));
+
+  it("shows personnel availability derived from disposition, within personnel scope (M16-2)", () => withDb(async (db) => {
+    expect(availabilityGroup("AVAILABLE_HOME")).toBe("AVAILABLE");
+    expect(availabilityGroup("RETURNED_HOME")).toBe("AVAILABLE");
+    expect(availabilityGroup("AWAITING_APPROVAL")).toBe("IN_PROCESS");
+    expect(availabilityGroup("ACTIVE_ASSIGNMENT")).toBe("ON_ASSIGNMENT");
+    expect(availabilityGroup("TEMP_UNAVAILABLE")).toBe("UNAVAILABLE");
+    const cb = await actor(db, "u_cb_sops");
+    const sum = (await availabilitySummary(db, cb))!;
+    const serving = Number((await one<{ n: number }>(db, `SELECT COUNT(*) AS n FROM personnel_records WHERE employment_status = 'SERVING'
+      AND home_unit_id IN (SELECT descendant_id FROM org_unit_closure WHERE ancestor_id = 'org_cb')`))!.n);
+    expect(sum.serving).toBe(serving);
+    expect(Object.values(sum.groups).reduce((a, b) => a + b, 0)).toBe(serving);
+    // A manual change to Temporarily Unavailable today appears as one line for the officer's home unit.
+    const p = (await one<{ id: string; home_unit_id: string; surname: string }>(db, `SELECT id, home_unit_id, surname FROM personnel_records WHERE disposition_status = 'AVAILABLE_HOME' AND employment_status = 'SERVING'
+      AND home_unit_id IN (SELECT descendant_id FROM org_unit_closure WHERE ancestor_id = 'org_cb') ORDER BY id LIMIT 1`))!;
+    await changeDisposition(db, cb, p.id, "TEMP_UNAVAILABLE", "Demo administrative leave recorded for the test");
+    const items = (await calendar(db, cb, today(), today())).filter((i) => i.kind === "AVAILABILITY_CHANGE");
+    const line = items.find((i) => i.href === `/app/personnel?unit=${p.home_unit_id}`)!;
+    expect(line.title).toMatch(/1 unavailable/);
+    expect(line.detail).toContain(p.surname);
+    expect(line.detail).toContain("Temporarily Unavailable");
+    expect((await availabilitySummary(db, cb))!.groups.UNAVAILABLE).toBe(sum.groups.UNAVAILABLE + 1);
+    // Outside the personnel scope: Lusaka staff do not see the Copperbelt change; no personnel.view, no availability.
+    expect((await calendar(db, await actor(db, "u_lsk_sops"), today(), today())).some((i) => i.href === line.href)).toBe(false);
+    const liaison = await actor(db, "u_hq_pio");
+    expect(await availabilitySummary(db, liaison)).toBeNull();
   }));
 });
 

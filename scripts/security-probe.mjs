@@ -112,6 +112,30 @@ check("reflected search escaped", !x.body.includes("<script>alert(1)</script>"),
 const c = await get("/app/calendar?month=9999-99", await session("u_cb_sops"));
 check("calendar bad month", c.status === 200, `${c.status}`);
 
+// 8. Inline styles are refused in production (KNOWN_ISSUES 14): style-src has no 'unsafe-inline', and the pages send no
+// style attributes or inline <style> elements that the policy would block. Development keeps 'unsafe-inline' for the
+// Next.js dev server, so this probe applies to production builds only.
+const home = await get("/login");
+const production = !/'unsafe-eval'/.test(home.csp ?? "");
+if (production) {
+  const styleSrc = (home.csp ?? "").split("; ").find((d) => d.startsWith("style-src ")) ?? "";
+  check("production style-src refuses inline styles", styleSrc === "style-src 'self'", styleSrc);
+  const [[asg]] = await db.query("SELECT id FROM personnel_assignments WHERE status = 'ACTIVE' AND home_unit_id IN (SELECT descendant_id FROM org_unit_closure WHERE ancestor_id = 'org_cb') LIMIT 1");
+  const [[dir]] = await db.query("SELECT id FROM command_directives WHERE issuer_position_id = 'pos_ig' LIMIT 1");
+  const pages = [
+    ["/login"], ["/"], ["/how-it-works"], ["/features"],
+    ["/app", "u_cb_sops"], ["/app/org", "u_cb_sops"], ["/app/calendar", "u_cb_sops"], ["/app", "u_rom"], ["/app", "u_hqc"],
+    ...(asg ? [[`/app/assignments/${asg.id}`, "u_cb_sops"]] : []), ...(dir ? [[`/app/command/directives/${dir.id}`, "u_rom"]] : []),
+  ];
+  const inline = [];
+  for (const [path, user] of pages) {
+    const r = await get(path, user ? await session(user) : undefined);
+    if (r.status !== 200) inline.push(`${path}: status ${r.status}`);
+    else if (/<[a-z][^>]*\sstyle=|<style[\s>]/i.test(r.body)) inline.push(path);
+  }
+  check(`no inline styles on ${pages.length} pages`, inline.length === 0, inline.join(", ") || "none");
+}
+
 for (const h of made) await db.query("DELETE FROM sessions WHERE id = ?", [h]);
 await db.end();
 for (const r of results) console.log(`${r.ok ? "PASS" : "FAIL"}  ${r.name}  (${r.detail})`);

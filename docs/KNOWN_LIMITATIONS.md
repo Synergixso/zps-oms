@@ -14,7 +14,7 @@ Reviewed 26 November 2026 against the code, the test evidence in `docs/evidence/
 
 ## 2. Production prerequisites (engineering, on the target infrastructure)
 - The local database uses the XAMPP `root` account. `db/admin/create_app_user.sql` creates least-privilege application and read-only accounts; TLS to the database, encryption at rest and off-host backups are infrastructure work.
-- Content Security Policy: scripts are nonce-based (no `'unsafe-inline'`, DEC-067); styles still allow `'unsafe-inline'` because the interface uses React style attributes. Removing that would need the style attributes moved to classes.
+- Content Security Policy: scripts are nonce-based (no `'unsafe-inline'`, DEC-067); since v0.12.0 production styles are also restricted to this origin (`style-src 'self'`). Development keeps `'unsafe-inline'` for the Next.js dev server.
 - Rate limiting is applied in the application to sign-in (per account lockout and per-device throttling) and to the public contact form; general request rate limiting belongs at the reverse proxy, which does not exist locally.
 - The audit hash chain detects tampering when verified (`npm run verify:audit`, restore drills); protection against an attacker who can rewrite the whole database needs external anchoring or WORM storage.
 - No central logging/SIEM, host time synchronisation (NTP) or monitoring stack locally; the `/api/health` endpoint (readiness and liveness) is ready for one.

@@ -4,6 +4,7 @@ import { pageAllowed } from "@/server/auth/guard";
 import { getDb } from "@/server/db/connection";
 import { listOrgUnits, UNIT_TYPE_LABEL } from "@/server/domain/org";
 import { AccessDenied, Badge, Card, Notice, PageHeader, Table, td, fmtDate, btnSecondary } from "@/components/ui";
+import { indent } from "@/components/sizing";
 
 export const metadata = { title: "Organisation directory" };
 
@@ -56,7 +57,7 @@ export default async function OrgDirectory({ searchParams }: { searchParams: Pro
             <Table head={["Name", "Code", "Type", "Reports to / administered by", "Status", "Effective from"]}>
               {rows.map((u) => (
                 <tr key={u.id} className="hover:bg-slate-50">
-                  <td className={td}><span style={{ paddingLeft: `${u.depth * 18}px` }} className="inline-block">{u.depth > 0 && <span className="mr-1 text-muted" aria-hidden>└</span>}<Link href={`/app/org/${u.id}`} className="font-semibold text-zp-blue hover:underline">{u.name}</Link></span></td>
+                  <td className={td}><span className={`inline-block ${indent(u.depth, 18)}`}>{u.depth > 0 && <span className="mr-1 text-muted" aria-hidden>└</span>}<Link href={`/app/org/${u.id}`} className="font-semibold text-zp-blue hover:underline">{u.name}</Link></span></td>
                   <td className={`${td} font-mono text-xs`}>{u.code}</td>
                   <td className={`${td} text-ink-2`}>{UNIT_TYPE_LABEL[u.unit_type]}</td>
                   <td className={td}>{u.parent_name ?? "—"}</td>

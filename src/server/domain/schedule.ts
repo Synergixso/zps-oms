@@ -10,7 +10,10 @@
  *  1. administrative events of units the actor can see (schedule.view);
  *  2. dates the system already holds about records the actor may see — assignment review dates
  *     (assignment.view), manpower contribution deadlines (manpower.view) and correspondence follow-ups;
- *  3. the actor's own open tasks with a due date.
+ *  3. the actor's own open tasks with a due date;
+ *  4. personnel availability derived from disposition (M16-2): availability changes recorded in the month
+ *     (personnel.view, by home unit, one line per day and unit) and approved assignments due to commence
+ *     (assignment.view). Availability is an administrative status only — never a location or position.
  * Derived entries are read-only and link to their source record.
  */
 import { z } from "zod";
@@ -19,6 +22,7 @@ import { all, one, run, tx } from "../db/connection";
 import { audit } from "./audit";
 import { PROHIBITED_TERMS } from "./catalogue";
 import { conflict, invalid, newId, notFound, nowIso, tenantOf, today } from "./core";
+import { AVAILABLE_DISPOSITIONS, DISPOSITIONS, type Disposition } from "./personnel";
 import { type Actor, can, hasPermission, requirePermission, scopeFor } from "./policy";
 
 export const EVENT_CATEGORIES = { MEETING: "Administrative meeting", DEADLINE: "Administrative deadline", REVIEW: "Review appointment", TRAINING: "Training (administrative)", INSPECTION: "Records inspection", OTHER: "Other administrative" } as const;
@@ -56,7 +60,7 @@ const EVENT_SELECT = `SELECT e.*, o.name AS unit_name, u.display_name AS created
 
 /** One calendar line: an administrative event or a dated item derived from another module. */
 export interface CalendarItem {
-  date: string; time: string | null; kind: "EVENT" | "ASSIGNMENT_REVIEW" | "CONTRIBUTION_DEADLINE" | "TASK" | "CORRESPONDENCE_FOLLOW_UP";
+  date: string; time: string | null; kind: "EVENT" | "ASSIGNMENT_REVIEW" | "CONTRIBUTION_DEADLINE" | "TASK" | "CORRESPONDENCE_FOLLOW_UP" | "AVAILABILITY_CHANGE" | "ASSIGNMENT_COMMENCEMENT";
   title: string; detail: string; href: string; status?: string;
 }
 
@@ -119,6 +123,80 @@ export async function listEvents(db: DB, actor: Actor, from: string, to: string,
 
 const isoDate = /^\d{4}-\d{2}-\d{2}$/;
 
+/** Availability groups derived from disposition status (M16-2). */
+export const AVAILABILITY_GROUPS = {
+  AVAILABLE: "Available",
+  IN_PROCESS: "In the assignment process",
+  ON_ASSIGNMENT: "On assignment",
+  UNAVAILABLE: "Unavailable",
+} as const;
+export type AvailabilityGroup = keyof typeof AVAILABILITY_GROUPS;
+const IN_PROCESS: string[] = ["PROPOSED", "AWAITING_APPROVAL", "APPROVED_PENDING"];
+const UNAVAILABLE: string[] = ["TEMP_UNAVAILABLE", "SUSPENDED_REVIEW"];
+
+export function availabilityGroup(disposition: string): AvailabilityGroup {
+  if ((AVAILABLE_DISPOSITIONS as string[]).includes(disposition)) return "AVAILABLE";
+  if (IN_PROCESS.includes(disposition)) return "IN_PROCESS";
+  if (UNAVAILABLE.includes(disposition)) return "UNAVAILABLE";
+  return "ON_ASSIGNMENT";
+}
+
+const dispositionLabel = (d: string | null) => (d ? DISPOSITIONS[d as Disposition] ?? d : "—");
+
+/** Current availability of serving personnel in the actor's personnel scope, grouped (null without personnel.view). */
+export async function availabilitySummary(db: DB, actor: Actor): Promise<{ serving: number; groups: Record<AvailabilityGroup, number> } | null> {
+  const f = unitFilter(actor, "personnel.view", "home_unit_id");
+  if (!f) return null;
+  const rows = await all<{ disposition_status: string; c: number }>(db,
+    `SELECT disposition_status, COUNT(*) AS c FROM personnel_records WHERE ${f.sql} AND employment_status = 'SERVING' GROUP BY disposition_status`, ...f.params);
+  const groups = { AVAILABLE: 0, IN_PROCESS: 0, ON_ASSIGNMENT: 0, UNAVAILABLE: 0 } as Record<AvailabilityGroup, number>;
+  for (const r of rows) groups[availabilityGroup(r.disposition_status)] += Number(r.c);
+  return { serving: Object.values(groups).reduce((a, b) => a + b, 0), groups };
+}
+
+/** Availability lines for a date range: changes recorded (one line per day and home unit) and approved assignments commencing. */
+async function availabilityItems(db: DB, actor: Actor, from: string, to: string): Promise<CalendarItem[]> {
+  const items: CalendarItem[] = [];
+  const per = unitFilter(actor, "personnel.view", "p.home_unit_id");
+  if (per) {
+    const rows = await all<{ effective_date: string; home_unit_id: string; unit_name: string; full_name: string; previous_status: string | null; new_status: string }>(db,
+      `SELECT d.effective_date, p.home_unit_id, o.name AS unit_name, CONCAT(p.surname, ', ', p.first_names) AS full_name, d.previous_status, d.new_status
+         FROM disposition_history d JOIN personnel_records p ON p.id = d.personnel_id JOIN org_units o ON o.id = p.home_unit_id
+        WHERE ${per.sql} AND d.effective_date BETWEEN ? AND ? AND d.previous_status IS NOT NULL
+          AND (d.previous_status <> d.new_status)
+        ORDER BY d.effective_date, o.name, p.surname, d.seq LIMIT 2000`, ...per.params, from, to);
+    const byDayUnit = new Map<string, typeof rows>();
+    for (const r of rows) {
+      // Only changes that move an officer between availability groups are shown; workflow steps within a group are not.
+      if (availabilityGroup(r.previous_status!) === availabilityGroup(r.new_status)) continue;
+      const k = `${r.effective_date}|${r.home_unit_id}`;
+      byDayUnit.set(k, [...(byDayUnit.get(k) ?? []), r]);
+    }
+    for (const [k, list] of byDayUnit) {
+      const [date, unit] = k.split("|");
+      const counts = new Map<AvailabilityGroup, number>();
+      for (const r of list) { const g = availabilityGroup(r.new_status); counts.set(g, (counts.get(g) ?? 0) + 1); }
+      const names = list.slice(0, 3).map((r) => `${r.full_name} (${dispositionLabel(r.previous_status)} → ${dispositionLabel(r.new_status)})`);
+      items.push({
+        date, time: null, kind: "AVAILABILITY_CHANGE",
+        title: `Availability: ${[...counts].map(([g, n]) => `${n} ${AVAILABILITY_GROUPS[g].toLowerCase()}`).join(", ")} · ${list[0].unit_name}`,
+        detail: `${names.join("; ")}${list.length > 3 ? `; and ${list.length - 3} more` : ""}`,
+        href: `/app/personnel?unit=${encodeURIComponent(unit)}`,
+      });
+    }
+  }
+  const asgUnits = unitFilter(actor, "assignment.view", "x");
+  if (asgUnits) {
+    const asg = asgUnits.sql === "1=1" ? asgUnits : { sql: `(${asgUnits.sql.replace("x IN", "a.home_unit_id IN")} OR ${asgUnits.sql.replace("x IN", "ar.responsible_unit_id IN")})`, params: [...asgUnits.params, ...asgUnits.params] };
+    const rows = await all<{ id: string; reference: string; commencement_date: string; full_name: string; area_name: string }>(db,
+      `SELECT a.id, a.reference, a.commencement_date, CONCAT(p.surname, ', ', p.first_names) AS full_name, ar.name AS area_name FROM personnel_assignments a
+         JOIN personnel_records p ON p.id = a.personnel_id JOIN operational_areas ar ON ar.id = a.area_id
+        WHERE ${asg.sql} AND a.status = 'APPROVED' AND a.commencement_date BETWEEN ? AND ? ORDER BY a.commencement_date LIMIT 500`, ...asg.params, from, to);
+    for (const r of rows) items.push({ date: r.commencement_date, time: null, kind: "ASSIGNMENT_COMMENCEMENT", title: `Assignment commences: ${r.reference}`, detail: `${r.full_name} · ${r.area_name} · unavailable to the home unit from this date`, href: `/app/assignments/${r.id}` });
+  }
+  return items;
+}
+
 /** The merged administrative calendar for a date range (at most 93 days). */
 export async function calendar(db: DB, actor: Actor, from: string, to: string): Promise<CalendarItem[]> {
   if (!isoDate.test(from) || !isoDate.test(to) || to < from) throw invalid("Choose a valid date range.");
@@ -153,6 +231,7 @@ export async function calendar(db: DB, actor: Actor, from: string, to: string): 
   const corr = await all<{ id: string; reference: string; subject: string; follow_up_date: string }>(db,
     "SELECT id, reference, subject, follow_up_date FROM correspondence WHERE assigned_to = ? AND status NOT IN ('CLOSED','FILED') AND follow_up_date BETWEEN ? AND ? ORDER BY follow_up_date LIMIT 300", actor.userId, from, to);
   for (const c of corr) items.push({ date: c.follow_up_date, time: null, kind: "CORRESPONDENCE_FOLLOW_UP", title: `Follow up: ${c.reference}`, detail: c.subject, href: `/app/correspondence/${c.id}` });
+  items.push(...await availabilityItems(db, actor, from, to));
   return items.sort((a, b) => a.date.localeCompare(b.date) || (a.time ?? "99").localeCompare(b.time ?? "99") || a.title.localeCompare(b.title));
 }
 

@@ -58,4 +58,4 @@ Earlier findings S1–S6 (v0.9.0) remain fixed and covered by tests.
 
 ## Residual risks (external)
 
-Independent penetration test and DPIA (X03); identity provider with MFA (X02); TLS, reverse-proxy rate limiting, least-privilege database account in use, encryption at rest, off-host audit storage and central logging (X01); malware scanning for documents (X04). `style-src 'unsafe-inline'` remains (styles cannot run code).
+Independent penetration test and DPIA (X03); identity provider with MFA (X02); TLS, reverse-proxy rate limiting, least-privilege database account in use, encryption at rest, off-host audit storage and central logging (X01); malware scanning for documents (X04). `style-src 'unsafe-inline'` was removed for production in v0.12.0 (security probe: production `style-src 'self'`, no inline styles on 11 pages).

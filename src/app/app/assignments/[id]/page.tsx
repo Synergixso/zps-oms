@@ -9,6 +9,7 @@ import { DISPOSITIONS } from "@/server/domain/personnel";
 import { assignmentWorkflowAction, initiateTransferAction } from "@/server/actions/personnel";
 import { AccessDenied, Badge, Card, DL, Notice, PageHeader, Table, Timeline, td, fmtDate, fmtDateTime } from "@/components/ui";
 import { ActionForm, Hidden, Select, Submit, TextArea, TextField } from "@/components/forms";
+import { widthPct } from "@/components/sizing";
 
 export const metadata = { title: "Assignment" };
 
@@ -40,7 +41,7 @@ export default async function AssignmentDetail({ params }: { params: Promise<{ i
           {(a.status === "ACTIVE" || a.status === "TRANSFER_PENDING") && (
             <Card title="Assignment tenure" subtitle={`Proposed minimum ${t.minimumDays} days at the same operational area (requires institutional authorisation)`}>
               <div className="h-2.5 rounded-full bg-slate-100" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="Minimum tenure completed">
-                <div className={`h-2.5 rounded-full ${t.minimumMet ? "bg-ok" : "bg-zp-blue"}`} style={{ width: `${pct}%` }} />
+                <div className={`h-2.5 rounded-full ${t.minimumMet ? "bg-ok" : "bg-zp-blue"} ${widthPct(pct)}`} />
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
                 <div><p className="text-xs font-semibold text-muted">Continuous start</p><p className="font-semibold">{fmtDate(t.continuousStart)}</p></div>

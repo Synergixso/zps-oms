@@ -8,6 +8,7 @@ import { MPR_STATUS_LABEL, manpowerInbox, manpowerSummary, listManpowerRequests,
 import { assignmentInbox, assignmentSummary, listAssignments, listTransfers } from "@/server/domain/assignments";
 import { addDays, today } from "@/server/domain/core";
 import { Badge, Bar, ButtonLink, Card, SectionHeader, Stat, Table, td, fmtDate } from "@/components/ui";
+import { indent } from "@/components/sizing";
 
 type Inbox = Array<{ kind: string; reference: string; title: string; href: string }>;
 
@@ -46,7 +47,7 @@ function StructureCard({ rows, title }: { rows: Awaited<ReturnType<typeof struct
       <Table head={["Unit", "Type", "Personnel", "On assignment"]} empty="No subordinate units.">
         {rows.map((u) => (
           <tr key={u.id}>
-            <td className={td}><span style={{ paddingLeft: `${u.depth * 14}px` }} className="font-semibold">{u.name}</span></td>
+            <td className={td}><span className={`font-semibold ${indent(u.depth, 14)}`}>{u.name}</span></td>
             <td className={`${td} text-xs text-muted`}>{u.unit_type.replace(/_/g, " ").toLowerCase()}</td>
             <td className={`${td} tabular-nums`}>{hasLink(u.id, u.personnel)}</td>
             <td className={`${td} tabular-nums`}>{u.on_assignment}</td>
